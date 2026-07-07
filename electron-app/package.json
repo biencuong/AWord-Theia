@@ -91,7 +91,9 @@
       "allowToChangeInstallationDirectory": true,
       "artifactName": "AWord-Setup-${version}.${ext}",
       "include": "installer.nsh",
-      "shortcutName": "AWord"
+      "shortcutName": "AWord",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
     }
   }
 }

@@ -19,6 +19,25 @@ function buildAboutMessageNode(): HTMLElement {
     const wrap = document.createElement('div');
     wrap.className = 'aword-about-content';
 
+    // Đầu trang: logo chữ A (màu thương hiệu cam, khớp icon app) + tên + phụ đề
+    const header = document.createElement('div');
+    header.className = 'aword-about-header';
+    const logo = document.createElement('div');
+    logo.className = 'aword-about-logo';
+    logo.textContent = 'A';
+    const titleBox = document.createElement('div');
+    const title = document.createElement('div');
+    title.className = 'aword-about-title';
+    title.textContent = 'AWord';
+    const subtitle = document.createElement('div');
+    subtitle.className = 'aword-about-subtitle';
+    subtitle.textContent = 'Giải pháp AI & Chuyển đổi số';
+    titleBox.appendChild(title);
+    titleBox.appendChild(subtitle);
+    header.appendChild(logo);
+    header.appendChild(titleBox);
+    wrap.appendChild(header);
+
     const tagline = document.createElement('p');
     tagline.className = 'aword-about-tagline';
     tagline.innerHTML = '<b>AWord</b> — Giải pháp AI &amp; Chuyển đổi số cho cơ quan, doanh nghiệp';
@@ -30,6 +49,7 @@ function buildAboutMessageNode(): HTMLElement {
     wrap.appendChild(lead);
 
     const contact = document.createElement('p');
+    contact.className = 'aword-about-contact';
     contact.innerHTML = '<b>Hotline / Zalo:</b> <a href="tel:0983606845">0983 606 845</a>';
     wrap.appendChild(contact);
 

@@ -5,7 +5,7 @@
 #   3. Tạo Personal Access Token (classic, quyền repo) tại https://github.com/settings/tokens
 #   4. $env:GITHUB_TOKEN = "ghp_..." ; .\Phat_Hanh_AWord.ps1
 param(
-    [string]$Repo = "biencuong/AWord"
+    [string]$Repo = "biencuong/AWord-Theia"
 )
 
 $ErrorActionPreference = "Stop"

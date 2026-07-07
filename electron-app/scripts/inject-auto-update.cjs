@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const GITHUB_REPO = 'biencuong/AWord'; // đổi ở đây nếu chuyển repo phát hành
+const GITHUB_REPO = 'biencuong/AWord-Theia'; // đổi ở đây nếu chuyển repo phát hành
 
 const target = path.join(__dirname, '..', 'lib', 'backend', 'electron-main.js');
 const marker = '/* AWORD_AUTO_UPDATE */';
@@ -92,9 +92,11 @@ ${marker}
 `;
 
 let content = fs.readFileSync(target, 'utf8');
-if (content.includes(marker)) {
-    console.log('[inject-auto-update] electron-main.js đã có bộ cập nhật, bỏ qua.');
-} else {
-    fs.writeFileSync(target, content + '\n' + snippet, 'utf8');
-    console.log(`[inject-auto-update] Đã tiêm bộ kiểm tra cập nhật (repo ${GITHUB_REPO}).`);
+const idx = content.indexOf(marker);
+if (idx >= 0) {
+    // Khối updater luôn được nối vào CUỐI tệp — cắt bỏ bản cũ để thay bằng bản mới
+    // (đề phòng đổi repo/logic mà electron-main.js chưa được build lại từ đầu).
+    content = content.slice(0, idx).replace(/\n+$/, '\n');
 }
+fs.writeFileSync(target, content + '\n' + snippet, 'utf8');
+console.log(`[inject-auto-update] Đã tiêm bộ kiểm tra cập nhật (repo ${GITHUB_REPO}).`);

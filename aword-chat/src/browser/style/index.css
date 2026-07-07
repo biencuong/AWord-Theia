@@ -7,8 +7,44 @@
 }
 
 .aword-about-content {
-    max-width: 420px;
-    line-height: 1.5;
+    max-width: 440px;
+    line-height: 1.6;
+    color: var(--theia-editor-foreground);
+    font-family: var(--theia-ui-font-family);
+}
+
+.aword-about-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--theia-editorWidget-border);
+}
+
+.aword-about-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ff8a3d, #f4511e);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.aword-about-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--theia-editor-foreground);
+}
+
+.aword-about-subtitle {
+    font-size: 12px;
+    color: var(--theia-descriptionForeground);
 }
 
 .aword-about-content p {
@@ -16,7 +52,22 @@
 }
 
 .aword-about-tagline {
-    font-size: 14px;
+    font-size: 13.5px;
+    color: var(--theia-editor-foreground);
+}
+
+.aword-about-content a {
+    color: var(--theia-textLink-foreground);
+    text-decoration: none;
+}
+
+.aword-about-content a:hover {
+    text-decoration: underline;
+}
+
+.aword-about-contact {
+    font-size: 13px;
+    color: var(--theia-editor-foreground);
 }
 
 .aword-about-services {
@@ -27,9 +78,10 @@
 }
 
 .aword-about-chip {
-    font-size: 12px;
-    padding: 3px 10px;
+    font-size: 11.5px;
+    padding: 3px 12px;
     border-radius: 999px;
     background: var(--theia-badge-background);
     color: var(--theia-badge-foreground);
+    border: 1px solid transparent;
 }
