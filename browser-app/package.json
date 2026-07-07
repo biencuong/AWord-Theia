@@ -1,0 +1,45 @@
+{
+  "private": true,
+  "name": "browser-app",
+  "version": "0.0.0",
+  "dependencies": {
+    "@theia/core": "1.73.1",
+    "@theia/editor": "1.73.1",
+    "@theia/filesystem": "1.73.1",
+    "@theia/markers": "1.73.1",
+    "@theia/messages": "1.73.1",
+    "@theia/monaco": "1.73.1",
+    "@theia/navigator": "1.73.1",
+    "@theia/plugin-ext": "1.73.1",
+    "@theia/plugin-ext-vscode": "1.73.1",
+    "@theia/preferences": "1.73.1",
+    "@theia/process": "1.73.1",
+    "@theia/terminal": "1.73.1",
+    "@theia/vsx-registry": "1.73.1",
+    "@theia/workspace": "1.73.1",
+    "@vscode/windows-ca-certs": "^0.3.4",
+    "aword-chat": "0.0.0"
+  },
+  "devDependencies": {
+    "@theia/cli": "1.73.1"
+  },
+  "scripts": {
+    "bundle": "npm run rebuild && theia build --mode development",
+    "rebuild": "theia rebuild:browser --cacheRoot ..",
+    "start": "theia start --plugins=local-dir:plugins",
+    "watch": "npm run rebuild && theia build --watch --mode development"
+  },
+  "theia": {
+    "target": "browser",
+    "frontend": {
+      "config": {
+        "applicationName": "AWord",
+        "defaultLocale": "vi"
+      }
+    }
+  },
+  "theiaPluginsDir": "plugins",
+  "theiaPlugins": {
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.202/file/Anthropic.claude-code-2.1.202@win32-x64.vsix"
+  }
+}

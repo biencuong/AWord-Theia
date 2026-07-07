@@ -1,0 +1,22 @@
+{
+  "name": "aword-vi-language-pack",
+  "displayName": "AWord Tieng Viet",
+  "description": "Ban dich tieng Viet cho giao dien loi cua AWord (dua tren Eclipse Theia)",
+  "version": "1.0.0",
+  "publisher": "aword",
+  "engines": { "vscode": "^1.0.0" },
+  "categories": ["Language Packs"],
+  "contributes": {
+    "localizations": [
+      {
+        "languageId": "vi",
+        "languageName": "Vietnamese",
+        "localizedLanguageName": "Tiếng Việt",
+        "translations": [
+          { "id": "vscode", "path": "./translations/main.i18n.json" },
+          { "id": "theia", "path": "./translations/theia.i18n.json" }
+        ]
+      }
+    ]
+  }
+}

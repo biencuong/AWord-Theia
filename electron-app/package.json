@@ -1,0 +1,97 @@
+{
+  "private": true,
+  "name": "electron-app",
+  "version": "1.0.0",
+  "main": "lib/backend/electron-main.js",
+  "dependencies": {
+    "@theia/core": "1.73.1",
+    "@theia/editor": "1.73.1",
+    "@theia/electron": "1.73.1",
+    "@theia/filesystem": "1.73.1",
+    "@theia/markers": "1.73.1",
+    "@theia/messages": "1.73.1",
+    "@theia/monaco": "1.73.1",
+    "@theia/navigator": "1.73.1",
+    "@theia/plugin-ext": "1.73.1",
+    "@theia/plugin-ext-vscode": "1.73.1",
+    "@theia/preferences": "1.73.1",
+    "@theia/process": "1.73.1",
+    "@theia/terminal": "1.73.1",
+    "@theia/vsx-registry": "1.73.1",
+    "@theia/workspace": "1.73.1",
+    "@vscode/windows-ca-certs": "^0.3.4",
+    "aword-chat": "0.0.0"
+  },
+  "devDependencies": {
+    "@theia/cli": "1.73.1",
+    "electron": "39.8.7",
+    "electron-builder": "^24.13.3"
+  },
+  "scripts": {
+    "bundle": "npm run rebuild && theia build --mode production",
+    "rebuild": "theia rebuild:electron --cacheRoot ..",
+    "start": "theia start --plugins=local-dir:plugins",
+    "watch": "npm run rebuild && theia build --watch --mode development",
+    "prepackage": "node scripts/prepackage.cjs",
+    "package": "electron-builder --win --x64 --publish never"
+  },
+  "theia": {
+    "target": "electron",
+    "frontend": {
+      "config": {
+        "applicationName": "AWord",
+        "defaultLocale": "vi",
+        "preferences": {
+          "workbench.colorTheme": "dark",
+          "window.menuBarVisibility": "classic",
+          "workbench.tree.renderIndentGuides": "onHover",
+          "claudeCode.preferredLocation": "sidebar",
+          "files.autoSave": "off"
+        }
+      }
+    }
+  },
+  "theiaPluginsDir": "plugins",
+  "theiaPlugins": {
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.202/file/Anthropic.claude-code-2.1.202@win32-x64.vsix"
+  },
+  "build": {
+    "appId": "vn.aword.app",
+    "productName": "AWord",
+    "copyright": "AWord",
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "asar": true,
+    "asarUnpack": [
+      "**/lib/backend/native/**",
+      "**/lib/backend/shell-integrations/**",
+      "**/lib/prebuilds/**",
+      "**/*.node"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "lib",
+      "node_modules",
+      "!**/*.js.map",
+      "!**/*.css.map"
+    ],
+    "extraResources": [
+      { "from": "plugins", "to": "app/plugins" },
+      { "from": "resources/skills", "to": "app/resources/skills" }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "AWord-Setup-${version}.${ext}",
+      "include": "installer.nsh",
+      "shortcutName": "AWord"
+    }
+  }
+}

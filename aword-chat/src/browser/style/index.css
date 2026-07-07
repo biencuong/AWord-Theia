@@ -1,0 +1,35 @@
+#widget-container h2 {
+    color: var(--theia-ui-font-color1);
+    font-size: 12px;
+    font-weight: 400;
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+.aword-about-content {
+    max-width: 420px;
+    line-height: 1.5;
+}
+
+.aword-about-content p {
+    margin: 0 0 12px;
+}
+
+.aword-about-tagline {
+    font-size: 14px;
+}
+
+.aword-about-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.aword-about-chip {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--theia-badge-background);
+    color: var(--theia-badge-foreground);
+}
