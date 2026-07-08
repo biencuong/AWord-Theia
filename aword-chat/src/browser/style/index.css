@@ -109,6 +109,22 @@
     font-weight: 600;
 }
 
+/* ===== Sửa mọi hộp thoại của Theia: không cho tràn ngang màn hình =====
+   Mặc định .dialogBlock không giới hạn bề rộng — nội dung dài một dòng
+   (đường dẫn, thông báo lỗi, ghi chú phát hành...) kéo hộp thoại tràn 2 bên.
+   Giới hạn bề rộng + buộc xuống dòng + cuộn dọc khi nội dung quá cao. */
+.lm-Widget.dialogOverlay .dialogBlock {
+    max-width: min(620px, 92vw);
+}
+
+.lm-Widget.dialogOverlay .dialogContent {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
 /* ===== Trang chào mừng ===== */
 .aword-welcome {
     height: 100%;

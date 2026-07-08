@@ -47,14 +47,19 @@
           "workbench.statusBar.visible": false,
           "workbench.tree.renderIndentGuides": "onHover",
           "claudeCode.preferredLocation": "sidebar",
-          "files.autoSave": "off"
+          "files.autoSave": "off",
+          "workbench.editorAssociations": {
+            "*.md": "default"
+          }
         }
       }
     }
   },
   "theiaPluginsDir": "plugins",
   "theiaPlugins": {
-    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.202/file/Anthropic.claude-code-2.1.202@win32-x64.vsix"
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.202/file/Anthropic.claude-code-2.1.202@win32-x64.vsix",
+    "tomoki1207.pdf": "https://open-vsx.org/api/tomoki1207/pdf/1.2.2/file/tomoki1207.pdf-1.2.2.vsix",
+    "cweijan.vscode-office": "https://open-vsx.org/api/cweijan/vscode-office/4.1.5/file/cweijan.vscode-office-4.1.5.vsix"
   },
   "build": {
     "appId": "vn.aword.app",
