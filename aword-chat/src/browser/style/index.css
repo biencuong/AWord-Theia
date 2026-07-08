@@ -109,12 +109,42 @@
     font-weight: 600;
 }
 
-/* ===== Sửa mọi hộp thoại của Theia: không cho tràn ngang màn hình =====
-   Mặc định .dialogBlock không giới hạn bề rộng — nội dung dài một dòng
-   (đường dẫn, thông báo lỗi, ghi chú phát hành...) kéo hộp thoại tràn 2 bên.
-   Giới hạn bề rộng + buộc xuống dòng + cuộn dọc khi nội dung quá cao. */
+/* ===== Hộp thoại Theia: đồng bộ phong cách/màu với giao diện AWord =====
+   1) Không tràn ngang: mặc định .dialogBlock không giới hạn bề rộng — nội dung
+      một dòng dài (đường dẫn, URL, ghi chú...) kéo hộp tràn 2 bên màn hình.
+   2) Đồng bộ màu: thanh tiêu đề gốc dùng màu statusBar (xanh chói) lạc tông
+      với theme tối — chuyển về nền widget + viền mảnh + vạch nhấn cam
+      thương hiệu, bo góc và đổ bóng giống các bề mặt khác của app. */
+.lm-Widget.dialogOverlay {
+    background: rgba(0, 0, 0, 0.45);
+}
+
 .lm-Widget.dialogOverlay .dialogBlock {
     max-width: min(620px, 92vw);
+    border-radius: 10px;
+    border: 1px solid var(--theia-editorWidget-border);
+    border-top: 3px solid #f4511e; /* vạch nhấn cam thương hiệu AWord */
+    background-color: var(--theia-editorWidget-background);
+    color: var(--theia-editor-foreground);
+    font-family: var(--theia-ui-font-family);
+    box-shadow: 0 10px 38px rgba(0, 0, 0, 0.5);
+}
+
+.lm-Widget.dialogOverlay .dialogTitle {
+    background-color: transparent;
+    color: var(--theia-editor-foreground);
+    border-bottom: 1px solid var(--theia-editorWidget-border);
+    font-size: 13.5px;
+    font-weight: 600;
+    min-height: 36px;
+}
+
+.lm-Widget.dialogOverlay .dialogTitle i.closeButton {
+    color: var(--theia-descriptionForeground);
+}
+
+.lm-Widget.dialogOverlay .dialogTitle i.closeButton:hover {
+    color: var(--theia-editor-foreground);
 }
 
 .lm-Widget.dialogOverlay .dialogContent {
@@ -123,6 +153,25 @@
     overflow-x: hidden;
     word-break: break-word;
     overflow-wrap: anywhere;
+    line-height: 1.6;
+    padding: 16px;
+}
+
+.lm-Widget.dialogOverlay .dialogControl {
+    padding: 12px 16px 14px;
+    gap: 8px;
+    border-top: 1px solid var(--theia-editorWidget-border);
+}
+
+/* Nút chính trong hộp thoại mang màu thương hiệu, khớp logo/vạch nhấn */
+.lm-Widget.dialogOverlay .theia-button.main {
+    background: linear-gradient(135deg, #ff8a3d, #f4511e);
+    color: #ffffff;
+    border: none;
+}
+
+.lm-Widget.dialogOverlay .theia-button.main:hover {
+    background: linear-gradient(135deg, #ff9955, #ff5722);
 }
 
 /* ===== Trang chào mừng ===== */

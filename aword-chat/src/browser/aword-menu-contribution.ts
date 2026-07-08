@@ -1,11 +1,17 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
 import {
-    Command, CommandContribution, CommandRegistry,
-    MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, MutableCompoundMenuNode
+    Command, CommandContribution, CommandRegistry, CommandService,
+    MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, MutableCompoundMenuNode,
+    MessageService, SelectionService, URI
 } from '@theia/core';
 import { CommonMenus, ConfirmDialog, Dialog } from '@theia/core/lib/browser';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
+import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handler';
+import { NavigatorContextMenu } from '@theia/navigator/lib/browser/navigator-contribution';
+import { EditorManager } from '@theia/editor/lib/browser';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
+import { FileService } from '@theia/filesystem/lib/browser/file-service';
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
@@ -15,6 +21,11 @@ export const AwordAboutCommand: Command = {
 export const AwordUpdateCommand: Command = {
     id: 'aword:check-update',
     label: 'Cập nhật phiên bản mới'
+};
+
+export const AwordAddToClaudeCommand: Command = {
+    id: 'aword:add-to-claude',
+    label: 'Thêm vào Claude Code (@)'
 };
 
 // Đường dẫn menu "Terminal" do @theia/terminal đăng ký: [...MAIN_MENU_BAR, '7_terminal'].
@@ -92,6 +103,24 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
     @inject(ApplicationServer)
     protected readonly applicationServer: ApplicationServer;
 
+    @inject(SelectionService)
+    protected readonly selectionService: SelectionService;
+
+    @inject(CommandService)
+    protected readonly commandService: CommandService;
+
+    @inject(MessageService)
+    protected readonly messageService: MessageService;
+
+    @inject(EditorManager)
+    protected readonly editorManager: EditorManager;
+
+    @inject(WorkspaceService)
+    protected readonly workspaceService: WorkspaceService;
+
+    @inject(FileService)
+    protected readonly fileService: FileService;
+
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(AwordAboutCommand, {
             // Dựng ConfirmDialog trực tiếp (không qua DI) để tránh lỗi Inversify "asynchronous dependencies"
@@ -106,6 +135,11 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         commands.registerCommand(AwordUpdateCommand, {
             execute: () => this.kiemTraCapNhat()
         });
+        commands.registerCommand(AwordAddToClaudeCommand, UriAwareCommandHandler.MultiSelect(this.selectionService, {
+            execute: uris => this.themVaoClaude(uris),
+            isEnabled: uris => uris.length > 0,
+            isVisible: uris => uris.length > 0
+        }));
     }
 
     registerMenus(menus: MenuModelRegistry): void {
@@ -118,6 +152,12 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             commandId: AwordAboutCommand.id,
             label: AwordAboutCommand.label,
             order: '1'
+        });
+        // Chuột phải trong cây thư mục (Explorer): gửi tham chiếu @tệp vào khung chat Claude.
+        menus.registerMenuAction(NavigatorContextMenu.NAVIGATION, {
+            commandId: AwordAddToClaudeCommand.id,
+            label: AwordAddToClaudeCommand.label,
+            order: 'z1'
         });
         // Ẩn menu "Terminal" khỏi thanh menu chính — tính năng Terminal vẫn dùng được qua Command Palette (Ctrl+Shift+P).
         // Dùng onDidChange thay vì FrontendApplicationContribution.onStart() vì thứ tự đăng ký menu giữa các
@@ -211,6 +251,42 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
             this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases/latest`, { external: true });
         }
+    }
+
+    // Gửi tham chiếu @tệp của các mục đang chọn trong Explorer vào Claude.
+    // Extension Claude Code không có menu explorer (lệnh insertAtMention chỉ đọc
+    // editor đang mở, không nhận URI) — nên với MỘT tệp: mở tệp đó rồi gọi
+    // insertAtMention để tham chiếu rơi thẳng vào ô nhập của Claude; với nhiều
+    // mục hoặc thư mục: sao chép chuỗi @... vào clipboard để dán vào khung chat.
+    protected async themVaoClaude(uris: URI[]): Promise<void> {
+        const thamChieu = uris.map(u => '@' + this.duongDanTuongDoi(u));
+        try {
+            if (uris.length === 1 && uris[0] && !(await this.fileService.resolve(uris[0])).isDirectory) {
+                await this.commandService.executeCommand('claude-vscode.sidebar.open').catch(() => { /* panel có thể đã mở */ });
+                await this.editorManager.open(uris[0], { mode: 'activate' });
+                await new Promise(r => setTimeout(r, 300));
+                await this.commandService.executeCommand('claude-vscode.insertAtMention');
+                return;
+            }
+            throw new Error('nhiều mục hoặc thư mục — chuyển sang clipboard');
+        } catch {
+            try {
+                await navigator.clipboard.writeText(thamChieu.join(' '));
+                this.messageService.info(`Đã sao chép ${thamChieu.join(' ')} — dán (Ctrl+V) vào khung chat Claude.`);
+            } catch {
+                this.messageService.warn('Không gửi được tham chiếu vào Claude.');
+            }
+        }
+    }
+
+    protected duongDanTuongDoi(uri: URI): string {
+        for (const root of this.workspaceService.tryGetRoots()) {
+            const rel = root.resource.relative(uri);
+            if (rel) {
+                return rel.toString();
+            }
+        }
+        return uri.path.base || uri.toString();
     }
 
     private hideTerminalMenu(menus: MenuModelRegistry): void {
