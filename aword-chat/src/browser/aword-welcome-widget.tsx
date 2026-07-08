@@ -12,6 +12,7 @@ const HUONG_DAN: { icon: string; text: string }[] = [
     { icon: '@', text: 'Gõ @ trong khung chat để đính kèm tệp làm ngữ cảnh; bôi đen đoạn văn bản rồi hỏi về đoạn đó.' },
     { icon: '✏️', text: 'Claude đọc và sửa tệp trực tiếp — mỗi thay đổi đều hiện diff để bạn duyệt trước khi chấp nhận.' },
     { icon: '⚡', text: 'AWord có sẵn 18 kỹ năng (soạn thảo docx, bảng tính, trình chiếu, xử lý văn bản đến...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
+    { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
 ];
 
