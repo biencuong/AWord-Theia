@@ -44,6 +44,7 @@
         "preferences": {
           "workbench.colorTheme": "dark",
           "window.menuBarVisibility": "classic",
+          "workbench.statusBar.visible": false,
           "workbench.tree.renderIndentGuides": "onHover",
           "claudeCode.preferredLocation": "sidebar",
           "files.autoSave": "off"
