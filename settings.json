@@ -1,0 +1,31 @@
+{
+  "language": "vietnamese",
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://apikey.aword.vn/v1",
+    "ANTHROPIC_AUTH_TOKEN": "xxxxx",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-8",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
+
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
+    "MAX_THINKING_TOKENS": "32000",
+
+    "PYTHONIOENCODING": "utf-8",
+    "PYTHONUTF8": "1",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8",
+    "CHCP": "65001"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(*)"
+    ],
+    "additionalDirectories": []
+  },
+  "autoUpdatesChannel": "latest",
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark",
+  "mcpServers": {},
+  "effortLevel": "xhigh",
+  "model": "sonnet"
+}

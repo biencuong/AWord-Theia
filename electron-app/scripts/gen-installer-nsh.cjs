@@ -37,13 +37,12 @@ skills.forEach((skill, i) => {
 });
 lines.push(
     '',
-    '  ; Đặt tiếng Việt làm ngôn ngữ trả lời mặc định của Claude Code',
-    '  ; (chỉ khi máy CHƯA có settings.json — không đụng vào cấu hình sẵn có).',
+    '  ; Cài settings.json tùy chỉnh của AWord cho Claude Code (gateway, model mặc định,',
+    '  ; tiếng Việt, hiệu năng tối đa) — chỉ khi máy CHƯA có, không đụng cấu hình sẵn.',
+    '  ; Nguồn: AWord-Theia\\settings.json (cạnh thư mục electron-app).',
     '  IfFileExists "$PROFILE\\.claude\\settings.json" skip_claude_settings',
-    '    CreateDirectory "$PROFILE\\.claude"',
-    '    FileOpen $0 "$PROFILE\\.claude\\settings.json" w',
-    '    FileWrite $0 \'{"language": "vietnamese"}\'',
-    '    FileClose $0',
+    '    SetOutPath "$PROFILE\\.claude"',
+    '    File "/oname=settings.json" "${PROJECT_DIR}\\..\\settings.json"',
     '  skip_claude_settings:',
     '',
     '  ; Menu chuột phải: tệp bất kỳ',
