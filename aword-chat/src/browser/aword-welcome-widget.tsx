@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { injectable, postConstruct, inject } from '@theia/core/shared/inversify';
 import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
-import { CommandService, URI } from '@theia/core';
+import { CommandService, MessageService, URI } from '@theia/core';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
+import { PROMPT_THIET_LAP_WORKSPACE, PROMPT_DE_XUAT_PLUGIN } from './aword-setup-prompts';
 
 // Hướng dẫn sử dụng nhanh — giữ ngắn gọn, mỗi mục một hành động cụ thể.
 const HUONG_DAN: { icon: string; text: string }[] = [
@@ -30,6 +31,9 @@ export class AwordWelcomeWidget extends ReactWidget {
 
     @inject(WindowService)
     protected readonly windowService!: WindowService;
+
+    @inject(MessageService)
+    protected readonly messageService!: MessageService;
 
     protected ganDay: string[] = [];
 
@@ -67,6 +71,15 @@ export class AwordWelcomeWidget extends ReactWidget {
                         <h3>Bắt đầu</h3>
                         <button className='theia-button main aword-welcome-btn' onClick={() => this.moThuMuc()}>📁 Mở thư mục…</button>
                         <button className='theia-button secondary aword-welcome-btn' onClick={() => this.moClaude()}>🤖 Trò chuyện với Claude</button>
+
+                        <h3>Thiết lập ban đầu</h3>
+                        <p className='aword-welcome-setup-note'>
+                            Lần đầu dùng AWord? Bấm nút dưới — Claude sẽ hỏi bạn <b>từng câu một</b> (tên, cơ quan,
+                            công việc, văn phong…) rồi tự dựng cấu trúc thư mục làm việc chuẩn
+                            (ABOUT ME / TEMPLATES / PROJECTS / CLAUDE OUTPUTS) kèm quy tắc soạn thảo Nghị định 30.
+                        </p>
+                        <button className='theia-button main aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_THIET_LAP_WORKSPACE, 'thiết lập không gian làm việc')}>🚀 Thiết lập không gian làm việc</button>
+                        <button className='theia-button secondary aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_DE_XUAT_PLUGIN, 'đề xuất plugin')}>🧩 Đề xuất plugin theo công việc</button>
 
                         <h3>Mở gần đây</h3>
                         {this.ganDay.length === 0
@@ -117,6 +130,21 @@ export class AwordWelcomeWidget extends ReactWidget {
     protected moClaude(): void {
         this.commandService.executeCommand('claude-vscode.sidebar.open').catch(() =>
             this.commandService.executeCommand('claude-vscode.editor.open')).catch(() => { /* plugin chưa sẵn sàng */ });
+    }
+
+    // Khung chat của Claude là webview đóng — không bơm chữ trực tiếp được;
+    // sao chép prompt vào clipboard rồi mở Claude để người dùng dán (Ctrl+V) và gửi.
+    protected async guiPromptChoClaude(prompt: string, tenViec: string): Promise<void> {
+        try {
+            await navigator.clipboard.writeText(prompt);
+            this.moClaude();
+            this.messageService.info(
+                `Đã sao chép nội dung ${tenViec}. Bấm vào ô nhập của Claude (bên phải), dán bằng Ctrl+V rồi nhấn Enter để bắt đầu.`,
+                { timeout: 15000 }
+            );
+        } catch {
+            this.messageService.warn('Không sao chép được nội dung — hãy thử lại.');
+        }
     }
 
     protected moWorkspace(uri: string): void {
