@@ -58,7 +58,7 @@ export const PROMPT_THIET_LAP_WORKSPACE = `Hãy giúp tôi thiết lập không 
 
 1. Hỏi tôi TỪNG CÂU MỘT (tuyệt đối không hỏi nhiều câu cùng lúc) để thu thập thông tin cho hai tệp "ABOUT ME/profile.md" và "ABOUT ME/writing-style.md": tên; nghề nghiệp; tên cơ quan; phòng ban và nhiệm vụ được phân công hiện tại; mục tiêu dùng Claude; đối tượng làm việc thường xuyên; giọng văn mong muốn; những điều thích và không thích trong văn phong; ví dụ mẫu văn bản nếu có. Mỗi câu hỏi luôn kèm ví dụ để tôi tham khảo.
 
-2. Hỏi tôi thường làm những loại nội dung nào (soạn thảo văn bản hành chính, kế hoạch, báo cáo, tờ trình, slide...) để tạo đúng các mẫu trong "TEMPLATES/". Nếu MCP "khodulieu" (Kho dữ liệu cơ quan) đang kết nối, dùng kho_mau_list / kho_mau_goi_y để lấy mẫu thật của cơ quan làm gốc; chưa kết nối thì tự soạn khung mẫu chuẩn Nghị định 30.
+2. Hỏi tôi thường làm những loại nội dung nào (soạn thảo văn bản hành chính, kế hoạch, báo cáo, tờ trình, slide...) để tạo đúng các mẫu trong "TEMPLATES/". Nếu MCP "khodulieu" (Kho dữ liệu cơ quan) đang kết nối: dùng kho_mau_list / kho_mau_goi_y chọn mẫu thật của cơ quan, kho_mau_tai_ve(id) tải FILE MẪU GỐC (base64 — giải mã, lưu file .docx vào TEMPLATES/ giữ nguyên 100% thể thức), kèm kho_mau_noi_dung(id) lấy text để ghi tài liệu mô tả cấu trúc. Ghi chú vào TEMPLATES/README: khi soạn văn bản thật, điền nội dung TRỰC TIẾP vào bản sao của file mẫu gốc (giữ nguyên thể thức) — không dựng file mới, không dùng file_path (đường dẫn máy chủ kho). Chưa kết nối kho thì tự soạn khung mẫu chuẩn Nghị định 30.
 
 3. Sau khi thu thập đủ, TỰ ĐỘNG tạo toàn bộ cấu trúc thư mục: "ABOUT ME/", "TEMPLATES/", "PROJECTS/", "CLAUDE OUTPUTS/" và điền nội dung thực tế vào các tệp dựa trên thông tin tôi đã cung cấp.
 
