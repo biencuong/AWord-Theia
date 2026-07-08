@@ -1,19 +1,27 @@
-import { injectable } from '@theia/core/shared/inversify';
+import { injectable, inject } from '@theia/core/shared/inversify';
 import {
     Command, CommandContribution, CommandRegistry,
     MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, MutableCompoundMenuNode
 } from '@theia/core';
 import { CommonMenus, ConfirmDialog, Dialog } from '@theia/core/lib/browser';
+import { WindowService } from '@theia/core/lib/browser/window/window-service';
+import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
     label: 'Giới thiệu AWord'
 };
 
+export const AwordUpdateCommand: Command = {
+    id: 'aword:check-update',
+    label: 'Cập nhật phiên bản mới'
+};
+
 // Đường dẫn menu "Terminal" do @theia/terminal đăng ký: [...MAIN_MENU_BAR, '7_terminal'].
 const TERMINAL_MENU_ID = '7_terminal';
-
-const SERVICES = ['Tư vấn ứng dụng AI', 'Chuyển đổi số', 'Tự động hóa quy trình', 'Đào tạo & chuyển giao'];
+// Repo phát hành — phải khớp electron-app/scripts/inject-auto-update.cjs và Phat_Hanh_AWord.ps1.
+const GITHUB_REPO = 'biencuong/AWord-Theia';
+const TRANG_CHU = 'https://aword.vn';
 
 function buildAboutMessageNode(): HTMLElement {
     const wrap = document.createElement('div');
@@ -50,24 +58,39 @@ function buildAboutMessageNode(): HTMLElement {
 
     const contact = document.createElement('p');
     contact.className = 'aword-about-contact';
-    contact.innerHTML = '<b>Hotline / Zalo:</b> <a href="tel:0983606845">0983 606 845</a>';
+    contact.innerHTML = '<b>Hotline / Zalo:</b> <a href="tel:0983606845">0983 606 845</a><br>'
+        + `<b>Trang chủ:</b> <a href="${TRANG_CHU}" target="_blank">aword.vn</a>`;
     wrap.appendChild(contact);
-
-    const services = document.createElement('div');
-    services.className = 'aword-about-services';
-    for (const s of SERVICES) {
-        const chip = document.createElement('span');
-        chip.className = 'aword-about-chip';
-        chip.textContent = s;
-        services.appendChild(chip);
-    }
-    wrap.appendChild(services);
 
     return wrap;
 }
 
+interface ThongTinRelease {
+    tag_name?: string;
+    name?: string;
+    body?: string;
+    html_url?: string;
+    assets?: { name: string; browser_download_url: string }[];
+}
+
+function soSanhPhienBan(a: string, b: string): number { // >0 nếu a mới hơn b
+    const pa = a.replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = b.replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const d = (pa[i] || 0) - (pb[i] || 0);
+        if (d !== 0) { return d; }
+    }
+    return 0;
+}
+
 @injectable()
 export class AwordMenuContribution implements CommandContribution, MenuContribution {
+
+    @inject(WindowService)
+    protected readonly windowService: WindowService;
+
+    @inject(ApplicationServer)
+    protected readonly applicationServer: ApplicationServer;
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(AwordAboutCommand, {
@@ -80,13 +103,21 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
                 cancel: ''
             }).open()
         });
+        commands.registerCommand(AwordUpdateCommand, {
+            execute: () => this.kiemTraCapNhat()
+        });
     }
 
     registerMenus(menus: MenuModelRegistry): void {
         menus.registerMenuAction(CommonMenus.HELP, {
+            commandId: AwordUpdateCommand.id,
+            label: AwordUpdateCommand.label,
+            order: '0'
+        });
+        menus.registerMenuAction(CommonMenus.HELP, {
             commandId: AwordAboutCommand.id,
             label: AwordAboutCommand.label,
-            order: '0'
+            order: '1'
         });
         // Ẩn menu "Terminal" khỏi thanh menu chính — tính năng Terminal vẫn dùng được qua Command Palette (Ctrl+Shift+P).
         // Dùng onDidChange thay vì FrontendApplicationContribution.onStart() vì thứ tự đăng ký menu giữa các
@@ -99,6 +130,89 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         });
     }
 
+    // Kiểm tra release mới nhất trên GitHub, hiện hộp thoại bản cũ/bản mới + tóm tắt nâng cấp.
+    protected async kiemTraCapNhat(): Promise<void> {
+        let banHienTai = '';
+        try {
+            banHienTai = (await this.applicationServer.getApplicationInfo())?.version ?? '';
+        } catch { /* backend chưa sẵn sàng — vẫn hiện được thông tin bản mới */ }
+
+        let release: ThongTinRelease | undefined;
+        let loi: string | undefined;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+                headers: { 'Accept': 'application/vnd.github+json' }
+            });
+            if (res.status === 404) {
+                loi = 'Chưa có bản phát hành nào trên kênh cập nhật.';
+            } else if (!res.ok) {
+                loi = `Máy chủ cập nhật trả về lỗi HTTP ${res.status}.`;
+            } else {
+                release = await res.json();
+            }
+        } catch {
+            loi = 'Không kết nối được máy chủ cập nhật. Kiểm tra kết nối mạng rồi thử lại.';
+        }
+
+        const wrap = document.createElement('div');
+        wrap.className = 'aword-about-content aword-update-content';
+
+        if (loi || !release) {
+            const p = document.createElement('p');
+            p.textContent = loi ?? 'Không đọc được thông tin bản phát hành.';
+            wrap.appendChild(p);
+            if (banHienTai) {
+                const cur = document.createElement('p');
+                cur.className = 'aword-about-subtitle';
+                cur.textContent = `Bạn đang dùng AWord ${banHienTai}.`;
+                wrap.appendChild(cur);
+            }
+            await new ConfirmDialog({ title: AwordUpdateCommand.label!, msg: wrap, ok: Dialog.OK, cancel: '' }).open();
+            return;
+        }
+
+        const banMoi = (release.tag_name ?? release.name ?? '').replace(/^v/i, '');
+        const coBanMoi = banHienTai !== '' && banMoi !== '' && soSanhPhienBan(banMoi, banHienTai) > 0;
+
+        const bang = document.createElement('div');
+        bang.className = 'aword-update-versions';
+        bang.innerHTML =
+            `<div><span class="aword-update-label">Bản đang dùng:</span> <b>${banHienTai || 'không rõ'}</b></div>` +
+            `<div><span class="aword-update-label">Bản mới nhất:</span> <b>${banMoi || 'không rõ'}</b></div>`;
+        wrap.appendChild(bang);
+
+        const ketLuan = document.createElement('p');
+        ketLuan.className = 'aword-update-status';
+        ketLuan.textContent = coBanMoi
+            ? 'Đã có phiên bản mới! Bấm "Tải bản mới" để tải bộ cài về và chạy cập nhật.'
+            : 'Bạn đang dùng phiên bản mới nhất.';
+        wrap.appendChild(ketLuan);
+
+        const tomTat = (release.body ?? '').trim();
+        if (tomTat) {
+            const tieuDe = document.createElement('p');
+            tieuDe.innerHTML = '<b>Nội dung nâng cấp:</b>';
+            tieuDe.style.marginBottom = '4px';
+            wrap.appendChild(tieuDe);
+            const noiDung = document.createElement('pre');
+            noiDung.className = 'aword-update-notes';
+            noiDung.textContent = tomTat.length > 1200 ? tomTat.slice(0, 1200) + '…' : tomTat;
+            wrap.appendChild(noiDung);
+        }
+
+        const dongY = await new ConfirmDialog({
+            title: AwordUpdateCommand.label!,
+            msg: wrap,
+            ok: coBanMoi ? 'Tải bản mới' : Dialog.OK,
+            cancel: coBanMoi ? 'Để sau' : ''
+        }).open();
+
+        if (coBanMoi && dongY) {
+            const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
+            this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases/latest`, { external: true });
+        }
+    }
+
     private hideTerminalMenu(menus: MenuModelRegistry): void {
         const menuBar = menus.getMenu(MAIN_MENU_BAR);
         const terminalNode = menuBar?.children.find(child => child.id === TERMINAL_MENU_ID);
@@ -107,15 +221,16 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
     }
 
-    // Menu Trợ giúp chỉ giữ lại "Giới thiệu AWord"; gỡ mọi mục khác
+    // Menu Trợ giúp chỉ giữ lại các mục của AWord; gỡ mọi mục khác
     // (About mặc định của Theia, Getting Started, tài liệu online...).
     private pruneHelpMenu(menus: MenuModelRegistry): void {
         const help = menus.getMenu(CommonMenus.HELP);
         if (!help || !MutableCompoundMenuNode.is(help)) {
             return;
         }
+        const giuLai = new Set<string>([AwordAboutCommand.id, AwordUpdateCommand.id, 'aword:welcome']);
         for (const child of [...help.children]) {
-            if (child.id !== AwordAboutCommand.id) {
+            if (!giuLai.has(child.id)) {
                 help.removeNode(child);
             }
         }

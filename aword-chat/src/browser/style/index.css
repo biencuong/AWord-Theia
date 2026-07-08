@@ -85,3 +85,175 @@
     color: var(--theia-badge-foreground);
     border: 1px solid transparent;
 }
+
+.aword-update-versions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: var(--theia-editorWidget-background);
+    border: 1px solid var(--theia-editorWidget-border);
+    font-size: 13px;
+}
+
+.aword-update-label {
+    display: inline-block;
+    min-width: 110px;
+    color: var(--theia-descriptionForeground);
+}
+
+.aword-update-status {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ===== Trang chào mừng ===== */
+.aword-welcome {
+    height: 100%;
+    overflow-y: auto;
+    background: var(--theia-editor-background);
+    color: var(--theia-editor-foreground);
+    font-family: var(--theia-ui-font-family);
+}
+
+.aword-welcome-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 36px 32px 48px;
+    line-height: 1.6;
+}
+
+.aword-welcome-header {
+    margin-bottom: 24px;
+}
+
+.aword-welcome-header .aword-about-logo {
+    width: 56px;
+    height: 56px;
+    font-size: 30px;
+    border-radius: 13px;
+}
+
+.aword-welcome-header .aword-about-title {
+    font-size: 24px;
+}
+
+.aword-welcome-columns {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.aword-welcome-col {
+    flex: 1 1 320px;
+    min-width: 280px;
+}
+
+.aword-welcome-col h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--theia-descriptionForeground);
+    margin: 22px 0 10px;
+}
+
+.aword-welcome-col h3:first-child {
+    margin-top: 0;
+}
+
+.aword-welcome-btn {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 0 8px;
+    padding: 6px 14px;
+    text-align: left;
+    font-size: 13px;
+}
+
+.aword-welcome-recent {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aword-welcome-recent li {
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.aword-welcome-recent a {
+    color: var(--theia-textLink-foreground);
+    text-decoration: none;
+    font-size: 13.5px;
+}
+
+.aword-welcome-recent a:hover {
+    text-decoration: underline;
+}
+
+.aword-welcome-recent-path {
+    font-size: 11.5px;
+    color: var(--theia-descriptionForeground);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aword-welcome-empty {
+    font-size: 12.5px;
+    color: var(--theia-descriptionForeground);
+}
+
+.aword-welcome-guide {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aword-welcome-guide li {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.aword-welcome-guide-icon {
+    flex: none;
+    width: 22px;
+    text-align: center;
+}
+
+.aword-welcome-about {
+    font-size: 13px;
+    margin: 0 0 10px;
+}
+
+.aword-welcome-about a {
+    color: var(--theia-textLink-foreground);
+    text-decoration: none;
+}
+
+.aword-welcome-about a:hover {
+    text-decoration: underline;
+}
+
+.aword-update-notes {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 8px 10px;
+    margin: 0 0 8px;
+    border-radius: 6px;
+    background: var(--theia-editorWidget-background);
+    border: 1px solid var(--theia-editorWidget-border);
+    font-family: var(--theia-ui-font-family);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--theia-editor-foreground);
+}

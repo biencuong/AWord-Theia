@@ -5,7 +5,10 @@
 #   3. Tạo Personal Access Token (classic, quyền repo) tại https://github.com/settings/tokens
 #   4. $env:GITHUB_TOKEN = "ghp_..." ; .\Phat_Hanh_AWord.ps1
 param(
-    [string]$Repo = "biencuong/AWord-Theia"
+    [string]$Repo = "biencuong/AWord-Theia",
+    # Tóm tắt nội dung nâng cấp — hiện trong menu "Trợ giúp > Cập nhật phiên bản mới" của app.
+    # Ví dụ: .\Phat_Hanh_AWord.ps1 -Notes "- Sua loi X`n- Them tinh nang Y"
+    [string]$Notes = ""
 )
 
 $ErrorActionPreference = "Stop"

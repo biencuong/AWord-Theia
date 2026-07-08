@@ -27,5 +27,5 @@
   "theme": "dark",
   "mcpServers": {},
   "effortLevel": "xhigh",
-  "model": "sonnet"
+  "model": "claude-fable-5"
 }
