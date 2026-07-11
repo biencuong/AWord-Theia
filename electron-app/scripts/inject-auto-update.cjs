@@ -39,7 +39,8 @@ ${marker}
 
     const taiTep = (url, dich, chuyenTiep) => new Promise((resolve, reject) => {
       if ((chuyenTiep ?? 0) > 5) { return reject(new Error('Qua nhieu chuyen tiep')); }
-      https.get(url, { headers: { 'User-Agent': 'AWord-Updater', 'Accept': 'application/octet-stream' } }, res => {
+      const req = https.get(url, { headers: { 'User-Agent': 'AWord-Updater', 'Accept': 'application/octet-stream' } }, res => {
+        res.on('error', reject); // socket reset GIUA luc tai body -> khong thanh uncaught
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           res.resume();
           return resolve(taiTep(res.headers.location, dich, (chuyenTiep ?? 0) + 1));
@@ -49,7 +50,9 @@ ${marker}
         res.pipe(ws);
         ws.on('finish', () => ws.close(() => resolve(dich)));
         ws.on('error', reject);
-      }).on('error', reject);
+      });
+      req.on('error', reject);
+      req.setTimeout(120000, () => req.destroy(new Error('Het thoi gian tai bo cai'))); // khong treo mai
     });
 
     const soSanhPhienBan = (a, b) => { // >0 nếu a mới hơn b

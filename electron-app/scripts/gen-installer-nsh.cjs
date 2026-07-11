@@ -22,7 +22,7 @@ if (skills.length === 0) {
 // Các file nguồn ở gốc AWord-Theia được nhúng vào bộ cài — thiếu là fail sớm,
 // tránh NSIS báo "no files found" khó hiểu lúc biên dịch.
 const rootDir = path.join(appDir, '..');
-for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd']) {
+for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd']) {
     if (!fs.existsSync(path.join(rootDir, f))) {
         console.error(`[gen-installer-nsh] Thiếu file nguồn ${f} ở gốc AWord-Theia!`);
         process.exit(1);
@@ -41,7 +41,7 @@ skills.forEach((skill, i) => {
     lines.push(
         `  IfFileExists "$PROFILE\\.claude\\skills\\${skill}\\SKILL.md" skip_skill_${i}`,
         `    SetOutPath "$PROFILE\\.claude\\skills\\${skill}"`,
-        `    File /r "\${PROJECT_DIR}\\resources\\skills\\${skill}\\*.*"`,
+        `    File /r "\${PROJECT_DIR}\\resources\\skills\\${skill}\\*"`,
         `  skip_skill_${i}:`
     );
 });
@@ -72,6 +72,11 @@ lines.push(
     '  File "${PROJECT_DIR}\\..\\Ket_Noi_KhoDuLieu.cmd"',
     '  CreateShortCut "$SMPROGRAMS\\Kết nối Kho dữ liệu (AWord).lnk" "$INSTDIR\\Ket_Noi_KhoDuLieu.cmd" "" "$INSTDIR\\AWord.exe" 0',
     '',
+    '  ; Script cài công cụ đọc tài liệu (python + thư viện doc/docx/xlsx/xls/pdf).',
+    '  ; Tự chạy 1 lần ở lần khởi động đầu (marker aword-cong-cu.ok); shortcut để chạy lại tay.',
+    '  File "${PROJECT_DIR}\\..\\Cai_Dat_Cong_Cu.cmd"',
+    '  CreateShortCut "$SMPROGRAMS\\Cài công cụ tài liệu (AWord).lnk" "$INSTDIR\\Cai_Dat_Cong_Cu.cmd" "" "$INSTDIR\\AWord.exe" 0',
+    '',
     '  ; Menu chuột phải: tệp bất kỳ',
     '  WriteRegStr HKCU "Software\\Classes\\*\\shell\\AWord" "" "Mở bằng AWord"',
     '  WriteRegStr HKCU "Software\\Classes\\*\\shell\\AWord" "Icon" "$INSTDIR\\AWord.exe"',
@@ -92,6 +97,7 @@ lines.push(
     '',
     '!macro customUnInstall',
     '  Delete "$SMPROGRAMS\\Kết nối Kho dữ liệu (AWord).lnk"',
+    '  Delete "$SMPROGRAMS\\Cài công cụ tài liệu (AWord).lnk"',
     '  DeleteRegKey HKCU "Software\\Classes\\*\\shell\\AWord"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\shell\\AWord"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\Background\\shell\\AWord"',

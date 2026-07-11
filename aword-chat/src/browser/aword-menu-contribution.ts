@@ -9,9 +9,7 @@ import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handler';
 import { NavigatorContextMenu } from '@theia/navigator/lib/browser/navigator-contribution';
-import { EditorManager } from '@theia/editor/lib/browser';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { FileService } from '@theia/filesystem/lib/browser/file-service';
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
@@ -112,14 +110,8 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
     @inject(MessageService)
     protected readonly messageService: MessageService;
 
-    @inject(EditorManager)
-    protected readonly editorManager: EditorManager;
-
     @inject(WorkspaceService)
     protected readonly workspaceService: WorkspaceService;
-
-    @inject(FileService)
-    protected readonly fileService: FileService;
 
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(AwordAboutCommand, {
@@ -253,30 +245,33 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
     }
 
-    // Gửi tham chiếu @tệp của các mục đang chọn trong Explorer vào Claude.
-    // Extension Claude Code không có menu explorer (lệnh insertAtMention chỉ đọc
-    // editor đang mở, không nhận URI) — nên với MỘT tệp: mở tệp đó rồi gọi
-    // insertAtMention để tham chiếu rơi thẳng vào ô nhập của Claude; với nhiều
-    // mục hoặc thư mục: sao chép chuỗi @... vào clipboard để dán vào khung chat.
+    // Chuột phải trong Explorer -> đưa tham chiếu @tệp/@thư-mục vào khung chat Claude.
+    // Khung chat của Claude là webview đóng: KHÔNG thể bơm chữ trực tiếp từ ngoài, và lệnh
+    // insertAtMention của extension chỉ đọc editor đang mở (không nhận URI) nên không dùng
+    // được từ Explorer. Cách tin cậy 100% và ĐỒNG NHẤT cho cả tệp lẫn thư mục, một hay
+    // nhiều mục: sao chép chuỗi @... vào clipboard + mở panel Claude + nhắc dán Ctrl+V.
     protected async themVaoClaude(uris: URI[]): Promise<void> {
-        const thamChieu = uris.map(u => '@' + this.duongDanTuongDoi(u));
+        const thamChieu = uris.map(u => '@' + this.duongDanTuongDoi(u)).join(' ');
         try {
-            if (uris.length === 1 && uris[0] && !(await this.fileService.resolve(uris[0])).isDirectory) {
-                await this.commandService.executeCommand('claude-vscode.sidebar.open').catch(() => { /* panel có thể đã mở */ });
-                await this.editorManager.open(uris[0], { mode: 'activate' });
-                await new Promise(r => setTimeout(r, 300));
-                await this.commandService.executeCommand('claude-vscode.insertAtMention');
-                return;
-            }
-            throw new Error('nhiều mục hoặc thư mục — chuyển sang clipboard');
+            await navigator.clipboard.writeText(thamChieu);
         } catch {
-            try {
-                await navigator.clipboard.writeText(thamChieu.join(' '));
-                this.messageService.info(`Đã sao chép ${thamChieu.join(' ')} — dán (Ctrl+V) vào khung chat Claude.`);
-            } catch {
-                this.messageService.warn('Không gửi được tham chiếu vào Claude.');
-            }
+            this.messageService.warn('Không sao chép được tham chiếu vào bộ nhớ tạm.');
+            return;
         }
+        // Mở khung Claude + TỰ FOCUS sẵn vào ô nhập để người dùng chỉ cần 1 lần Ctrl+V
+        // (không phải bấm chuột vào ô). Không thể chèn thẳng chữ: khung chat là webview
+        // đóng của Anthropic, và lệnh insertAtMention của extension chỉ đọc editor văn bản
+        // đang mở — mà .docx/.pdf/.xlsx mở bằng trình xem riêng nên không dùng được.
+        try {
+            await this.commandService.executeCommand('claude-vscode.sidebar.open')
+                .catch(() => this.commandService.executeCommand('claude-vscode.editor.open'));
+            await new Promise(r => setTimeout(r, 250));
+            await this.commandService.executeCommand('claude-vscode.focus').catch(() => { /* không sao */ });
+        } catch { /* plugin chưa sẵn sàng — tham chiếu vẫn nằm trong clipboard */ }
+        this.messageService.info(
+            `Đã sao chép ${thamChieu} — nhấn Ctrl+V để chỉ dẫn cho Claude (con trỏ đã sẵn trong ô nhập).`,
+            { timeout: 12000 }
+        );
     }
 
     protected duongDanTuongDoi(uri: URI): string {

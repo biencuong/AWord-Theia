@@ -9,11 +9,15 @@ const path = require('path');
 const appDir = path.join(__dirname, '..');
 const rootDir = path.join(appDir, '..');
 const steps = [
+    path.join(__dirname, 'fix-cmd-crlf.cjs'),
     path.join(rootDir, 'scripts', 'gen-i18n-vi.mjs'),
     path.join(rootDir, 'scripts', 'gen-i18n-vi-theia.mjs'),
     path.join(rootDir, 'scripts', 'sync-i18n-vi.mjs'),
     path.join(rootDir, 'scripts', 'localize-claude-code-vi.cjs'),
     path.join(__dirname, 'patch-plugins-env.cjs'),
+    // Thứ tự 2 script inject cố định (cả hai đều cắt từ marker tới cuối file):
+    // first-run-tools TRƯỚC, auto-update SAU — đổi chỗ sẽ xóa khối của nhau.
+    path.join(__dirname, 'inject-first-run-tools.cjs'),
     path.join(__dirname, 'inject-auto-update.cjs'),
     path.join(__dirname, 'gen-installer-nsh.cjs'),
 ];

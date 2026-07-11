@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
@@ -50,6 +50,25 @@
           "files.autoSave": "off",
           "workbench.editorAssociations": {
             "*.md": "default"
+          },
+          "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/node_modules/**": true,
+            "**/.venv/**": true,
+            "**/__pycache__/**": true,
+            "**/dist/**": true,
+            "**/out/**": true,
+            "**/.cache/**": true,
+            "**/AppData/**": true
+          },
+          "search.exclude": {
+            "**/node_modules": true,
+            "**/.venv": true,
+            "**/__pycache__": true,
+            "**/dist": true,
+            "**/out": true,
+            "**/.git": true
           }
         }
       }
@@ -85,7 +104,8 @@
     ],
     "extraResources": [
       { "from": "plugins", "to": "app/plugins" },
-      { "from": "resources/skills", "to": "app/resources/skills" }
+      { "from": "resources/skills", "to": "app/resources/skills" },
+      { "from": "resources/pytools", "to": "pytools" }
     ],
     "win": {
       "target": ["nsis"],

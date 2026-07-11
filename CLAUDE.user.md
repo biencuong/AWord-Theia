@@ -28,14 +28,46 @@ hiệu lực phải nói rõ và nêu văn bản thay thế (nếu có).
 
 ## Khi soạn thảo văn bản (BẮT BUỘC)
 
-1. LUÔN tìm thông tin từ Kho dữ liệu trước khi soạn (`kho_assemble` về vấn đề, rồi
-   `kho_search`/`kho_related` bổ sung).
-2. Lấy ĐỦ nội dung các văn bản được tham chiếu và các văn bản liên quan về ngữ nghĩa —
-   không dừng ở tiêu đề/trích yếu; dùng `kho_get(id, full_text=True)` với từng căn cứ.
-3. Trước khi viết, TRÌNH DANH SÁCH CĂN CỨ dự kiến cho người dùng: liệt kê từng văn bản
-   (số ký hiệu, ngày, trích yếu) kèm GIẢI THÍCH vì sao chọn làm căn cứ; hỏi người dùng
-   xác nhận hoặc bổ sung/loại bỏ căn cứ nào (dùng AskUserQuestion). Chỉ soạn sau khi
-   người dùng chốt căn cứ.
+1. LUẬT VỀ MẪU — áp dụng cho MỌI loại văn bản soạn mới khi MCP `khodulieu` đang kết nối:
+   (a) tìm mẫu khớp nội dung: `kho_mau_goi_y(vấn đề)` / `kho_mau_list`;
+   (b) tải mẫu về: `kho_mau_tai_ve(id)` (giải mã base64, lưu bản sao);
+   (c) ĐIỀN nội dung vào bản sao file mẫu — TUYỆT ĐỐI không tự tạo file mới (dễ sai thể thức).
+   Ngoại lệ duy nhất: kho KHÔNG có mẫu phù hợp → dựng bằng skill
+   `the-thuc-van-ban-theo-nd30` (chế độ canonical). Người dùng gửi mẫu riêng từ ngoài →
+   vẫn theo đúng luật trên: điền vào bản sao mẫu họ gửi, không tự tạo mới.
+2. Thể thức: BẮT BUỘC thực hiện theo Nghị định 30/2020/NĐ-CP — dùng skill
+   `the-thuc-van-ban-theo-nd30` (có sẵn trên máy) để dựng đúng thể thức và tự kiểm tra
+   (audit) file trước khi giao. Cơ quan Đảng thì theo thể thức văn bản của Đảng.
+3. Tra Kho dữ liệu lấy CĂN CỨ/DỮ LIỆU KHI NGƯỜI DÙNG YÊU CẦU (tránh bắt người dùng chờ
+   lâu không cần thiết; riêng MẪU thì theo luật ở mục 1). Khi có tra kho:
+   - `kho_assemble` về vấn đề, rồi `kho_search`/`kho_related` bổ sung.
+   - Lấy ĐỦ nội dung các văn bản được tham chiếu và liên quan ngữ nghĩa — không dừng ở
+     tiêu đề/trích yếu; dùng `kho_get(id, full_text=True)` với từng căn cứ.
+   - Trước khi viết, TRÌNH DANH SÁCH CĂN CỨ dự kiến: từng văn bản (số ký hiệu, ngày,
+     trích yếu) kèm GIẢI THÍCH vì sao chọn; hỏi người dùng chốt/bổ sung/loại bỏ
+     (AskUserQuestion). Chỉ soạn sau khi người dùng chốt căn cứ.
+
+## Công cụ đọc tài liệu (doc/docx/xlsx/xls/pdf/ảnh)
+
+Máy đã cài sẵn Python + thư viện (python-docx, openpyxl, xlrd, pypdf, pymupdf, pdfplumber,
+pillow, pywin32...) — bộ cài AWord đóng kèm và tự cài offline ở lần khởi động đầu.
+
+Cách đọc từng loại:
+- `.docx` → python-docx; `.xlsx` → openpyxl; `.xls` (cũ) → xlrd.
+- `.doc`/`.xls` đời cũ (nhị phân): ưu tiên chuyển qua Word/Excel bằng COM (pywin32) — máy
+  công sở thường có Microsoft Office; không có Office thì báo rõ cho người dùng.
+- `.pdf` có lớp text → pdfplumber/pymupdf lấy text trực tiếp.
+- ẢNH (.png/.jpg...) → ĐỌC TRỰC TIẾP bằng thị giác của Claude (Read tệp ảnh) — KHÔNG cần
+  OCR/thư viện. Claude là mô hình đa phương thức, nhìn ảnh và đọc chữ trong ảnh được.
+- `.pdf` SCAN (ảnh chụp, không có lớp text): KHÔNG dùng OCR (tesseract kém tiếng Việt).
+  Quy trình: dùng pymupdf render TỪNG TRANG thành ảnh PNG (độ phân giải ~200dpi, lưu tạm)
+  rồi Read từng ảnh — Claude đọc nội dung bằng thị giác. Nhận diện PDF scan: pdfplumber/
+  pymupdf trích ra rất ít hoặc không có text dù trang có nội dung.
+
+LUẬT VỀ THƯ VIỆN (bắt buộc): nếu chạy skill/script mà báo THIẾU một thư viện, phải CÀI
+ĐẶT CỐ ĐỊNH lên máy ngay bằng `python -m pip install --user <gói>` (KHÔNG dùng cài tạm
+kiểu chạy-một-lần-rồi-quên), để lần sau dùng lại được luôn — tránh cài đi cài lại lòng vòng
+tốn thời gian. Chỉ cài gói CÒN THIẾU, không cài lại thứ đã có. Cài xong mới chạy tiếp.
 
 ## Nếu chưa thấy các công cụ `kho_*`
 
