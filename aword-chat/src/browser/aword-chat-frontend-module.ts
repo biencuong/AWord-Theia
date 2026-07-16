@@ -2,6 +2,7 @@ import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core';
 import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from '@theia/core/lib/browser';
 import { AwordMenuContribution } from './aword-menu-contribution';
+import { AwordLayoutContribution } from './aword-layout-contribution';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { AwordWelcomeContribution } from './aword-welcome-contribution';
 
@@ -15,6 +16,10 @@ export default new ContainerModule(bind => {
     bind(AwordMenuContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(AwordMenuContribution);
     bind(MenuContribution).toService(AwordMenuContribution);
+
+    bind(AwordLayoutContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(AwordLayoutContribution);
+    bind(MenuContribution).toService(AwordLayoutContribution);
 
     bind(AwordWelcomeWidget).toSelf();
     bind(WidgetFactory).toDynamicValue(ctx => ({

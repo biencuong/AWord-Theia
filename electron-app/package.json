@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "20260716.18.31",
+  "version": "20260716.19.9",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
@@ -50,6 +50,7 @@
         },
         "preferences": {
           "workbench.colorTheme": "dark",
+          "window.titleBarStyle": "custom",
           "window.menuBarVisibility": "classic",
           "workbench.statusBar.visible": false,
           "workbench.tree.renderIndentGuides": "onHover",

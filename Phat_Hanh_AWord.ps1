@@ -63,32 +63,48 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Error "Push that bai (kiem tra dang nhap GitHub)."; exit 1 }
 Pop-Location
 
-# --- 4) GitHub Release + tai len exe ---
+# --- 4) GitHub Release + tai len exe (uu tien gh CLI - khong can token) ---
 Buoc "Tao GitHub Release + tai len bo cai"
-if (-not $env:GITHUB_TOKEN) {
-    Write-Warning "Chua dat GITHUB_TOKEN - da push ma nguon nhung KHONG tao release/tai exe duoc."
-    Write-Warning "Dat token roi chay lai:  `$env:GITHUB_TOKEN='ghp_...'; .\Phat_Hanh_AWord.ps1 -BoQuaBuild"
-    exit 1
-}
 $tag = "v$version"
-$headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "User-Agent" = "AWord-Publisher" }
 if (-not $Notes) {
     $notesFile = Join-Path $root "GHI_CHU_PHAT_HANH.md"
     if (Test-Path $notesFile) { $Notes = (Get-Content $notesFile -Raw -Encoding UTF8).Trim() }
 }
 if (-not $Notes) { $Notes = "Ban phat hanh AWord $version" }
 
-$body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false } | ConvertTo-Json
-try {
-    $rel = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$Repo/releases" -Headers $headers -Body $body -ContentType "application/json"
-} catch {
-    $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/tags/$tag" -Headers $headers
-    Write-Host "Release $tag da ton tai, dung lai de tai tep len."
+# Tim gh CLI
+$gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
+if (-not $gh -and (Test-Path "C:\Program Files\GitHub CLI\gh.exe")) { $gh = "C:\Program Files\GitHub CLI\gh.exe" }
+
+if ($gh) {
+    # Dung dang nhap gh co san (khong can GITHUB_TOKEN). GH_TOKEN rong de gh dung keyring.
+    $notesTmp = Join-Path $env:TEMP "aword-release-notes.md"
+    Set-Content -Path $notesTmp -Value $Notes -Encoding UTF8
+    & $gh release view $tag 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
+        & $gh release upload $tag $exe --clobber
+    } else {
+        & $gh release create $tag $exe --title "AWord $version" --notes-file $notesTmp
+    }
+    if ($LASTEXITCODE -ne 0) { Write-Error "Tao release qua gh that bai."; exit 1 }
+} elseif ($env:GITHUB_TOKEN) {
+    # Du phong: dung REST voi GITHUB_TOKEN neu khong co gh
+    $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "User-Agent" = "AWord-Publisher" }
+    $body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false } | ConvertTo-Json
+    try {
+        $rel = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$Repo/releases" -Headers $headers -Body $body -ContentType "application/json"
+    } catch {
+        $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/tags/$tag" -Headers $headers
+    }
+    $name = [System.IO.Path]::GetFileName($exe)
+    $uploadUrl = ($rel.upload_url -replace "\{.*\}", "") + "?name=$name"
+    Invoke-RestMethod -Method Post -Uri $uploadUrl -Headers $headers -ContentType "application/octet-stream" -InFile $exe | Out-Null
+} else {
+    Write-Warning "Da push ma nguon nhung khong tao release duoc: chua cai/dang nhap gh va khong co GITHUB_TOKEN."
+    Write-Warning "Cai + dang nhap gh:  winget install GitHub.cli ; gh auth login"
+    exit 1
 }
-$name = [System.IO.Path]::GetFileName($exe)
-$uploadUrl = ($rel.upload_url -replace "\{.*\}", "") + "?name=$name"
-Write-Host "Tai len $name..."
-Invoke-RestMethod -Method Post -Uri $uploadUrl -Headers $headers -ContentType "application/octet-stream" -InFile $exe | Out-Null
 
 Write-Host "`nXONG: https://github.com/$Repo/releases/tag/$tag" -ForegroundColor Green
 Write-Host "Cac may da cai AWord se tu nhan duoc ban $version trong lan mo ke tiep."
