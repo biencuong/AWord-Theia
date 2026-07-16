@@ -13,6 +13,9 @@ Nội dung chính:
 - Cập nhật Claude Code 2.1.211; plugin xem Office chỉ nạp khi mở tài liệu — khởi động nhanh hơn.
 - Giao diện gọn hơn: bỏ chợ tiện ích và các mục menu lập trình không dùng cho văn phòng.
 - Màn hình khởi động nền sáng, gọn đẹp hơn.
+- Mở lên vào thẳng trình Khám phá với thư mục làm việc; ẩn các biểu tượng lập trình
+  (Quản lý mã nguồn, Kiểm thử, Gỡ lỗi) không dùng cho văn phòng.
 - Xử lý xung đột với Claude cài sẵn trên máy: tự ưu tiên bản mới hơn, không thì dùng bản đóng kèm.
 - Khắc phục lỗi mở nhiều cửa sổ Claude khi khởi động.
 - Thêm "Kiểm tra AWord" trong Start Menu để chẩn đoán nhanh khi Claude không mở được.
+- Phiên bản nay đánh theo thời gian phát hành (ví dụ 2026/07/16 18:31) để dễ nhận biết bản mới.

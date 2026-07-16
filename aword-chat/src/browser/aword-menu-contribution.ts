@@ -92,6 +92,15 @@ function soSanhPhienBan(a: string, b: string): number { // >0 nếu a mới hơn
     return 0;
 }
 
+// Phiên bản đánh mã theo thời gian (semver YYYYMMDD.giờ.phút) — hiển thị lại dạng
+// "2026/07/16 18:30" cho dễ đọc. Bản cũ dạng 1.0.x giữ nguyên cách hiển thị.
+function dinhDangPhienBan(v: string): string {
+    const m = /^(\d{4})(\d{2})(\d{2})\.(\d{1,2})\.(\d{1,2})$/.exec((v || '').replace(/^v/i, ''));
+    if (!m) { return v; }
+    const [, y, mo, d, h, mi] = m;
+    return `${y}/${mo}/${d} ${h.padStart(2, '0')}:${mi.padStart(2, '0')}`;
+}
+
 @injectable()
 export class AwordMenuContribution implements CommandContribution, MenuContribution {
 
@@ -198,7 +207,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             if (banHienTai) {
                 const cur = document.createElement('p');
                 cur.className = 'aword-about-subtitle';
-                cur.textContent = `Bạn đang dùng AWord ${banHienTai}.`;
+                cur.textContent = `Bạn đang dùng AWord ${dinhDangPhienBan(banHienTai)}.`;
                 wrap.appendChild(cur);
             }
             await new ConfirmDialog({ title: AwordUpdateCommand.label!, msg: wrap, ok: Dialog.OK, cancel: '' }).open();
@@ -211,8 +220,8 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         const bang = document.createElement('div');
         bang.className = 'aword-update-versions';
         bang.innerHTML =
-            `<div><span class="aword-update-label">Bản đang dùng:</span> <b>${banHienTai || 'không rõ'}</b></div>` +
-            `<div><span class="aword-update-label">Bản mới nhất:</span> <b>${banMoi || 'không rõ'}</b></div>`;
+            `<div><span class="aword-update-label">Bản đang dùng:</span> <b>${dinhDangPhienBan(banHienTai) || 'không rõ'}</b></div>` +
+            `<div><span class="aword-update-label">Bản mới nhất:</span> <b>${dinhDangPhienBan(banMoi) || 'không rõ'}</b></div>`;
         wrap.appendChild(bang);
 
         const ketLuan = document.createElement('p');
