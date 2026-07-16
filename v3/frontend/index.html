@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AWord</title>
+<link rel="stylesheet" href="vendor/xterm.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,7 +26,7 @@
     <!-- Thanh hoạt động (activity bar) trái -->
     <div id="activitybar">
       <div class="act active" title="Khám phá">&#x1F4C1;</div>
-      <div class="act" title="Trò chuyện">&#x1F916;</div>
+      <div class="act" title="Claude Code">&#x1F916;</div>
     </div>
 
     <!-- Explorer -->
@@ -33,32 +34,22 @@
       <div class="side-title">KHÁM PHÁ</div>
       <div id="ws-name"></div>
       <ul id="filetree"></ul>
+      <div class="explorer-hint">Bấm tệp để chèn <b>@tệp</b> vào Claude.</div>
     </aside>
 
-    <!-- Vùng chính: khung chat Claude -->
+    <!-- Vùng chính: Claude Code THẬT chạy trong terminal -->
     <main id="main">
       <div id="chattoolbar">
-        <span class="tab active">🤖 Claude</span>
+        <span class="tab active">🤖 Claude Code</span>
         <span class="spacer"></span>
-        <button id="btn-new" title="Cuộc trò chuyện mới">＋ Mới</button>
-        <button id="btn-stop" title="Dừng lượt hiện tại">■ Dừng</button>
+        <button id="btn-restart" title="Kết thúc và mở lại phiên Claude">↻ Khởi động lại</button>
       </div>
-      <div id="chat"></div>
-
-      <!-- Trình xem tài liệu (text) — phủ lên khung chat khi mở tệp -->
-      <div id="viewer" class="hidden">
-        <div class="viewer-bar"><span id="viewer-title"></span><button id="viewer-close" title="Đóng">✕</button></div>
-        <pre id="viewer-body"></pre>
-      </div>
-
-      <div id="composer">
-        <textarea id="input" rows="1" placeholder="Nhập yêu cầu bằng tiếng Việt rồi nhấn Enter…"></textarea>
-        <button id="send" title="Gửi (Enter)">&#x27A4;</button>
-      </div>
+      <div id="terminal"></div>
       <div id="status">Đang kết nối…</div>
     </main>
   </div>
-  <!-- Lớp phủ khi lần đầu tự cài / cập nhật Claude -->
+
+  <!-- Lớp phủ khi lần đầu tự cài Claude -->
   <div id="bootoverlay" class="hidden">
     <div class="boot-inner">
       <div class="big-logo">A</div>
@@ -67,6 +58,9 @@
       <div id="boot-sub"></div>
     </div>
   </div>
+
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/addon-fit.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

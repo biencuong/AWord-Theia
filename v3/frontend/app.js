@@ -1,168 +1,160 @@
-// AWord Lite v3 — frontend. Chạy được CẢ HAI chế độ:
-//  - Tauri (bản đóng gói): dùng window.__TAURI__ invoke/event.
-//  - HTTP (chạy dev qua node server.js): dùng fetch + SSE.
+// AWord Lite v3 — frontend. Chạy CLAUDE CODE THẬT trong terminal (xterm.js) qua PTY của Tauri.
 'use strict';
-const $ = s => document.querySelector(s);
-const chat = $('#chat'), input = $('#input'), send = $('#send'), status = $('#status'), tree = $('#filetree'), wsName = $('#ws-name');
+// Guard chạy-một-lần: WebView2 có thể nạp/chạy app.js 2 lần trong cùng realm → const top-level
+// sẽ "already declared". Bọc IIFE (scope hàm) + chỉ init lần đầu để tuyệt đối an toàn.
+window.__APPJS_RUNS = (window.__APPJS_RUNS || 0) + 1;
 
-const T = window.__TAURI__;
-const isTauri = !!T;
+if (window.__APPJS_RUNS === 1) (function () {
+  const $ = s => document.querySelector(s);
+  const status = $('#status'), tree = $('#filetree'), wsName = $('#ws-name');
 
-// --- Lớp transport ---
-const api = isTauri ? {
-  bootstrap: () => T.core.invoke('bootstrap'),
-  onBoot: cb => T.event.listen('boot', e => cb(e.payload)),
-  chat: content => T.core.invoke('chat', { message: content }),
-  onEvent: cb => T.event.listen('claude', e => cb(e.payload)),
-  listFiles: dir => T.core.invoke('list_files', { dir: dir || '.' }),
-  readFile: path => T.core.invoke('read_file', { path }),
-  openExternal: path => T.core.invoke('open_external', { path }),
-  stop: () => T.core.invoke('stop'),
-} : {
-  bootstrap: () => { },
-  onBoot: () => { },
-  chat: content => fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }),
-  onEvent: cb => { const es = new EventSource('/stream'); es.onmessage = ev => { try { cb(JSON.parse(ev.data)); } catch { } }; es.onerror = () => status.textContent = 'Mất kết nối máy chủ…'; },
-  listFiles: async dir => (await fetch('/files?dir=' + encodeURIComponent(dir || '.'))).json(),
-  readFile: async path => { const r = await fetch('/file?path=' + encodeURIComponent(path)); return (r.headers.get('X-Kieu') || '') === 'text' ? { kieu: 'text', noiDung: await r.text() } : { kieu: 'ngoai' }; },
-  openExternal: path => fetch('/open', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) }),
-  stop: () => fetch('/stop', { method: 'POST' }),
-};
+  const T = window.__TAURI__;
+  const isTauri = !!T;
 
-let bongAssistant = null, dangTraLoi = false;
+  // --- Lớp transport ---
+  const api = isTauri ? {
+    bootstrap: () => T.core.invoke('bootstrap'),
+    onBoot: cb => T.event.listen('boot', e => cb(e.payload)),
+    ptySpawn: (cols, rows) => T.core.invoke('pty_spawn', { cols, rows }),
+    ptyWrite: data => T.core.invoke('pty_write', { data }),
+    ptyResize: (cols, rows) => T.core.invoke('pty_resize', { cols, rows }),
+    ptyKill: () => T.core.invoke('pty_kill'),
+    onPty: cb => T.event.listen('pty', e => cb(e.payload)),
+    onPtyExit: cb => T.event.listen('pty_exit', () => cb()),
+    listFiles: dir => T.core.invoke('list_files', { dir: dir || '.' }),
+  } : {
+    bootstrap: () => { }, onBoot: () => { },
+    ptySpawn: () => { }, ptyWrite: () => { }, ptyResize: () => { }, ptyKill: () => { },
+    onPty: () => { }, onPtyExit: () => { },
+    listFiles: async dir => (await fetch('/files?dir=' + encodeURIComponent(dir || '.'))).json(),
+  };
 
-function themWelcome() {
-  const d = document.createElement('div');
-  d.className = 'welcome';
-  d.innerHTML = '<div class="big">A</div><div><b>Chào mừng đến với AWord</b></div>' +
-    '<div style="margin-top:6px">Gõ yêu cầu bằng tiếng Việt để bắt đầu trò chuyện với Claude.</div>';
-  chat.appendChild(d);
-}
-function xoaWelcome() { const w = chat.querySelector('.welcome'); if (w) w.remove(); }
-function themTin(loai, text) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + loai; d.textContent = text;
-  chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d;
-}
+  // --- Terminal (xterm) ---
+  const term = new Terminal({
+    fontFamily: '"Cascadia Code", "Consolas", monospace',
+    fontSize: 13,
+    cursorBlink: true,
+    allowProposedApi: true,
+    scrollback: 5000,
+    theme: {
+      background: '#1e1e1e', foreground: '#e7e7e7',
+      cursor: '#e0662a', cursorAccent: '#1e1e1e',
+      selectionBackground: '#e0662a55',
+      black: '#1e1e1e', brightBlack: '#666',
+    },
+  });
+  const fit = new FitAddon.FitAddon();
+  term.loadAddon(fit);
+  term.open($('#terminal'));
 
-// --- Nhận sự kiện từ claude ---
-function xuLySuKien(m) {
-  if (!m || !m.type) return;
-  if (m.type === '_ready') status.textContent = 'Sẵn sàng · ' + (m.workspace || '');
-  else if (m.type === 'init') status.textContent = 'Model: ' + (m.model || '?') + ' · sẵn sàng';
-  else if (m.type === 'assistant') {
-    if (!bongAssistant) bongAssistant = themTin('assistant pending', '');
-    bongAssistant.textContent += m.text; chat.scrollTop = chat.scrollHeight;
-  } else if (m.type === 'result') {
-    if (bongAssistant) bongAssistant.classList.remove('pending');
-    else if (m.text) themTin('assistant', m.text);
-    bongAssistant = null; dangTraLoi = false; send.disabled = false;
-    status.textContent = 'Xong' + (m.cost ? ` · ~$${(+m.cost).toFixed(4)}` : '') + (m.is_error ? ' · LỖI' : '');
-  } else if (m.type === '_loi' || m.type === '_stderr') status.textContent = 'Lỗi: ' + (m.message || '');
-  else if (m.type === '_claude_exit') { status.textContent = 'Claude đã dừng. Gửi tin để khởi động lại.'; dangTraLoi = false; send.disabled = false; }
-}
-
-async function gui() {
-  const text = input.value.trim();
-  if (!text || dangTraLoi) return;
-  xoaWelcome(); themTin('user', text);
-  input.value = ''; input.style.height = 'auto';
-  dangTraLoi = true; send.disabled = true; status.textContent = 'Claude đang trả lời…'; bongAssistant = null;
-  try { await api.chat(text); } catch { status.textContent = 'Không gửi được.'; dangTraLoi = false; send.disabled = false; }
-}
-send.onclick = gui;
-input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); gui(); } });
-input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; });
-
-// --- Explorer ---
-async function napFiles(dir) {
-  try {
-    const j = await api.listFiles(dir);
-    wsName.textContent = j.workspace || '';
-    tree.innerHTML = '';
-    for (const it of j.items || []) {
-      const li = document.createElement('li');
-      li.className = it.dir ? 'dir' : 'file'; li.textContent = it.name; li.title = it.path;
-      li.onclick = () => it.dir ? napFiles(it.path) : moFile(it.path);
-      tree.appendChild(li);
-    }
-  } catch { }
-}
-async function moFile(p) {
-  try {
-    const r = await api.readFile(p);
-    if (r.kieu === 'text') {
-      $('#viewer-title').textContent = p; $('#viewer-body').textContent = r.noiDung || '';
-      $('#viewer').classList.remove('hidden');
-    } else {
-      status.textContent = 'Đang mở ' + p + ' bằng ứng dụng…';
-      await api.openExternal(p);
-    }
-  } catch { status.textContent = 'Không mở được tệp.'; }
-}
-$('#viewer-close').onclick = () => $('#viewer').classList.add('hidden');
-
-// --- Nút Mới / Dừng ---
-$('#btn-new').onclick = async () => {
-  await api.stop(); chat.innerHTML = ''; themWelcome();
-  bongAssistant = null; dangTraLoi = false; send.disabled = false;
-  status.textContent = 'Cuộc trò chuyện mới.'; input.focus();
-};
-$('#btn-stop').onclick = async () => {
-  await api.stop();
-  if (bongAssistant) bongAssistant.classList.remove('pending');
-  bongAssistant = null; dangTraLoi = false; send.disabled = false; status.textContent = 'Đã dừng.';
-};
-
-// --- Nút cửa sổ (chỉ trong Tauri) ---
-if (isTauri && T.window) {
-  const win = T.window.getCurrentWindow();
-  const c = document.querySelectorAll('.winctrls span');
-  if (c[0]) c[0].onclick = () => win.minimize();
-  if (c[1]) c[1].onclick = () => win.toggleMaximize();
-  if (c[2]) c[2].onclick = () => win.close();
-} else {
-  $('.winctrls')?.style && ($('.winctrls').style.visibility = 'hidden'); // chạy trong trình duyệt: ẩn nút giả
-}
-
-// --- Khởi động: tự phát hiện/cài/cập nhật Claude (chỉ Tauri) ---
-const bootOverlay = $('#bootoverlay'), bootMsg = $('#boot-msg'), bootSub = $('#boot-sub');
-function hienBoot(msg, sub) { bootMsg.textContent = msg; bootSub.textContent = sub || ''; bootOverlay.classList.remove('hidden'); }
-function anBoot() { bootOverlay.classList.add('hidden'); }
-
-function xuLyBoot(m) {
-  if (!m || !m.status) return;
-  switch (m.status) {
-    case 'dang_cai':
-      hienBoot('Đang cài đặt Claude Code (lần đầu)…', 'Đang tải bản mới nhất từ Anthropic. Vui lòng chờ, có thể mất một lát.');
-      break;
-    case 'cai_xong':
-      anBoot(); status.textContent = 'Đã cài Claude ' + (m.version || '') + ' · sẵn sàng'; napFiles('.');
-      break;
-    case 'kiem_tra_cap_nhat':
-      status.textContent = 'Đang kiểm tra cập nhật Claude…';
-      break;
-    case 'cap_nhat_xong':
-    case 'cap_nhat_bo_qua':
-      status.textContent = 'Sẵn sàng';
-      break;
-    case 'san_sang':
-      anBoot(); status.textContent = 'Model: sẵn sàng · Claude ' + (m.version || '');
-      break;
-    case 'loi':
-      hienBoot('Chưa dùng được Claude', (m.message || '') + ' — Đóng cửa sổ này, kiểm tra mạng rồi mở lại AWord.');
-      break;
+  // base64 -> Uint8Array (tránh lỗi biên UTF-8 khi ghép mảnh; xterm ghi Uint8Array trực tiếp)
+  function b64ToBytes(b64) {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
   }
-}
 
-if (isTauri) {
-  hienBoot('Đang chuẩn bị AWord…', 'Kiểm tra Claude trên máy…');
-  // Đăng ký lắng nghe XONG rồi mới bootstrap: sự kiện Tauri không được đệm,
-  // gọi bootstrap trước khi listener sẵn sàng sẽ lỡ 'san_sang' và kẹt lớp phủ.
-  Promise.resolve(api.onBoot(xuLyBoot)).then(() => api.bootstrap());
-}
+  // Đăng ký nhận dữ liệu terminal TRƯỚC khi spawn (sự kiện Tauri không được đệm).
+  const ioReady = Promise.all([
+    Promise.resolve(api.onPty(b64 => term.write(b64ToBytes(b64)))),
+    Promise.resolve(api.onPtyExit(() => {
+      term.write('\r\n\x1b[33m▌ Claude đã thoát. Bấm "↻ Khởi động lại" để mở phiên mới.\x1b[0m\r\n');
+      status.textContent = 'Claude đã dừng.';
+    })),
+  ]);
 
-api.onEvent(xuLySuKien);
-themWelcome();
-napFiles('.');
-input.focus();
+  // Gõ phím -> gửi vào PTY.
+  term.onData(d => api.ptyWrite(d));
+
+  function doFit() {
+    try { fit.fit(); } catch { }
+    if (isTauri) api.ptyResize(term.cols, term.rows);
+  }
+  new ResizeObserver(() => doFit()).observe($('#terminal'));
+  window.addEventListener('resize', doFit);
+
+  function startPty() {
+    if (!isTauri) {
+      term.write('\x1b[90mChế độ xem thử trong trình duyệt — terminal chỉ hoạt động khi chạy bản đóng gói AWord.\x1b[0m\r\n');
+      return;
+    }
+    ioReady.then(() => {
+      try { fit.fit(); } catch { }
+      api.ptySpawn(term.cols, term.rows);
+      term.focus();
+    });
+  }
+
+  // --- Explorer ---
+  async function napFiles(dir) {
+    try {
+      const j = await api.listFiles(dir);
+      wsName.textContent = j.workspace || '';
+      tree.innerHTML = '';
+      for (const it of j.items || []) {
+        const li = document.createElement('li');
+        li.className = it.dir ? 'dir' : 'file';
+        li.textContent = it.name; li.title = it.path;
+        li.onclick = () => it.dir
+          ? napFiles(it.path)
+          : (api.ptyWrite('@' + it.path + ' '), term.focus());
+        tree.appendChild(li);
+      }
+    } catch { }
+  }
+
+  // --- Nút Khởi động lại phiên ---
+  $('#btn-restart').onclick = async () => {
+    if (!isTauri) return;
+    await api.ptyKill();
+    term.reset();
+    status.textContent = 'Đang mở lại phiên Claude…';
+    startPty();
+  };
+
+  // --- Nút cửa sổ (chỉ trong Tauri) ---
+  if (isTauri && T.window) {
+    const win = T.window.getCurrentWindow();
+    const c = document.querySelectorAll('.winctrls span');
+    if (c[0]) c[0].onclick = () => win.minimize();
+    if (c[1]) c[1].onclick = () => win.toggleMaximize();
+    if (c[2]) c[2].onclick = () => win.close();
+  } else if ($('.winctrls')) {
+    $('.winctrls').style.visibility = 'hidden';
+  }
+
+  // --- Lớp phủ khởi động (tự cài Claude lần đầu) ---
+  const bootOverlay = $('#bootoverlay'), bootMsg = $('#boot-msg'), bootSub = $('#boot-sub');
+  function hienBoot(msg, sub) { bootMsg.textContent = msg; bootSub.textContent = sub || ''; bootOverlay.classList.remove('hidden'); }
+  function anBoot() { bootOverlay.classList.add('hidden'); }
+
+  function xuLyBoot(m) {
+    if (!m || !m.status) return;
+    switch (m.status) {
+      case 'dang_cai':
+        hienBoot('Đang cài đặt Claude Code (lần đầu)…', 'Đang tải bản mới nhất từ Anthropic. Vui lòng chờ, có thể mất một lát.');
+        break;
+      case 'cai_xong':
+        anBoot(); status.textContent = 'Đã cài Claude ' + (m.version || '') + ' · đang mở phiên…';
+        napFiles('.'); startPty();
+        break;
+      case 'san_sang':
+        anBoot(); status.textContent = 'Claude ' + (m.version || '') + ' · sẵn sàng';
+        startPty();
+        break;
+      case 'loi':
+        hienBoot('Chưa dùng được Claude', (m.message || '') + ' — Đóng cửa sổ này, kiểm tra mạng rồi mở lại AWord.');
+        break;
+    }
+  }
+
+  // --- Khởi động ---
+  napFiles('.');
+  if (isTauri) {
+    hienBoot('Đang chuẩn bị AWord…', 'Kiểm tra Claude trên máy…');
+    Promise.resolve(api.onBoot(xuLyBoot)).then(() => api.bootstrap());
+  } else {
+    startPty();
+  }
+})();

@@ -1,85 +1,70 @@
-# AWord Lite (v3) — thử nghiệm vỏ nhẹ thay Electron/Theia
+# AWord Lite (v3) — vỏ nhẹ chạy CLAUDE CODE THẬT thay Electron/Theia
 
-Mục tiêu: thay phần lõi nặng (Electron ~250MB + Theia ~178MB) bằng vỏ nhẹ, **giữ nguyên**
-động cơ AI (`claude.exe`), skill, MCP, CLAUDE.md, và **giao diện giống bản AWord hiện tại**.
+Mục tiêu: thay phần lõi nặng (Electron ~250MB + Theia ~178MB) bằng vỏ **~8MB**, nhưng **giữ nguyên
+Claude Code thật** (giao diện tương tác đầy đủ: hiện tool-use, sửa file, chạy skill) và **giao diện
+giống AWord hiện tại**.
 
-Đây là nhánh thử nghiệm (`aword-v3-lite`), thư mục `v3/` — **không đụng** bản Theia trên `main`.
+Nhánh thử nghiệm `aword-v3-lite`, thư mục `v3/` — **không đụng** bản Theia trên `main`.
 
-## Kiến trúc
+## Cách làm: nhúng terminal thật
 
-```
-Trình duyệt/WebView2 (giao diện web giống AWord)
-        │  POST /chat  (gửi tin)         GET /stream (SSE nhận phản hồi)
-        ▼
-   backend/server.js  (Node, KHÔNG cần thư viện ngoài)
-        │  stdin (JSON)  ▲ stdout (stream-json)
-        ▼                │
-   claude.exe  --print --input-format stream-json --output-format stream-json --verbose
-   (động cơ AI y như bản hiện tại: đọc ~/.claude/settings.json, skill, MCP, gateway)
-```
-
-- Node giữ MỘT tiến trình `claude.exe` sống (stdin mở) → chat **đa lượt, nhớ ngữ cảnh** (đã kiểm thử).
-- Không dùng Electron, không dùng Theia. Không cần thư viện npm.
-- `claude.exe` được tìm theo thứ tự: PATH → `~/.local/bin` → `%LOCALAPPDATA%\Programs\claude` →
-  bản đóng kèm trong bộ cài AWord.
-
-## Chạy thử (giai đoạn 1 — chạy được NGAY, không cần Rust/MSVC)
+Không dựng lại giao diện Claude Code (bất khả thi) — mà chạy **chính `claude.exe` ở chế độ tương
+tác** trong một **terminal thật** hiển thị trong cửa sổ AWord, y như VS Code/Theia chạy nó:
 
 ```
-v3\AWord-Lite.cmd
+Cửa sổ AWord (Tauri, WebView2)  ── giao diện: thanh tiêu đề + explorer + terminal
+   │  xterm.js  ⇅  (gõ phím → pty_write ; đầu ra PTY → sự kiện 'pty', base64)
+   ▼
+Backend Rust (Tauri)  ──  PTY / ConPTY
+   │  stdin/stdout của một TTY thật
+   ▼
+claude.exe   (KHÔNG --print — chế độ TUI tương tác đầy đủ, đọc ~/.claude, skill, MCP, gateway)
 ```
-Hoặc thủ công:
+
+- **xterm.js** (đóng kèm `frontend/vendor/`, không cần bundler) render terminal.
+- **portable-pty** (ConPTY trên Windows) chạy claude tương tác, luồng đọc PTY → phát `pty` (base64) lên webview.
+- Giao diện AWord: thanh tiêu đề tùy biến (logo cam + menu), activity bar, Explorer (bấm tệp → chèn `@tệp`).
+
+## KHÔNG đóng kèm claude.exe
+
+Khi mở, backend tự dò `claude.exe` (ưu tiên bản có sẵn: `~/.local/bin` → `%LOCALAPPDATA%\Programs\claude`
+→ winget → PATH → bản đóng kèm AWord Theia). **Thiếu** → tự cài bằng trình cài **chính thức**
+(`https://claude.ai/install.ps1`, bản latest), có lớp phủ báo tiến trình. **Không** tự chạy
+`claude update` — Claude Code tự lo cập nhật nên mở nhanh, không "treo".
+
+## Build
+
+Cần (đã cài sẵn máy dev): Rust (rustup) + **VS Build Tools workload C++** (MSVC) + Tauri CLI.
 ```
-cd v3\backend
-node server.js               (mặc định thư mục làm việc: Documents\AWord)
-node server.js "D:\ho-so"    (chỉ định thư mục khác)
+cd v3/tauri
+npx tauri build       (ra target\release\bundle\nsis\AWord_0.1.0_x64-setup.exe)
+npx tauri dev         (chạy nhanh khi phát triển)
 ```
-Rồi mở `msedge --app=http://127.0.0.1:41789` (Edge/WebView2 có sẵn Windows) — cửa sổ không có
-thanh trình duyệt, nhìn như app thật.
+Lưu ý: `frontendDist` (`../../frontend`) **không được** chứa `node_modules` (tauri build sẽ từ chối).
+Thư viện web đã đóng kèm sẵn ở `frontend/vendor/` — xem `frontend/vendor/SOURCE.md` để cập nhật.
 
-### Đã chạy được
-- Chat với Claude (streaming, đa lượt, nhớ ngữ cảnh) qua động cơ `claude.exe` thật.
-- Explorer: liệt kê thư mục làm việc, bấm tệp → chèn `@tệp` vào ô nhập (như "Thêm vào Claude").
-- Giao diện tối khớp AWord: logo cam, thanh tiêu đề + menu, activity bar, Explorer, khung chat.
-
-### Chưa làm (giai đoạn sau)
-- Xem tài liệu docx/xlsx/pdf trong app (dùng thư viện web: docx-preview, SheetJS, pdf.js).
-- Cửa sổ thật (thu nhỏ/phóng to/đóng) — hiện là app-window của Edge.
-- Nút bố cục, cập nhật, kết nối kho — port từ bản Theia sang.
-
-## Giai đoạn 2 — đóng gói Tauri (ĐÃ LÀM XONG ✓)
-
-Đã bọc bằng **Tauri** (Rust backend thuần + WebView2). Thư mục `tauri/`.
-- `tauri/src-tauri/src/main.rs` — backend Rust điều khiển `claude.exe` (giữ tiến trình sống, luồng
-  đọc stdout → phát sự kiện lên webview), lệnh chat/stop/list_files/read_file/open_external.
-- Cửa sổ frameless (giữ thanh tiêu đề tùy biến giống AWord). `frontend/` dùng CHUNG với giai đoạn 1
-  (transport tự nhận Tauri hay HTTP).
-
-### Build lại
-Cần (đã cài sẵn trên máy dev): Rust (rustup) + **VS Build Tools workload C++** (MSVC) + Tauri CLI.
-```
-cd v3\tauri
-npx tauri build      (ra target\release\bundle\nsis\AWord_*-setup.exe)
-```
-Chạy nhanh khi dev:  `npx tauri dev`
-
-### KẾT QUẢ THỰC ĐO
+### Kết quả đo
 | | AWord (Theia) | **AWord Lite (Tauri)** |
 |---|---|---|
-| Vỏ ứng dụng (không tính claude.exe) | ~430 MB (Electron 250 + Theia asar 178) | **8.3 MB** (aword-lite.exe) |
-| Bộ cài (chưa đóng claude.exe) | 285 MB | **1.8 MB** |
-| RAM lúc mở | vài trăm MB | **~26 MB** |
-| Khởi động | vài giây (nặng) | gần như tức thì |
+| Vỏ ứng dụng (không tính claude.exe) | ~430 MB | **~8.7 MB** |
+| Bộ cài (chưa đóng claude.exe) | 285 MB | **~1.9 MB** |
+| RAM lúc mở | vài trăm MB | **~30 MB** |
 
-→ Vỏ nhẹ **8.3MB thay cho toàn bộ ~430MB Electron+Theia**. Phần nặng duy nhất còn lại là chính
-`claude.exe` (242MB, động cơ AI, không bỏ được) — GIỐNG cả hai bản.
+→ Vỏ nhẹ ~8MB thay toàn bộ ~430MB Electron+Theia, **vẫn là Claude Code thật**. Phần nặng duy nhất còn
+lại là chính `claude.exe` (~242MB, động cơ AI, không bỏ được) — giống cả hai bản.
 
-### Còn lại để thành sản phẩm hoàn chỉnh
-- **Đóng kèm `claude.exe`** vào bộ cài Tauri (thêm vào `bundle.resources`) để cài offline độc lập
-  → bộ cài ~245MB (vs Theia 285MB), nhưng vỏ vẫn 8MB. Hiện prototype tìm claude.exe có sẵn trên máy.
-- Port nốt: xem docx/xlsx/pdf trong app (thư viện web), nút bố cục/cập nhật/kết nối kho, tự cập nhật.
-- Ký số (chung với bản Theia) để hết cảnh báo antivirus/SmartScreen.
+## Ghi chú kỹ thuật (bài học khi làm)
 
-## Đánh giá
-ĐÃ CHỨNG MINH ĐẦY ĐỦ: có thể loại bỏ toàn bộ phần lõi nặng Electron+Theia (~430MB → 8MB) mà vẫn
-giữ nguyên động cơ AI, giao diện AWord, chat đa lượt. Đây là bằng chứng cho hướng "xử lý phần lõi nặng".
+- **WebView2 nạp/chạy `app.js` có thể 2 lần** trong cùng realm → `const` top-level báo "already declared"
+  làm cả file chết (biểu hiện: cửa sổ trống, "chạy ko ra gì"). Khắc phục: bọc `app.js` trong IIFE +
+  guard `window.__APPJS_RUNS === 1`.
+- **WebView2 cache asset**: sau khi cập nhật, `app.js`/`index.html` cũ có thể bị dùng lại. Đặt
+  `additionalBrowserArgs: "--disable-http-cache ..."` trong `tauri.conf.json` để luôn nạp bản mới.
+- Đầu ra PTY gửi lên webview dạng **base64** (Vec<u8> → chuỗi) để tránh lỗi biên UTF-8 khi ghép mảnh;
+  xterm ghi thẳng `Uint8Array`.
+
+## Còn lại để thành sản phẩm hoàn chỉnh
+- Xem docx/xlsx/pdf ngay trong app (khung riêng cạnh terminal).
+- Nút bố cục/cập nhật/kết nối kho; tự cập nhật vỏ.
+- Ký số (chung bản Theia) để hết cảnh báo antivirus/SmartScreen.
+- (Tùy chọn) Tự tin cậy sẵn thư mục `~/Documents/AWord` để bỏ bước hỏi "trust this folder?" lần đầu.

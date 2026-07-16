@@ -1,19 +1,29 @@
-// AWord Lite (v3) — backend Rust (Tauri v2). Điều khiển claude.exe headless stream-json.
-// KHÔNG đóng kèm claude.exe: khi chạy tự tìm; THIẾU thì tự cài (trình cài chính thức);
-// CÓ thì tự kiểm tra cập nhật (nền). Không cần Node/Electron/Theia.
+// AWord Lite (v3) — backend Rust (Tauri v2).
+// Chạy CLAUDE CODE THẬT (giao diện tương tác đầy đủ: tool-use, sửa file, skill) trong một
+// terminal thật (PTY/ConPTY) render bằng xterm.js — vỏ ~8MB thay Electron/Theia.
+// KHÔNG đóng kèm claude.exe: khi chạy tự tìm; THIẾU thì tự cài (trình cài chính thức).
+// KHÔNG tự chạy `claude update` (Claude Code tự cập nhật sẵn) → mở nhanh, không "treo".
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde_json::{json, Value};
-use std::io::{BufRead, BufReader, Write};
+use base64::Engine;
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
+use serde_json::json;
+use std::io::{Read, Write};
 use std::path::PathBuf;
-use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
 
+// Một phiên terminal đang chạy claude.
+struct PtySession {
+    master: Box<dyn portable_pty::MasterPty + Send>, // để resize
+    writer: Box<dyn Write + Send>,                   // để gõ vào
+    child: Box<dyn portable_pty::Child + Send + Sync>, // để kết thúc
+}
+
 #[derive(Default)]
 struct AppState {
-    claude: Mutex<Option<Child>>,
-    claude_path: Mutex<Option<String>>, // đường dẫn claude.exe đã xác định (sau bootstrap)
+    pty: Mutex<Option<PtySession>>,
+    claude_path: Mutex<Option<String>>,
 }
 
 fn home() -> PathBuf {
@@ -29,9 +39,8 @@ fn localappdata() -> PathBuf {
 }
 
 // Tìm claude.exe. Trả về (đường dẫn, là_bản_đóng_kèm_AWord_Theia).
-// Thứ tự: cài của người dùng (~/.local/bin, LOCALAPPDATA, winget, PATH) -> bản đóng kèm AWord Theia.
+// Ưu tiên bản cài của người dùng, cuối cùng mới đến bản đóng kèm AWord Theia.
 fn find_claude_path() -> Option<(String, bool)> {
-    // Cài của người dùng (được phép tự cập nhật)
     let user_cands = [
         home().join(".local").join("bin").join("claude.exe"),
         localappdata().join("Programs").join("claude").join("claude.exe"),
@@ -41,7 +50,6 @@ fn find_claude_path() -> Option<(String, bool)> {
             return Some((c.to_string_lossy().into_owned(), false));
         }
     }
-    // winget
     if let Ok(rd) = std::fs::read_dir(localappdata().join("Microsoft").join("WinGet").join("Packages")) {
         for e in rd.flatten() {
             if e.file_name().to_string_lossy().starts_with("Anthropic.ClaudeCode") {
@@ -52,7 +60,6 @@ fn find_claude_path() -> Option<(String, bool)> {
             }
         }
     }
-    // PATH
     if let Ok(paths) = std::env::var("PATH") {
         for dir in std::env::split_paths(&paths) {
             let p = dir.join("claude.exe");
@@ -61,7 +68,6 @@ fn find_claude_path() -> Option<(String, bool)> {
             }
         }
     }
-    // Bản đóng kèm AWord (Theia) — DÙNG được nhưng KHÔNG tự cập nhật (Theia tự lo).
     let bundle = localappdata()
         .join("Programs").join("AWord").join("resources").join("app").join("plugins")
         .join("Anthropic.claude-code").join("extension").join("resources").join("native-binary").join("claude.exe");
@@ -72,13 +78,13 @@ fn find_claude_path() -> Option<(String, bool)> {
 }
 
 fn get_version(exe: &str) -> String {
-    Command::new(exe).arg("--version").output().ok()
+    std::process::Command::new(exe).arg("--version").output().ok()
         .and_then(|o| String::from_utf8(o.stdout).ok())
         .map(|s| s.trim().to_string())
         .unwrap_or_default()
 }
 
-// Bootstrap: xác định/cài claude, phát sự kiện "boot" cho giao diện. Chạy nền, không chặn UI.
+// Bootstrap: xác định/cài claude, phát sự kiện "boot". Chạy nền, không chặn UI.
 #[tauri::command]
 fn bootstrap(app: AppHandle) {
     let app2 = app.clone();
@@ -86,24 +92,11 @@ fn bootstrap(app: AppHandle) {
         if let Some((p, is_bundle)) = find_claude_path() {
             let ver = get_version(&p);
             set_claude_path(&app2, &p);
+            // Sẵn sàng: giao diện sẽ khởi terminal. Claude Code tự lo cập nhật, ta không chặn.
             let _ = app2.emit("boot", json!({"status":"san_sang","path":p,"version":ver,"bundle":is_bundle}));
-            // Tự kiểm tra cập nhật (nền) nếu là bản cài của người dùng.
-            if !is_bundle {
-                let _ = app2.emit("boot", json!({"status":"kiem_tra_cap_nhat"}));
-                let out = Command::new(&p).arg("update").output();
-                match out {
-                    Ok(o) => {
-                        let msg = String::from_utf8_lossy(&o.stdout).trim().to_string();
-                        let _ = app2.emit("boot", json!({"status":"cap_nhat_xong","message":msg}));
-                    }
-                    Err(_) => { let _ = app2.emit("boot", json!({"status":"cap_nhat_bo_qua"})); }
-                }
-            }
         } else {
-            // THIẾU claude -> cài bằng trình cài chính thức (cần Internet).
             let _ = app2.emit("boot", json!({"status":"dang_cai"}));
-            let ok = cai_claude();
-            if ok {
+            if cai_claude() {
                 if let Some((p, is_bundle)) = find_claude_path() {
                     let ver = get_version(&p);
                     set_claude_path(&app2, &p);
@@ -120,7 +113,7 @@ fn bootstrap(app: AppHandle) {
 
 // Trình cài chính thức của Claude Code cho Windows (native, bản latest).
 fn cai_claude() -> bool {
-    Command::new("powershell")
+    std::process::Command::new("powershell")
         .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
             "& ([scriptblock]::Create((Invoke-RestMethod https://claude.ai/install.ps1))) latest"])
         .status()
@@ -129,16 +122,19 @@ fn cai_claude() -> bool {
 }
 
 fn set_claude_path(app: &AppHandle, p: &str) {
-    let state = app.state::<AppState>();
-    *state.claude_path.lock().unwrap() = Some(p.to_string());
+    *app.state::<AppState>().claude_path.lock().unwrap() = Some(p.to_string());
 }
 
-// Bảo đảm tiến trình claude đang chạy; nếu chưa, spawn + luồng đọc stdout phát sự kiện "claude".
-fn ensure_claude(app: &AppHandle, state: &State<AppState>) -> bool {
+// Mở phiên terminal chạy claude tương tác, kích thước cols×rows.
+#[tauri::command]
+fn pty_spawn(app: AppHandle, state: State<AppState>, cols: u16, rows: u16) -> Result<(), String> {
     {
-        let mut guard = state.claude.lock().unwrap();
-        if guard.as_mut().map_or(false, |c| c.try_wait().ok().flatten().is_none()) {
-            return true; // còn sống
+        // Đã có phiên còn sống thì thôi.
+        let mut g = state.pty.lock().unwrap();
+        if let Some(s) = g.as_mut() {
+            if s.child.try_wait().ok().flatten().is_none() {
+                return Ok(());
+            }
         }
     }
     let exe = {
@@ -146,76 +142,73 @@ fn ensure_claude(app: &AppHandle, state: &State<AppState>) -> bool {
         if pp.is_none() {
             if let Some((p, _)) = find_claude_path() { *pp = Some(p); }
         }
-        match pp.clone() {
-            Some(p) => p,
-            None => {
-                let _ = app.emit("claude", json!({"type":"_loi","message":"Chưa cài Claude. Đang thử cài lại…"}));
-                return false;
-            }
-        }
+        pp.clone().ok_or_else(|| "Chưa cài Claude.".to_string())?
     };
-    let mut child = match Command::new(&exe)
-        .args(["--print", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose"])
-        .current_dir(workspace())
-        .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null())
-        .spawn()
-    {
-        Ok(c) => c,
-        Err(e) => {
-            let _ = app.emit("claude", json!({"type":"_loi","message": format!("Không chạy được claude.exe: {}", e)}));
-            return false;
-        }
-    };
-    if let Some(out) = child.stdout.take() {
-        let app2 = app.clone();
-        std::thread::spawn(move || {
-            let reader = BufReader::new(out);
-            for line in reader.lines().map_while(Result::ok) {
-                let line = line.trim();
-                if line.is_empty() { continue; }
-                let obj: Value = match serde_json::from_str(line) { Ok(v) => v, Err(_) => continue };
-                let t = obj["type"].as_str().unwrap_or("");
-                if t == "assistant" {
-                    if let Some(content) = obj["message"]["content"].as_array() {
-                        let text: String = content.iter()
-                            .filter(|c| c["type"] == "text").filter_map(|c| c["text"].as_str()).collect();
-                        if !text.is_empty() {
-                            let _ = app2.emit("claude", json!({"type":"assistant","text":text}));
-                        }
-                    }
-                } else if t == "result" {
-                    let _ = app2.emit("claude", json!({"type":"result","text":obj["result"].as_str().unwrap_or(""),
-                        "is_error":obj["is_error"].as_bool().unwrap_or(false),"cost":obj["total_cost_usd"].as_f64()}));
-                } else if t == "system" && obj["subtype"] == "init" {
-                    let _ = app2.emit("claude", json!({"type":"init","model":obj["model"].as_str().unwrap_or(""),
-                        "session_id":obj["session_id"].as_str().unwrap_or("")}));
+
+    let pty = native_pty_system();
+    let pair = pty
+        .openpty(PtySize { rows: rows.max(4), cols: cols.max(20), pixel_width: 0, pixel_height: 0 })
+        .map_err(|e| format!("Không mở được terminal: {e}"))?;
+
+    let mut cmd = CommandBuilder::new(&exe);
+    cmd.cwd(workspace());
+    // Truyền toàn bộ biến môi trường hiện tại (PATH, USERPROFILE, LOCALAPPDATA...) để claude
+    // tìm được ~/.claude, gateway, MCP... y như chạy trong terminal thật.
+    for (k, v) in std::env::vars() {
+        cmd.env(k, v);
+    }
+    cmd.env("TERM", "xterm-256color");
+
+    let child = pair.slave.spawn_command(cmd).map_err(|e| format!("Không chạy được claude: {e}"))?;
+    drop(pair.slave);
+
+    let mut reader = pair.master.try_clone_reader().map_err(|e| format!("{e}"))?;
+    let writer = pair.master.take_writer().map_err(|e| format!("{e}"))?;
+
+    // Luồng đọc PTY -> phát 'pty' (base64) lên webview.
+    let app2 = app.clone();
+    std::thread::spawn(move || {
+        let mut buf = [0u8; 8192];
+        loop {
+            match reader.read(&mut buf) {
+                Ok(0) => break,
+                Ok(n) => {
+                    let b64 = base64::engine::general_purpose::STANDARD.encode(&buf[..n]);
+                    let _ = app2.emit("pty", b64);
                 }
+                Err(_) => break,
             }
-            let _ = app2.emit("claude", json!({"type":"_claude_exit"}));
-        });
-    }
-    *state.claude.lock().unwrap() = Some(child);
-    true
-}
-
-#[tauri::command]
-fn chat(app: AppHandle, state: State<AppState>, message: String) {
-    if !ensure_claude(&app, &state) { return; }
-    let mut guard = state.claude.lock().unwrap();
-    if let Some(child) = guard.as_mut() {
-        if let Some(stdin) = child.stdin.as_mut() {
-            let line = json!({"type":"user","message":{"role":"user","content":message}}).to_string();
-            let _ = stdin.write_all(line.as_bytes());
-            let _ = stdin.write_all(b"\n");
-            let _ = stdin.flush();
         }
+        let _ = app2.emit("pty_exit", ());
+    });
+
+    *state.pty.lock().unwrap() = Some(PtySession { master: pair.master, writer, child });
+    Ok(())
+}
+
+// Gõ dữ liệu vào terminal (chuỗi UTF-8, gồm cả phím điều khiển như \r, \x03, \x1b...).
+#[tauri::command]
+fn pty_write(state: State<AppState>, data: String) {
+    if let Some(s) = state.pty.lock().unwrap().as_mut() {
+        let _ = s.writer.write_all(data.as_bytes());
+        let _ = s.writer.flush();
     }
 }
 
+// Đổi kích thước terminal khi cửa sổ co giãn.
 #[tauri::command]
-fn stop(state: State<AppState>) {
-    let mut guard = state.claude.lock().unwrap();
-    if let Some(mut child) = guard.take() { let _ = child.kill(); }
+fn pty_resize(state: State<AppState>, cols: u16, rows: u16) {
+    if let Some(s) = state.pty.lock().unwrap().as_ref() {
+        let _ = s.master.resize(PtySize { rows: rows.max(4), cols: cols.max(20), pixel_width: 0, pixel_height: 0 });
+    }
+}
+
+// Kết thúc phiên (để khởi động lại).
+#[tauri::command]
+fn pty_kill(state: State<AppState>) {
+    if let Some(mut s) = state.pty.lock().unwrap().take() {
+        let _ = s.child.kill();
+    }
 }
 
 fn in_ws(rel: &str) -> Option<PathBuf> {
@@ -225,8 +218,9 @@ fn in_ws(rel: &str) -> Option<PathBuf> {
     if abs.starts_with(ws.canonicalize().unwrap_or_else(|_| workspace())) { Some(abs) } else { None }
 }
 
+// Explorer: liệt kê thư mục làm việc (để bấm chèn @tệp vào terminal).
 #[tauri::command]
-fn list_files(dir: String) -> Value {
+fn list_files(dir: String) -> serde_json::Value {
     let ws = workspace();
     let target = in_ws(&dir).unwrap_or_else(|| ws.clone());
     let mut items = vec![];
@@ -246,31 +240,12 @@ fn list_files(dir: String) -> Value {
     json!({"workspace": ws.to_string_lossy(), "items": items})
 }
 
-const TEXT_EXT: &[&str] = &["txt","md","markdown","json","js","ts","py","csv","tsv","html","htm","css","xml","yaml","yml","ini","log","cfg","bat","cmd","ps1","sh"];
-
-#[tauri::command]
-fn read_file(path: String) -> Value {
-    let abs = match in_ws(&path) { Some(p) if p.is_file() => p, _ => return json!({"kieu":"loi"}) };
-    let ext = abs.extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default();
-    if TEXT_EXT.contains(&ext.as_str()) {
-        match std::fs::read_to_string(&abs) {
-            Ok(t) => json!({"kieu":"text","noiDung":t}),
-            Err(_) => json!({"kieu":"loi"}),
-        }
-    } else { json!({"kieu":"ngoai"}) }
-}
-
-#[tauri::command]
-fn open_external(path: String) -> bool {
-    if let Some(abs) = in_ws(&path) {
-        Command::new("cmd").arg("/c").arg("start").arg("").arg(abs.as_os_str()).spawn().is_ok()
-    } else { false }
-}
-
 fn main() {
     tauri::Builder::default()
         .manage(AppState::default())
-        .invoke_handler(tauri::generate_handler![bootstrap, chat, stop, list_files, read_file, open_external])
+        .invoke_handler(tauri::generate_handler![
+            bootstrap, pty_spawn, pty_write, pty_resize, pty_kill, list_files
+        ])
         .run(tauri::generate_context!())
         .expect("loi khoi chay AWord Lite");
 }

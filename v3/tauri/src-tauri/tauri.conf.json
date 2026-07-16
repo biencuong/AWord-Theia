@@ -16,7 +16,8 @@
         "minWidth": 800,
         "minHeight": 500,
         "decorations": false,
-        "backgroundColor": "#1e1e1e"
+        "backgroundColor": "#1e1e1e",
+        "additionalBrowserArgs": "--disable-http-cache --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection"
       }
     ],
     "security": { "csp": null }
