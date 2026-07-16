@@ -22,7 +22,7 @@ if (skills.length === 0) {
 // Các file nguồn ở gốc AWord-Theia được nhúng vào bộ cài — thiếu là fail sớm,
 // tránh NSIS báo "no files found" khó hiểu lúc biên dịch.
 const rootDir = path.join(appDir, '..');
-for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd']) {
+for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd', 'Cap_Nhat_Claude.ps1']) {
     if (!fs.existsSync(path.join(rootDir, f))) {
         console.error(`[gen-installer-nsh] Thiếu file nguồn ${f} ở gốc AWord-Theia!`);
         process.exit(1);
@@ -97,6 +97,12 @@ lines.push(
     '  File "${PROJECT_DIR}\\..\\Kiem_Tra_AWord.cmd"',
     '  CreateShortCut "$SMPROGRAMS\\Kiểm tra AWord.lnk" "$INSTDIR\\Kiem_Tra_AWord.cmd" "" "$INSTDIR\\AWord.exe" 0',
     '',
+    '  ; Hòa hợp binary Claude (hybrid): ưu tiên claude cài sẵn trên máy nếu mới hơn/bằng và',
+    '  ; chạy được, không thì giữ bản đóng kèm (offline). Chạy ngay khi cài + shortcut chạy lại tay.',
+    '  File "${PROJECT_DIR}\\..\\Cap_Nhat_Claude.ps1"',
+    '  CreateShortCut "$SMPROGRAMS\\Cập nhật Claude (AWord).lnk" "$INSTDIR\\Cap_Nhat_Claude.ps1" "" "$INSTDIR\\AWord.exe" 0',
+    "  ExecWait 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \"$INSTDIR\\Cap_Nhat_Claude.ps1\" -InstallDir \"$INSTDIR\"'",
+    '',
     '  ; Menu chuột phải: tệp bất kỳ',
     '  WriteRegStr HKCU "Software\\Classes\\*\\shell\\AWord" "" "Mở bằng AWord"',
     '  WriteRegStr HKCU "Software\\Classes\\*\\shell\\AWord" "Icon" "$INSTDIR\\AWord.exe"',
@@ -119,6 +125,7 @@ lines.push(
     '  Delete "$SMPROGRAMS\\Kết nối Kho dữ liệu (AWord).lnk"',
     '  Delete "$SMPROGRAMS\\Cài công cụ tài liệu (AWord).lnk"',
     '  Delete "$SMPROGRAMS\\Kiểm tra AWord.lnk"',
+    '  Delete "$SMPROGRAMS\\Cập nhật Claude (AWord).lnk"',
     '  DeleteRegKey HKCU "Software\\Classes\\*\\shell\\AWord"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\shell\\AWord"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\Background\\shell\\AWord"',

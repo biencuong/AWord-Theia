@@ -20,6 +20,11 @@ const KHOA_DA_CHAO_MUNG = 'aword.daChaoMung';
 const TEN_WORKSPACE_MAC_DINH = 'AWord';
 const THU_MUC_CON_MAC_DINH = ['ABOUT ME', 'TEMPLATES', 'PROJECTS', 'CLAUDE OUTPUTS'];
 
+// Các view container ở thanh bên trái KHÔNG cần cho công việc văn phòng — ẩn khỏi activity bar.
+// (Quản lý mã nguồn, Kiểm thử, Gỡ lỗi — do plugin-ext/scm/test/debug kéo theo, không gỡ khỏi bundle được.)
+const ICON_SIDEBAR_AN = ['scm-view-container', 'test-view-container', 'debug'];
+const EXPLORER_CONTAINER_ID = 'explorer-view-container';
+
 @injectable()
 export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelcomeWidget> implements FrontendApplicationContribution {
 
@@ -49,6 +54,12 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     // - Đã có workspace → mở khung chat Claude ở vùng soạn thảo chính; trang chào mừng chỉ hiện lần đầu.
     // - Người dùng CHỦ ĐỘNG đóng workspace (đã có mục gần đây) → tôn trọng, chỉ hiện trang chào mừng.
     async onDidInitializeLayout(app: FrontendApplication): Promise<void> {
+        // Ẩn các icon sidebar không dùng — quét vài lần vì view container có thể được thêm
+        // trễ (sau khi plugin/layout ổn định).
+        for (const tre of [0, 1000, 3000, 6000]) {
+            setTimeout(() => this.anIconSidebar(app), tre);
+        }
+
         if (this.workspaceService.tryGetRoots().length === 0) {
             let ganDay: string[] = [];
             try { ganDay = await this.workspaceService.recentWorkspaces(); } catch { /* backend chưa sẵn sàng */ }
@@ -61,10 +72,30 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         if (!window.localStorage.getItem(KHOA_DA_CHAO_MUNG)) {
             window.localStorage.setItem(KHOA_DA_CHAO_MUNG, '1');
             await this.openView({ activate: false, reveal: true });
-            // Lần đầu: thu gọn panel trái để khung chat rộng rãi — Explorer mở lại bằng cách bấm icon.
-            try { app.shell.collapsePanel('left'); } catch { /* bố cục chưa sẵn sàng — không sao */ }
         }
+        // Mặc định mở trình Khám phá (Explorer) với thư mục làm việc ở panel trái.
+        await this.moExplorer(app);
         this.moClaudeGiuaManHinh(app);
+    }
+
+    // Ẩn view container Quản lý mã nguồn / Kiểm thử / Gỡ lỗi khỏi thanh bên trái.
+    protected anIconSidebar(app: FrontendApplication): void {
+        try {
+            for (const w of app.shell.getWidgets('left')) {
+                if (ICON_SIDEBAR_AN.includes(w.id)) { w.close(); }
+            }
+        } catch { /* layout chưa sẵn sàng — lần quét sau sẽ xử lý */ }
+    }
+
+    // Hiện trình Khám phá + bung thư mục làm việc để thấy danh sách tệp ngay.
+    protected async moExplorer(app: FrontendApplication): Promise<void> {
+        try {
+            await app.shell.revealWidget(EXPLORER_CONTAINER_ID);
+            const nav = app.shell.getWidgets('left').find(w => w.id === 'files') as
+                { model?: { root?: unknown; expandNode?: (n: unknown) => unknown } } | undefined;
+            const root = nav?.model?.root;
+            if (nav?.model?.expandNode && root) { nav.model.expandNode(root); }
+        } catch { /* không hiện được — không sao, người dùng tự mở */ }
     }
 
     override registerCommands(commands: CommandRegistry): void {
