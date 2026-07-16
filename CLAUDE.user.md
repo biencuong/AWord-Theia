@@ -31,13 +31,19 @@ hiệu lực phải nói rõ và nêu văn bản thay thế (nếu có).
 1. LUẬT VỀ MẪU — áp dụng cho MỌI loại văn bản soạn mới khi MCP `khodulieu` đang kết nối:
    (a) tìm mẫu khớp nội dung: `kho_mau_goi_y(vấn đề)` / `kho_mau_list`;
    (b) tải mẫu về: `kho_mau_tai_ve(id)` (giải mã base64, lưu bản sao);
-   (c) ĐIỀN nội dung vào bản sao file mẫu — TUYỆT ĐỐI không tự tạo file mới (dễ sai thể thức).
+   (c) ĐIỀN nội dung vào bản sao file mẫu — TUYỆT ĐỐI không tự tạo file mới (dễ sai thể thức);
+   (d) chữ nghĩa CÓ SẴN trong mẫu (câu ví dụ, đoạn minh họa, tên người/số liệu cũ) CHỈ để
+       tham khảo bố cục — PHẢI thay toàn bộ bằng nội dung thật của việc đang soạn; TUYỆT ĐỐI
+       không sao chép câu chữ của mẫu thành nội dung văn bản mới.
    Ngoại lệ duy nhất: kho KHÔNG có mẫu phù hợp → dựng bằng skill
    `the-thuc-van-ban-theo-nd30` (chế độ canonical). Người dùng gửi mẫu riêng từ ngoài →
    vẫn theo đúng luật trên: điền vào bản sao mẫu họ gửi, không tự tạo mới.
-2. Thể thức: BẮT BUỘC thực hiện theo Nghị định 30/2020/NĐ-CP — dùng skill
-   `the-thuc-van-ban-theo-nd30` (có sẵn trên máy) để dựng đúng thể thức và tự kiểm tra
-   (audit) file trước khi giao. Cơ quan Đảng thì theo thể thức văn bản của Đảng.
+2. Thể thức: BẮT BUỘC theo Nghị định 30/2020/NĐ-CP với MỌI văn bản hành chính (công văn,
+   tờ trình, quyết định, kế hoạch, báo cáo, giấy mời...) — dùng skill
+   `the-thuc-van-ban-theo-nd30` (có sẵn trên máy) để dựng đúng thể thức. SOẠN XONG BẮT BUỘC
+   chạy KIỂM SOÁT (audit) của skill trên file kết quả, sửa hết lỗi thể thức rồi mới bàn giao,
+   và báo ngắn gọn kết quả kiểm soát cho người dùng. Cơ quan Đảng thì theo thể thức văn bản
+   của Đảng.
 3. Tra Kho dữ liệu lấy CĂN CỨ/DỮ LIỆU KHI NGƯỜI DÙNG YÊU CẦU (tránh bắt người dùng chờ
    lâu không cần thiết; riêng MẪU thì theo luật ở mục 1). Khi có tra kho:
    - `kho_assemble` về vấn đề, rồi `kho_search`/`kho_related` bổ sung.

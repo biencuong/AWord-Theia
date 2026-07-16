@@ -1,6 +1,8 @@
 KHUYẾN NGHỊ: Bản này thay đổi nhiều về cấu hình và giao diện — nên CÀI MỚI bằng bộ cài
-này. Khi bộ cài hỏi về settings.json và CLAUDE.md, hãy chọn "Yes" (cập nhật) — bản cũ
-được tự sao lưu thành *.truoc-cap-nhat.* để khôi phục khi cần.
+này. Khi bộ cài hỏi về settings.json và CLAUDE.md, hãy chọn "Yes" (cập nhật):
+- settings.json được HỢP NHẤT, không thay thế — giữ nguyên mã kết nối AI, Kho dữ liệu (MCP)
+  đã kết nối và tùy chỉnh cá nhân, chỉ bổ sung thông số tối ưu mới.
+- Bản cũ luôn được tự sao lưu thành *.truoc-cap-nhat.* để khôi phục khi cần.
 
 Nội dung chính:
 - Mở app là vào thẳng khung chat Claude giữa màn hình (kiểu Claude for Windows);

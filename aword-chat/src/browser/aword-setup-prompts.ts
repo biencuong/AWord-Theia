@@ -17,6 +17,11 @@ export const QUY_TAC_CLAUDE_MD = `# Quy tắc làm việc trong không gian này
 - Viết tự nhiên, trang trọng chuẩn mực hành chính, tránh văn phong giống AI. Văn bản trình bày
   tuân thủ Nghị định 30 về thể thức văn bản hành chính, hoặc thể thức văn bản của Đảng nếu là
   cơ quan Đảng.
+- Soạn văn bản hành chính (công văn, tờ trình, quyết định, báo cáo...): BẮT BUỘC đúng thể thức
+  Nghị định 30; soạn xong PHẢI kiểm soát (audit) thể thức bằng skill the-thuc-van-ban-theo-nd30,
+  sửa hết lỗi rồi mới bàn giao.
+- Khi có file mẫu: điền nội dung vào BẢN SAO của mẫu, không tạo file mới; chữ nghĩa có sẵn
+  trong mẫu chỉ để tham khảo bố cục — không sao chép thành nội dung văn bản mới.
 - Ưu tiên sự rõ ràng hơn là ngôn ngữ mang tính quảng cáo.
 - Giữ giọng văn chuyên nghiệp, đúng mực của công chức, viên chức hành chính.
 - Không sử dụng emoji, dấu * hoặc từ ngữ dư thừa nếu không cần thiết.

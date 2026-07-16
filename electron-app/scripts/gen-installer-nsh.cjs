@@ -22,7 +22,7 @@ if (skills.length === 0) {
 // Các file nguồn ở gốc AWord-Theia được nhúng vào bộ cài — thiếu là fail sớm,
 // tránh NSIS báo "no files found" khó hiểu lúc biên dịch.
 const rootDir = path.join(appDir, '..');
-for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd']) {
+for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1']) {
     if (!fs.existsSync(path.join(rootDir, f))) {
         console.error(`[gen-installer-nsh] Thiếu file nguồn ${f} ở gốc AWord-Theia!`);
         process.exit(1);
@@ -49,20 +49,23 @@ lines.push(
     '',
     '  ; settings.json của AWord cho Claude Code (gateway, model mặc định, tốc độ trả lời).',
     '  ; - Máy CHƯA có: cài thẳng.',
-    '  ; - Máy ĐÃ có (cập nhật/cài lại): HỎI người dùng chọn CẬP NHẬT hay GIỮ, nêu rõ ảnh hưởng;',
-    '  ;   chọn cập nhật thì bản cũ được sao lưu thành settings.truoc-cap-nhat.json.',
+    '  ; - Máy ĐÃ có (cập nhật/cài lại): HỎI người dùng. Chọn CẬP NHẬT thì HỢP NHẤT (không thay',
+    '  ;   thế): script Cap_Nhat_Cau_Hinh.ps1 áp thông số tối ưu mới lên cấu hình hiện có,',
+    '  ;   GIỮ token thật + mcpServers + tùy chỉnh cá nhân; bản cũ sao lưu settings.truoc-cap-nhat.json.',
     '  ; - Cài im lặng (/S): mặc định GIỮ bản hiện có (/SD IDNO) — lựa chọn an toàn nhất.',
-    '  ; - Bản mẫu settings.example.json LUÔN được ghi mới để tham khảo.',
-    '  ; Nguồn: AWord-Theia\\settings.json (cạnh thư mục electron-app).',
+    '  ; - Bản mẫu settings.example.json LUÔN được ghi mới (script hợp nhất đọc từ đây).',
+    '  ; Nguồn: AWord-Theia\\settings.json + Cap_Nhat_Cau_Hinh.ps1 (cạnh thư mục electron-app).',
+    '  SetOutPath "$INSTDIR"',
+    '  File "${PROJECT_DIR}\\..\\Cap_Nhat_Cau_Hinh.ps1"',
     '  SetOutPath "$PROFILE\\.claude"',
     '  File "/oname=settings.example.json" "${PROJECT_DIR}\\..\\settings.json"',
     '  IfFileExists "$PROFILE\\.claude\\settings.json" hoi_settings',
     '    File "/oname=settings.json" "${PROJECT_DIR}\\..\\settings.json"',
     '    Goto xong_settings',
     '  hoi_settings:',
-    '  MessageBox MB_YESNO|MB_ICONQUESTION "Máy này đã có cấu hình Claude (settings.json).$\\r$\\n$\\r$\\nBạn có muốn CẬP NHẬT theo cấu hình mới của AWord không?$\\r$\\n$\\r$\\n• CÓ (khuyến nghị): Claude trả lời NHANH hơn rõ rệt (cấu hình cân bằng tốc độ mới); mã kết nối AI và model mặc định dùng bản đi kèm bộ cài. Mọi chỉnh sửa cá nhân trong settings.json sẽ bị thay thế — bản cũ được SAO LƯU thành settings.truoc-cap-nhat.json để khôi phục khi cần.$\\r$\\n$\\r$\\n• KHÔNG: giữ nguyên cấu hình hiện tại, không thay đổi gì; bản mẫu mới vẫn xem được ở settings.example.json." /SD IDNO IDNO xong_settings',
+    '  MessageBox MB_YESNO|MB_ICONQUESTION "Máy này đã có cấu hình Claude (settings.json).$\\r$\\n$\\r$\\nBạn có muốn CẬP NHẬT theo cấu hình mới của AWord không?$\\r$\\n$\\r$\\n• CÓ (khuyến nghị): BỔ SUNG các thông số tối ưu mới vào cấu hình hiện có theo kiểu HỢP NHẤT, KHÔNG thay thế — GIỮ NGUYÊN mã kết nối AI, các Kho dữ liệu (MCP) đã kết nối và mọi tùy chỉnh cá nhân. Bản cũ vẫn được sao lưu thành settings.truoc-cap-nhat.json.$\\r$\\n$\\r$\\n• KHÔNG: giữ nguyên cấu hình hiện tại, không thay đổi gì; bản mẫu mới vẫn xem được ở settings.example.json." /SD IDNO IDNO xong_settings',
     '    CopyFiles /SILENT "$PROFILE\\.claude\\settings.json" "$PROFILE\\.claude\\settings.truoc-cap-nhat.json"',
-    '    File "/oname=settings.json" "${PROJECT_DIR}\\..\\settings.json"',
+    "    ExecWait 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \"$INSTDIR\\Cap_Nhat_Cau_Hinh.ps1\"'",
     '  xong_settings:',
     '',
     '  ; CLAUDE.md cấp người dùng: quy tắc làm việc + quy trình đọc tài liệu của AWord.',
