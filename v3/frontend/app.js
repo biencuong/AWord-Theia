@@ -1,10 +1,31 @@
-// AWord Lite v3 — frontend: nối SSE nhận phản hồi Claude, gửi tin qua POST, Explorer đọc thư mục.
+// AWord Lite v3 — frontend. Chạy được CẢ HAI chế độ:
+//  - Tauri (bản đóng gói): dùng window.__TAURI__ invoke/event.
+//  - HTTP (chạy dev qua node server.js): dùng fetch + SSE.
 'use strict';
 const $ = s => document.querySelector(s);
 const chat = $('#chat'), input = $('#input'), send = $('#send'), status = $('#status'), tree = $('#filetree'), wsName = $('#ws-name');
 
-let bongAssistant = null; // bong bóng assistant đang nhận
-let dangTraLoi = false;
+const T = window.__TAURI__;
+const isTauri = !!T;
+
+// --- Lớp transport ---
+const api = isTauri ? {
+  chat: content => T.core.invoke('chat', { message: content }),
+  onEvent: cb => T.event.listen('claude', e => cb(e.payload)),
+  listFiles: dir => T.core.invoke('list_files', { dir: dir || '.' }),
+  readFile: path => T.core.invoke('read_file', { path }),
+  openExternal: path => T.core.invoke('open_external', { path }),
+  stop: () => T.core.invoke('stop'),
+} : {
+  chat: content => fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }),
+  onEvent: cb => { const es = new EventSource('/stream'); es.onmessage = ev => { try { cb(JSON.parse(ev.data)); } catch { } }; es.onerror = () => status.textContent = 'Mất kết nối máy chủ…'; },
+  listFiles: async dir => (await fetch('/files?dir=' + encodeURIComponent(dir || '.'))).json(),
+  readFile: async path => { const r = await fetch('/file?path=' + encodeURIComponent(path)); return (r.headers.get('X-Kieu') || '') === 'text' ? { kieu: 'text', noiDung: await r.text() } : { kieu: 'ngoai' }; },
+  openExternal: path => fetch('/open', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) }),
+  stop: () => fetch('/stop', { method: 'POST' }),
+};
+
+let bongAssistant = null, dangTraLoi = false;
 
 function themWelcome() {
   const d = document.createElement('div');
@@ -14,71 +35,50 @@ function themWelcome() {
   chat.appendChild(d);
 }
 function xoaWelcome() { const w = chat.querySelector('.welcome'); if (w) w.remove(); }
-
 function themTin(loai, text) {
   const d = document.createElement('div');
-  d.className = 'msg ' + loai;
-  d.textContent = text;
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
-  return d;
+  d.className = 'msg ' + loai; d.textContent = text;
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d;
 }
 
-// --- SSE: nhận sự kiện từ claude.exe ---
-function noiStream() {
-  const es = new EventSource('/stream');
-  es.onmessage = ev => {
-    let m; try { m = JSON.parse(ev.data); } catch { return; }
-    if (m.type === '_ready') { status.textContent = 'Sẵn sàng · ' + (m.workspace || ''); }
-    else if (m.type === 'init') { status.textContent = 'Model: ' + (m.model || '?') + ' · sẵn sàng'; }
-    else if (m.type === 'assistant') {
-      if (!bongAssistant) { bongAssistant = themTin('assistant pending', ''); }
-      bongAssistant.textContent += m.text;
-      chat.scrollTop = chat.scrollHeight;
-    }
-    else if (m.type === 'result') {
-      if (bongAssistant) { bongAssistant.classList.remove('pending'); }
-      else if (m.text) { themTin('assistant', m.text); }
-      bongAssistant = null; dangTraLoi = false; send.disabled = false;
-      status.textContent = 'Xong' + (m.cost ? ` · ~$${m.cost.toFixed(4)}` : '') + (m.is_error ? ' · LỖI' : '');
-    }
-    else if (m.type === '_loi' || m.type === '_stderr') { status.textContent = 'Lỗi: ' + (m.message || ''); }
-    else if (m.type === '_claude_exit') { status.textContent = 'Claude đã dừng (mã ' + m.code + '). Gửi tin để khởi động lại.'; dangTraLoi = false; send.disabled = false; }
-  };
-  es.onerror = () => { status.textContent = 'Mất kết nối máy chủ…'; };
+// --- Nhận sự kiện từ claude ---
+function xuLySuKien(m) {
+  if (!m || !m.type) return;
+  if (m.type === '_ready') status.textContent = 'Sẵn sàng · ' + (m.workspace || '');
+  else if (m.type === 'init') status.textContent = 'Model: ' + (m.model || '?') + ' · sẵn sàng';
+  else if (m.type === 'assistant') {
+    if (!bongAssistant) bongAssistant = themTin('assistant pending', '');
+    bongAssistant.textContent += m.text; chat.scrollTop = chat.scrollHeight;
+  } else if (m.type === 'result') {
+    if (bongAssistant) bongAssistant.classList.remove('pending');
+    else if (m.text) themTin('assistant', m.text);
+    bongAssistant = null; dangTraLoi = false; send.disabled = false;
+    status.textContent = 'Xong' + (m.cost ? ` · ~$${(+m.cost).toFixed(4)}` : '') + (m.is_error ? ' · LỖI' : '');
+  } else if (m.type === '_loi' || m.type === '_stderr') status.textContent = 'Lỗi: ' + (m.message || '');
+  else if (m.type === '_claude_exit') { status.textContent = 'Claude đã dừng. Gửi tin để khởi động lại.'; dangTraLoi = false; send.disabled = false; }
 }
 
-// --- Gửi tin ---
 async function gui() {
   const text = input.value.trim();
   if (!text || dangTraLoi) return;
-  xoaWelcome();
-  themTin('user', text);
+  xoaWelcome(); themTin('user', text);
   input.value = ''; input.style.height = 'auto';
-  dangTraLoi = true; send.disabled = true; status.textContent = 'Claude đang trả lời…';
-  bongAssistant = null;
-  try {
-    await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: text }) });
-  } catch { status.textContent = 'Không gửi được.'; dangTraLoi = false; send.disabled = false; }
+  dangTraLoi = true; send.disabled = true; status.textContent = 'Claude đang trả lời…'; bongAssistant = null;
+  try { await api.chat(text); } catch { status.textContent = 'Không gửi được.'; dangTraLoi = false; send.disabled = false; }
 }
 send.onclick = gui;
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); gui(); }
-});
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); gui(); } });
 input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px'; });
 
 // --- Explorer ---
 async function napFiles(dir) {
   try {
-    const r = await fetch('/files?dir=' + encodeURIComponent(dir || '.'));
-    const j = await r.json();
+    const j = await api.listFiles(dir);
     wsName.textContent = j.workspace || '';
     tree.innerHTML = '';
-    for (const it of j.items) {
+    for (const it of j.items || []) {
       const li = document.createElement('li');
-      li.className = it.dir ? 'dir' : 'file';
-      li.textContent = it.name;
-      li.title = it.path;
+      li.className = it.dir ? 'dir' : 'file'; li.textContent = it.name; li.title = it.path;
       li.onclick = () => it.dir ? napFiles(it.path) : moFile(it.path);
       tree.appendChild(li);
     }
@@ -86,36 +86,42 @@ async function napFiles(dir) {
 }
 async function moFile(p) {
   try {
-    const r = await fetch('/file?path=' + encodeURIComponent(p));
-    if ((r.headers.get('X-Kieu') || '') === 'text') {
-      const t = await r.text();
-      $('#viewer-title').textContent = p;
-      $('#viewer-body').textContent = t;
+    const r = await api.readFile(p);
+    if (r.kieu === 'text') {
+      $('#viewer-title').textContent = p; $('#viewer-body').textContent = r.noiDung || '';
       $('#viewer').classList.remove('hidden');
     } else {
-      // docx/xlsx/pdf... -> mở bằng ứng dụng thật của máy (Word/Excel/PDF).
       status.textContent = 'Đang mở ' + p + ' bằng ứng dụng…';
-      await fetch('/open', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: p }) });
+      await api.openExternal(p);
     }
   } catch { status.textContent = 'Không mở được tệp.'; }
 }
 $('#viewer-close').onclick = () => $('#viewer').classList.add('hidden');
 
-// Nút: Cuộc trò chuyện mới / Dừng
+// --- Nút Mới / Dừng ---
 $('#btn-new').onclick = async () => {
-  await fetch('/new', { method: 'POST' });
-  chat.innerHTML = ''; themWelcome();
+  await api.stop(); chat.innerHTML = ''; themWelcome();
   bongAssistant = null; dangTraLoi = false; send.disabled = false;
   status.textContent = 'Cuộc trò chuyện mới.'; input.focus();
 };
 $('#btn-stop').onclick = async () => {
-  await fetch('/stop', { method: 'POST' });
+  await api.stop();
   if (bongAssistant) bongAssistant.classList.remove('pending');
-  bongAssistant = null; dangTraLoi = false; send.disabled = false;
-  status.textContent = 'Đã dừng.';
+  bongAssistant = null; dangTraLoi = false; send.disabled = false; status.textContent = 'Đã dừng.';
 };
 
+// --- Nút cửa sổ (chỉ trong Tauri) ---
+if (isTauri && T.window) {
+  const win = T.window.getCurrentWindow();
+  const c = document.querySelectorAll('.winctrls span');
+  if (c[0]) c[0].onclick = () => win.minimize();
+  if (c[1]) c[1].onclick = () => win.toggleMaximize();
+  if (c[2]) c[2].onclick = () => win.close();
+} else {
+  $('.winctrls')?.style && ($('.winctrls').style.visibility = 'hidden'); // chạy trong trình duyệt: ẩn nút giả
+}
+
+api.onEvent(xuLySuKien);
 themWelcome();
-noiStream();
 napFiles('.');
 input.focus();
