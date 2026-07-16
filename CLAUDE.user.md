@@ -59,6 +59,21 @@ Khi người dùng cần đọc/tóm tắt/phân tích file văn bản → dùng
 (có sẵn trên máy): quy trình chọn file, xử lý đường dẫn Unicode, đọc từng định dạng và
 cách trình bày kết quả đều ở đó.
 
+TIẾT KIỆM TOKEN + TRÁNH LỖI "Prompt is too long" KHI ĐỌC/VIẾT VĂN BẢN DÀI (quan trọng):
+đọc văn bản dài tốn token đầu vào theo độ dài và có thể làm ĐẦY cửa sổ ngữ cảnh, nên:
+- ĐỌC CÓ TRỌNG TÂM, KHÔNG NẠP TOÀN VĂN: với file rất dài (vài chục trang trở lên), TUYỆT ĐỐI
+  không đổ hết nội dung vào ngữ cảnh. Trích đúng phần cần (mục lục → điều khoản/mục liên quan
+  → bảng số liệu). Với PDF/scan dài, dùng `pdf_sang_anh.py --trang ...` đọc theo cụm trang.
+  Nếu >5 trang, HỎI người dùng cần tập trung phần nào trước khi đọc sâu.
+- TÓM TẮT DẦN: đọc một phần → ghi tóm tắt ngắn → chuyển phần sau, thay vì giữ toàn văn trong
+  ngữ cảnh. Chỉ giữ lại phần thật sự cần cho việc đang làm.
+- KHÔNG NẠP LẠI: file đã đọc trong phiên thì đừng đọc lại toàn bộ (bộ nhớ đệm ngữ cảnh tự
+  động làm phần lặp lại rẻ đi ~10 lần).
+- NẾU GẶP "Prompt is too long": ngữ cảnh đã đầy — báo người dùng bắt đầu CUỘC TRÒ CHUYỆN MỚI
+  và chỉ đưa lại (bằng @) đúng file/phần đang cần; không cố nhồi tiếp vào phiên cũ.
+- VIẾT DÀI: giới hạn đầu ra do Claude Code tự đặt theo model (thường 32–64K token, đủ ~24–48
+  trang) — thừa cho mọi công văn hành chính; văn bản dài hơn thì soạn theo phần.
+
 Máy đã cài sẵn Python + thư viện (python-docx, openpyxl, xlrd, pypdf, pymupdf, pdfplumber,
 pillow, pywin32...) — bộ cài AWord đóng kèm và tự cài offline ở lần khởi động đầu.
 
