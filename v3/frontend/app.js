@@ -157,8 +157,9 @@ function xuLyBoot(m) {
 
 if (isTauri) {
   hienBoot('Đang chuẩn bị AWord…', 'Kiểm tra Claude trên máy…');
-  api.onBoot(xuLyBoot);
-  api.bootstrap();
+  // Đăng ký lắng nghe XONG rồi mới bootstrap: sự kiện Tauri không được đệm,
+  // gọi bootstrap trước khi listener sẵn sàng sẽ lỡ 'san_sang' và kẹt lớp phủ.
+  Promise.resolve(api.onBoot(xuLyBoot)).then(() => api.bootstrap());
 }
 
 api.onEvent(xuLySuKien);
