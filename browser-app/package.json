@@ -14,6 +14,7 @@
     "@theia/plugin-ext-vscode": "1.73.1",
     "@theia/preferences": "1.73.1",
     "@theia/process": "1.73.1",
+    "@theia/search-in-workspace": "1.73.1",
     "@theia/terminal": "1.73.1",
     "@theia/workspace": "1.73.1",
     "@vscode/windows-ca-certs": "^0.3.4",
@@ -39,6 +40,6 @@
   },
   "theiaPluginsDir": "plugins",
   "theiaPlugins": {
-    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.202/file/Anthropic.claude-code-2.1.202@win32-x64.vsix"
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.211/file/Anthropic.claude-code-2.1.211@win32-x64.vsix"
   }
 }

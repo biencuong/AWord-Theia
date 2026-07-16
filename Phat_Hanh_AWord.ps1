@@ -23,7 +23,15 @@ if (-not (Test-Path $exe)) { Write-Error "Khong tim thay $exe — hay dong goi t
 $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "User-Agent" = "AWord-Publisher" }
 
 Write-Host "Tao release $tag tren $Repo..."
-$body = @{ tag_name = $tag; name = "AWord $version"; body = "Ban phat hanh AWord $version"; draft = $false; prerelease = $false } | ConvertTo-Json
+# Ghi chú phát hành: ưu tiên -Notes; không có thì đọc GHI_CHU_PHAT_HANH.md (cạnh script);
+# vẫn không có mới dùng câu mặc định. Nội dung này hiện trong hộp thoại
+# "Trợ giúp > Cập nhật phiên bản mới" của app — nơi khuyến nghị người dùng cài mới.
+if (-not $Notes) {
+    $notesFile = "$PSScriptRoot\GHI_CHU_PHAT_HANH.md"
+    if (Test-Path $notesFile) { $Notes = (Get-Content $notesFile -Raw -Encoding UTF8).Trim() }
+}
+if (-not $Notes) { $Notes = "Ban phat hanh AWord $version" }
+$body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false } | ConvertTo-Json
 try {
     $rel = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$Repo/releases" -Headers $headers -Body $body -ContentType "application/json"
 } catch {

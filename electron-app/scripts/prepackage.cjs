@@ -14,6 +14,7 @@ const steps = [
     path.join(rootDir, 'scripts', 'gen-i18n-vi-theia.mjs'),
     path.join(rootDir, 'scripts', 'sync-i18n-vi.mjs'),
     path.join(rootDir, 'scripts', 'localize-claude-code-vi.cjs'),
+    path.join(__dirname, 'lazy-office-plugin.cjs'),
     path.join(__dirname, 'patch-plugins-env.cjs'),
     // Thứ tự 2 script inject cố định (cả hai đều cắt từ marker tới cuối file):
     // first-run-tools TRƯỚC, auto-update SAU — đổi chỗ sẽ xóa khối của nhau.

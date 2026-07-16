@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>AWord</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #1e1e1e; color: #e7e7e7; overflow: hidden;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    user-select: none; cursor: default;
+  }
+  .wrap {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+  }
+  .logo {
+    width: 72px; height: 72px; border-radius: 16px;
+    background: linear-gradient(135deg, #f0894f, #d9642a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 700; color: #fff;
+    box-shadow: 0 6px 24px rgba(217, 100, 42, .45);
+  }
+  .ten { font-size: 26px; font-weight: 600; letter-spacing: .5px; }
+  .phu { font-size: 12.5px; color: #9d9d9d; }
+  .vong {
+    margin-top: 6px; width: 26px; height: 26px;
+    border: 3px solid #3c3c3c; border-top-color: #f0894f;
+    border-radius: 50%; animation: quay 0.9s linear infinite;
+  }
+  @keyframes quay { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">A</div>
+    <div class="ten">AWord</div>
+    <div class="phu">Giải pháp AI &amp; Chuyển đổi số — đang khởi động…</div>
+    <div class="vong"></div>
+  </div>
+</body>
+</html>
