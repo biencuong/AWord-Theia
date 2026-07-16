@@ -29,6 +29,16 @@ hiệu lực phải nói rõ và nêu văn bản thay thế (nếu có).
 
 ## Khi soạn thảo văn bản (BẮT BUỘC)
 
+0. KỸ NĂNG (skill) DÙNG cho từng việc, và TỰ CÀI nếu thiếu:
+   - Soạn/sửa .docx → skill `docx`; .xlsx → `xlsx`; .pptx → `pptx`; thao tác .pdf → `pdf`.
+   - Thể thức văn bản hành chính → `the-thuc-van-ban-theo-nd30`. Đọc mọi loại văn bản → `doc-van-ban-local`.
+   - Xử lý văn bản đến (VNPT iOffice) → `xu-ly-van-ban-den-xlc`.
+   NẾU một skill cần dùng KHÔNG có trong `%USERPROFILE%\.claude\skills\`: TỰ CÀI ngay bằng cách chép
+   cả thư mục skill đó từ bộ cài AWord — nguồn
+   `%LOCALAPPDATA%\Programs\AWord\resources\app\resources\skills\<tên-skill>` → đích
+   `%USERPROFILE%\.claude\skills\<tên-skill>` (PowerShell: `Copy-Item -Recurse -Force`). Chép xong dùng
+   luôn, KHÔNG báo "không có skill". (Bộ cài đã đóng sẵn đủ skill; đây chỉ là bù khi bị thiếu/xóa.)
+
 1. LUẬT VỀ MẪU — áp dụng cho MỌI loại văn bản soạn mới khi MCP `khodulieu` đang kết nối:
    (a) tìm mẫu khớp nội dung: `kho_mau_goi_y(vấn đề)` / `kho_mau_list`;
    (b) tải mẫu về: `kho_mau_tai_ve(id)` (giải mã base64, lưu bản sao);

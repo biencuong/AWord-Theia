@@ -54,11 +54,12 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     // - Đã có workspace → mở khung chat Claude ở vùng soạn thảo chính; trang chào mừng chỉ hiện lần đầu.
     // - Người dùng CHỦ ĐỘNG đóng workspace (đã có mục gần đây) → tôn trọng, chỉ hiện trang chào mừng.
     async onDidInitializeLayout(app: FrontendApplication): Promise<void> {
-        // Ẩn các icon sidebar không dùng — quét vài lần vì view container có thể được thêm
-        // trễ (sau khi plugin/layout ổn định).
-        for (const tre of [0, 1000, 3000, 6000]) {
-            setTimeout(() => this.anIconSidebar(app), tre);
-        }
+        // Ẩn các icon sidebar không dùng: ẩn NGAY một lần, rồi NGHE SỰ KIỆN thêm widget để
+        // ẩn nốt view container nào xuất hiện trễ — thay cho việc quét mù nhiều lần theo mốc
+        // thời gian cứng (tốn và kéo dài "đuôi" khởi động). Tự ngừng nghe sau khi layout ổn định.
+        this.anIconSidebar(app);
+        const subAn = app.shell.onDidAddWidget(() => this.anIconSidebar(app));
+        setTimeout(() => subAn.dispose(), 8000);
 
         if (this.workspaceService.tryGetRoots().length === 0) {
             let ganDay: string[] = [];
@@ -75,7 +76,16 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         }
         // Mặc định mở trình Khám phá (Explorer) với thư mục làm việc ở panel trái.
         await this.moExplorer(app);
-        this.moClaudeGiuaManHinh(app);
+        // TRÌ HOÃN mở khung Claude ra khỏi đường khởi động then-chốt: chờ ứng dụng "rảnh tay"
+        // rồi mới mở (webview + spawn claude.exe ~253MB là việc nặng). Để layout/Explorer hiện
+        // trước, không chặn UI. Vẫn đảm bảo chỉ mở đúng một lần (logic trong moClaudeGiuaManHinh).
+        this.moKhiRanh(() => this.moClaudeGiuaManHinh(app));
+    }
+
+    // Chạy cb khi renderer rảnh (requestIdleCallback); không có thì lùi 500ms.
+    protected moKhiRanh(cb: () => void): void {
+        const ric = (window as unknown as { requestIdleCallback?: (fn: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
+        if (ric) { ric(cb, { timeout: 3000 }); } else { setTimeout(cb, 500); }
     }
 
     // Ẩn view container Quản lý mã nguồn / Kiểm thử / Gỡ lỗi khỏi thanh bên trái.
@@ -146,22 +156,16 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     protected async moClaudeGiuaManHinh(app: FrontendApplication): Promise<void> {
         const lenhGiuaManHinh = 'claude-vscode.editor.open';
         const lenhThanhBen = 'claude-vscode.sidebar.open';
-        for (let lan = 0; lan < 60 && !this.commandRegistry.getCommand(lenhGiuaManHinh); lan++) {
-            await new Promise(r => setTimeout(r, 500));
-        }
-        if (!this.commandRegistry.getCommand(lenhGiuaManHinh)) {
+        // Chờ plugin đăng ký lệnh bằng SỰ KIỆN (onCommandsChanged) thay vì polling 500ms.
+        if (!await this.doiLenh(lenhGiuaManHinh, 30000)) {
             return; // plugin không nạp được trong 30s — không cố thêm
         }
-        // Webview của phiên trước gắn lại vào layout KHÔNG đồng bộ với việc plugin đăng ký
-        // lệnh — quét theo chu kỳ tối đa 5 giây: hễ thấy widget Claude xuất hiện thì chỉ
-        // focus nó và dừng; hết 5 giây không thấy mới coi là chưa có và mở mới.
-        for (let lan = 0; lan < 10; lan++) {
-            const claudeDangCo = this.timWidgetClaude(app);
-            if (claudeDangCo) {
-                try { await app.shell.activateWidget(claudeDangCo.id); } catch { /* widget đang tái tạo — bỏ qua */ }
-                return;
-            }
-            await new Promise(r => setTimeout(r, 500));
+        // Theia khôi phục layout phiên trước (có thể gồm panel Claude cũ). Chờ NGẮN bằng sự kiện
+        // thêm widget: thấy widget Claude thì chỉ focus (tránh mở thành 2 cửa sổ); không thấy mới mở.
+        const claudeDangCo = await this.doiWidgetClaude(app, 2000);
+        if (claudeDangCo) {
+            try { await app.shell.activateWidget(claudeDangCo.id); } catch { /* widget đang tái tạo — bỏ qua */ }
+            return;
         }
         try {
             await this.commandRegistry.executeCommand(lenhGiuaManHinh);
@@ -169,6 +173,30 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
             // Một lần dự phòng duy nhất; vẫn lỗi thì dừng — plugin sẽ tự hiện thông báo lỗi của nó.
             try { await this.commandRegistry.executeCommand(lenhThanhBen); } catch { /* dừng, không lặp */ }
         }
+    }
+
+    // Chờ một lệnh được đăng ký (theo sự kiện, có timeout). Trả về true nếu lệnh sẵn sàng.
+    protected doiLenh(id: string, timeoutMs: number): Promise<boolean> {
+        if (this.commandRegistry.getCommand(id)) { return Promise.resolve(true); }
+        return new Promise<boolean>(resolve => {
+            const to = setTimeout(() => { sub.dispose(); resolve(false); }, timeoutMs);
+            const sub = this.commandRegistry.onCommandsChanged(() => {
+                if (this.commandRegistry.getCommand(id)) { clearTimeout(to); sub.dispose(); resolve(true); }
+            });
+        });
+    }
+
+    // Chờ widget Claude xuất hiện (do khôi phục layout), theo sự kiện, có timeout.
+    protected doiWidgetClaude(app: FrontendApplication, timeoutMs: number): Promise<{ id: string } | undefined> {
+        const co = this.timWidgetClaude(app);
+        if (co) { return Promise.resolve(co); }
+        return new Promise(resolve => {
+            const to = setTimeout(() => { sub.dispose(); resolve(undefined); }, timeoutMs);
+            const sub = app.shell.onDidAddWidget(() => {
+                const w = this.timWidgetClaude(app);
+                if (w) { clearTimeout(to); sub.dispose(); resolve(w); }
+            });
+        });
     }
 
     // Tìm widget Claude đang tồn tại — ưu tiên vùng soạn thảo chính, sau đó mọi vùng khác

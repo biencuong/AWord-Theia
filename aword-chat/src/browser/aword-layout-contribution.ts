@@ -1,9 +1,9 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
 import {
     Command, CommandContribution, CommandRegistry, CommandService,
-    MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, MessageService
+    MenuContribution, MenuModelRegistry, MessageService
 } from '@theia/core';
-import { ApplicationShell } from '@theia/core/lib/browser';
+import { ApplicationShell, CommonMenus } from '@theia/core/lib/browser';
 
 // Menu "Bố cục" trên thanh menu — các công tắc sắp xếp giao diện cho công việc văn phòng.
 export const LayoutExplorer: Command = { id: 'aword.layout.toggle-explorer', label: 'Hiện/ẩn thanh Khám phá' };
@@ -14,7 +14,6 @@ export const LayoutClaudeRestart: Command = { id: 'aword.layout.claude-restart',
 export const LayoutFocus: Command = { id: 'aword.layout.focus', label: 'Chế độ tập trung (ẩn thanh bên & bảng dưới)' };
 
 const EXPLORER_CONTAINER_ID = 'explorer-view-container';
-const AWORD_LAYOUT_MENU = [...MAIN_MENU_BAR, 'aword_layout'];
 
 @injectable()
 export class AwordLayoutContribution implements CommandContribution, MenuContribution {
@@ -40,14 +39,15 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
     }
 
     registerMenus(menus: MenuModelRegistry): void {
-        // Đặt menu "Bố cục" trước menu Trợ giúp (9_help).
-        menus.registerSubmenu(AWORD_LAYOUT_MENU, 'Bố cục', { sortString: '7_layout' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '1_panels'], { commandId: LayoutExplorer.id, label: LayoutExplorer.label, order: '1' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '1_panels'], { commandId: LayoutClaude.id, label: LayoutClaude.label, order: '2' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '2_claude'], { commandId: LayoutClaudeCenter.id, label: LayoutClaudeCenter.label, order: '1' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '2_claude'], { commandId: LayoutClaudeSide.id, label: LayoutClaudeSide.label, order: '2' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '2_claude'], { commandId: LayoutClaudeRestart.id, label: LayoutClaudeRestart.label, order: '3' });
-        menus.registerMenuAction([...AWORD_LAYOUT_MENU, '3_focus'], { commandId: LayoutFocus.id, label: LayoutFocus.label, order: '1' });
+        // KHÔNG tạo menu "Bố cục" trên thanh menu (giữ gọn tối thiểu). Các lệnh bố cục (hiện/ẩn
+        // Explorer, Claude, tập trung...) vẫn dùng được qua Command Palette (Ctrl+Shift+P).
+        // Riêng "Khởi động lại Claude (khi treo)" là thao tác gỡ kẹt quan trọng nên vẫn để trong
+        // menu Trợ giúp cho dễ tìm.
+        menus.registerMenuAction(CommonMenus.HELP, {
+            commandId: LayoutClaudeRestart.id,
+            label: LayoutClaudeRestart.label,
+            order: '3'
+        });
     }
 
     protected toggleExplorer(): void {

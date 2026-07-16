@@ -1,4 +1,5 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
+import debounce = require('@theia/core/shared/lodash.debounce');
 import {
     Command, CommandContribution, CommandRegistry, CommandService,
     CompoundMenuNode, MenuContribution, MenuModelRegistry, MenuNode, MAIN_MENU_BAR, MutableCompoundMenuNode,
@@ -27,7 +28,10 @@ export const AwordAddToClaudeCommand: Command = {
 };
 
 // Đường dẫn menu "Terminal" do @theia/terminal đăng ký: [...MAIN_MENU_BAR, '7_terminal'].
-const TERMINAL_MENU_ID = '7_terminal';
+// Các menu top-level GỠ khỏi thanh menu cho gọn (không cần cho việc văn phòng):
+// Terminal (do @theia/terminal), Chọn vùng/Selection (do monaco MenubarSelectionMenu).
+// Tính năng vẫn dùng được qua Command Palette (Ctrl+Shift+P).
+const MENU_BAR_AN = ['7_terminal', '3_selection'];
 // Repo phát hành — phải khớp electron-app/scripts/inject-auto-update.cjs và Phat_Hanh_AWord.ps1.
 const GITHUB_REPO = 'biencuong/AWord-Theia';
 const TRANG_CHU = 'https://aword.vn';
@@ -160,17 +164,22 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             label: AwordAddToClaudeCommand.label,
             order: 'z1'
         });
-        // Ẩn menu "Terminal" khỏi thanh menu chính — tính năng Terminal vẫn dùng được qua Command Palette (Ctrl+Shift+P).
-        // Dùng onDidChange thay vì FrontendApplicationContribution.onStart() vì thứ tự đăng ký menu giữa các
-        // extension không được đảm bảo; lắng nghe sự kiện đảm bảo gỡ đúng lúc menu Terminal xuất hiện, dù trước hay sau.
+        // Ẩn menu "Terminal" + tinh gọn menu Xem/Trợ giúp. Tính năng vẫn dùng được qua Command Palette (Ctrl+Shift+P).
+        // Lúc khởi động, MỌI extension đăng ký menu -> menus.onDidChange bắn RẤT NHIỀU lần; mỗi lần 3 hàm
+        // này quét/đệ quy cây menu (chi phí bậc hai, đồng bộ trên luồng chính). Vì vậy:
+        //   (1) DEBOUNCE: gộp nhiều lần bắn liên tiếp thành 1 lần quét (trailing edge 200ms).
+        //   (2) TỰ NGỪNG NGHE sau ~20s: menu hầu như không đổi nữa, khỏi quét lại mỗi lần mở context menu.
+        this.donMenu(menus);
+        const quet = debounce(() => this.donMenu(menus), 200);
+        const sub = menus.onDidChange(quet);
+        setTimeout(() => { quet.cancel(); sub.dispose(); }, 20000);
+    }
+
+    // Gộp 3 thao tác tinh gọn menu vào một chỗ.
+    private donMenu(menus: MenuModelRegistry): void {
         this.hideTerminalMenu(menus);
         this.pruneHelpMenu(menus);
         this.pruneViewMenu(menus);
-        menus.onDidChange(() => {
-            this.hideTerminalMenu(menus);
-            this.pruneHelpMenu(menus);
-            this.pruneViewMenu(menus);
-        });
     }
 
     // Kiểm tra release mới nhất trên GitHub, hiện hộp thoại bản cũ/bản mới + tóm tắt nâng cấp.
@@ -297,9 +306,10 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
 
     private hideTerminalMenu(menus: MenuModelRegistry): void {
         const menuBar = menus.getMenu(MAIN_MENU_BAR);
-        const terminalNode = menuBar?.children.find(child => child.id === TERMINAL_MENU_ID);
-        if (terminalNode && menuBar && MutableCompoundMenuNode.is(menuBar)) {
-            menuBar.removeNode(terminalNode);
+        if (!menuBar || !MutableCompoundMenuNode.is(menuBar)) { return; }
+        for (const id of MENU_BAR_AN) {
+            const node = menuBar.children.find(child => child.id === id);
+            if (node) { menuBar.removeNode(node); }
         }
     }
 
@@ -333,7 +343,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         if (!help || !MutableCompoundMenuNode.is(help)) {
             return;
         }
-        const giuLai = new Set<string>([AwordAboutCommand.id, AwordUpdateCommand.id, 'aword:welcome']);
+        const giuLai = new Set<string>([AwordAboutCommand.id, AwordUpdateCommand.id, 'aword:welcome', 'aword.layout.claude-restart']);
         for (const child of [...help.children]) {
             if (!giuLai.has(child.id)) {
                 help.removeNode(child);
