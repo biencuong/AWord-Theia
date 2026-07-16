@@ -85,10 +85,35 @@ async function napFiles(dir) {
   } catch { }
 }
 async function moFile(p) {
-  // Prototype: đưa nội dung/đường dẫn tệp vào ô nhập làm ngữ cảnh (@tệp) — giống "Thêm vào Claude".
-  input.value = (input.value ? input.value + ' ' : '') + '@' + p + ' ';
-  input.focus();
+  try {
+    const r = await fetch('/file?path=' + encodeURIComponent(p));
+    if ((r.headers.get('X-Kieu') || '') === 'text') {
+      const t = await r.text();
+      $('#viewer-title').textContent = p;
+      $('#viewer-body').textContent = t;
+      $('#viewer').classList.remove('hidden');
+    } else {
+      // docx/xlsx/pdf... -> mở bằng ứng dụng thật của máy (Word/Excel/PDF).
+      status.textContent = 'Đang mở ' + p + ' bằng ứng dụng…';
+      await fetch('/open', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: p }) });
+    }
+  } catch { status.textContent = 'Không mở được tệp.'; }
 }
+$('#viewer-close').onclick = () => $('#viewer').classList.add('hidden');
+
+// Nút: Cuộc trò chuyện mới / Dừng
+$('#btn-new').onclick = async () => {
+  await fetch('/new', { method: 'POST' });
+  chat.innerHTML = ''; themWelcome();
+  bongAssistant = null; dangTraLoi = false; send.disabled = false;
+  status.textContent = 'Cuộc trò chuyện mới.'; input.focus();
+};
+$('#btn-stop').onclick = async () => {
+  await fetch('/stop', { method: 'POST' });
+  if (bongAssistant) bongAssistant.classList.remove('pending');
+  bongAssistant = null; dangTraLoi = false; send.disabled = false;
+  status.textContent = 'Đã dừng.';
+};
 
 themWelcome();
 noiStream();

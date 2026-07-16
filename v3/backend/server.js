@@ -78,6 +78,23 @@ function guiTinNhan(noiDung) {
     try { cp.stdin.write(msg); } catch (e) { guiSSE({ type: '_loi', message: 'Ghi stdin thất bại: ' + e.message }); }
 }
 
+// Cuộc trò chuyện mới / Dừng: kết thúc tiến trình claude hiện tại; lượt sau sẽ khởi động lại sạch.
+function ketThucClaude() {
+    if (cp && !cp.killed) { try { cp.stdin.end(); } catch { } try { cp.kill(); } catch { } }
+    cp = null;
+}
+
+// Mở tệp bằng ứng dụng mặc định của Windows (Word/Excel/trình xem PDF...).
+function moNgoai(rel) {
+    const abs = trongWorkspace(rel);
+    if (!abs || !fs.existsSync(abs)) return false;
+    try { spawn('cmd', ['/c', 'start', '', abs], { windowsHide: true, detached: true }).unref(); return true; }
+    catch { return false; }
+}
+
+const TEXT_EXT = new Set(['.txt', '.md', '.markdown', '.json', '.js', '.ts', '.py', '.csv', '.tsv',
+    '.html', '.htm', '.css', '.xml', '.yaml', '.yml', '.ini', '.log', '.cfg', '.bat', '.cmd', '.ps1', '.sh']);
+
 // --- Explorer: liệt kê thư mục / đọc tệp (giới hạn trong WORKSPACE) ---
 function trongWorkspace(p) {
     const abs = path.resolve(WORKSPACE, p || '.');
@@ -127,11 +144,30 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     if (u.pathname === '/file') {
-        const abs = trongWorkspace(u.searchParams.get('path') || '');
+        const rel = u.searchParams.get('path') || '';
+        const abs = trongWorkspace(rel);
         if (!abs || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()) { res.writeHead(404); res.end(''); return; }
-        // Prototype: chỉ đọc text; docx/pdf để giai đoạn sau (docx-preview/pdf.js).
-        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end(fs.readFileSync(abs));
+        const ext = path.extname(abs).toLowerCase();
+        if (TEXT_EXT.has(ext)) {
+            res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'X-Kieu': 'text' });
+            res.end(fs.readFileSync(abs));
+        } else {
+            // docx/xlsx/pdf... -> báo frontend mở bằng ứng dụng ngoài (Word/Excel/PDF thật của máy).
+            res.writeHead(200, { 'Content-Type': 'application/json', 'X-Kieu': 'ngoai' });
+            res.end(JSON.stringify({ kieu: 'ngoai', ext }));
+        }
+        return;
+    }
+    if (u.pathname === '/open' && req.method === 'POST') {
+        const body = await docBody(req);
+        let p = ''; try { p = JSON.parse(body).path || ''; } catch { }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: moNgoai(p) }));
+        return;
+    }
+    if ((u.pathname === '/new' || u.pathname === '/stop') && req.method === 'POST') {
+        ketThucClaude();
+        res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
         return;
     }
     // Tĩnh

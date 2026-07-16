@@ -37,7 +37,20 @@
 
     <!-- Vùng chính: khung chat Claude -->
     <main id="main">
+      <div id="chattoolbar">
+        <span class="tab active">🤖 Claude</span>
+        <span class="spacer"></span>
+        <button id="btn-new" title="Cuộc trò chuyện mới">＋ Mới</button>
+        <button id="btn-stop" title="Dừng lượt hiện tại">■ Dừng</button>
+      </div>
       <div id="chat"></div>
+
+      <!-- Trình xem tài liệu (text) — phủ lên khung chat khi mở tệp -->
+      <div id="viewer" class="hidden">
+        <div class="viewer-bar"><span id="viewer-title"></span><button id="viewer-close" title="Đóng">✕</button></div>
+        <pre id="viewer-body"></pre>
+      </div>
+
       <div id="composer">
         <textarea id="input" rows="1" placeholder="Nhập yêu cầu bằng tiếng Việt rồi nhấn Enter…"></textarea>
         <button id="send" title="Gửi (Enter)">&#x27A4;</button>
