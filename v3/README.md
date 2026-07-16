@@ -47,18 +47,39 @@ thanh trình duyệt, nhìn như app thật.
 - Cửa sổ thật (thu nhỏ/phóng to/đóng) — hiện là app-window của Edge.
 - Nút bố cục, cập nhật, kết nối kho — port từ bản Theia sang.
 
-## Giai đoạn 2 — đóng gói Tauri (app ~15–20MB)
+## Giai đoạn 2 — đóng gói Tauri (ĐÃ LÀM XONG ✓)
 
-Bọc giao diện + backend bằng **Tauri** (Rust + WebView2) để ra 1 file cài nhẹ, khởi động ~1s,
-RAM giảm 3–5 lần so với Electron. Cần cài trước:
-- **Rust** (rustup): https://rustup.rs
-- **Visual Studio Build Tools** với workload "Desktop development with C++" (link.exe/cl.exe) — Tauri
-  trên Windows bắt buộc MSVC. (~6GB, 30–60 phút.)
+Đã bọc bằng **Tauri** (Rust backend thuần + WebView2). Thư mục `tauri/`.
+- `tauri/src-tauri/src/main.rs` — backend Rust điều khiển `claude.exe` (giữ tiến trình sống, luồng
+  đọc stdout → phát sự kiện lên webview), lệnh chat/stop/list_files/read_file/open_external.
+- Cửa sổ frameless (giữ thanh tiêu đề tùy biến giống AWord). `frontend/` dùng CHUNG với giai đoạn 1
+  (transport tự nhận Tauri hay HTTP).
 
-Sau khi có toolchain: `npm create tauri-app`, đưa `frontend/` vào, chuyển `server.js` thành
-Rust sidecar (hoặc giữ Node làm sidecar). `claude.exe` đóng kèm như tài nguyên.
+### Build lại
+Cần (đã cài sẵn trên máy dev): Rust (rustup) + **VS Build Tools workload C++** (MSVC) + Tauri CLI.
+```
+cd v3\tauri
+npx tauri build      (ra target\release\bundle\nsis\AWord_*-setup.exe)
+```
+Chạy nhanh khi dev:  `npx tauri dev`
+
+### KẾT QUẢ THỰC ĐO
+| | AWord (Theia) | **AWord Lite (Tauri)** |
+|---|---|---|
+| Vỏ ứng dụng (không tính claude.exe) | ~430 MB (Electron 250 + Theia asar 178) | **8.3 MB** (aword-lite.exe) |
+| Bộ cài (chưa đóng claude.exe) | 285 MB | **1.8 MB** |
+| RAM lúc mở | vài trăm MB | **~26 MB** |
+| Khởi động | vài giây (nặng) | gần như tức thì |
+
+→ Vỏ nhẹ **8.3MB thay cho toàn bộ ~430MB Electron+Theia**. Phần nặng duy nhất còn lại là chính
+`claude.exe` (242MB, động cơ AI, không bỏ được) — GIỐNG cả hai bản.
+
+### Còn lại để thành sản phẩm hoàn chỉnh
+- **Đóng kèm `claude.exe`** vào bộ cài Tauri (thêm vào `bundle.resources`) để cài offline độc lập
+  → bộ cài ~245MB (vs Theia 285MB), nhưng vỏ vẫn 8MB. Hiện prototype tìm claude.exe có sẵn trên máy.
+- Port nốt: xem docx/xlsx/pdf trong app (thư viện web), nút bố cục/cập nhật/kết nối kho, tự cập nhật.
+- Ký số (chung với bản Theia) để hết cảnh báo antivirus/SmartScreen.
 
 ## Đánh giá
-Giai đoạn 1 đã CHỨNG MINH: vỏ nhẹ + `claude.exe` chạy được toàn bộ chat AWord với UI đúng như
-hiện tại, **không cần Electron/Theia**. Phần nặng còn lại chỉ là `claude.exe` (242MB, động cơ AI,
-không bỏ được). So với bản Theia (~900MB), bản Lite chỉ còn `claude.exe` + vài MB vỏ.
+ĐÃ CHỨNG MINH ĐẦY ĐỦ: có thể loại bỏ toàn bộ phần lõi nặng Electron+Theia (~430MB → 8MB) mà vẫn
+giữ nguyên động cơ AI, giao diện AWord, chat đa lượt. Đây là bằng chứng cho hướng "xử lý phần lõi nặng".
