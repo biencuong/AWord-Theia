@@ -14,8 +14,12 @@ from xml.etree import ElementTree as ET
 from docx import Document
 from docx.document import Document as _Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
+from docx.section import Section
+from docx.shared import Mm, Pt
 from docx.table import Table, _Cell
 from docx.text.paragraph import Paragraph
 
@@ -815,3 +819,89 @@ def clone_patch_docx(source_docx: Path, output_docx: Path, data: dict[str, str])
 
 def dump_json(data: dict[str, Any], path: str | Path) -> None:
     Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+
+# ---------------------------------------------------------------------------
+# Page setup / page numbering helpers.
+#
+# Chuyen tu create_nd30_docx.py sang day (thu vien dung chung) de mot noi
+# duy nhat trien khai ky thuat nay, dung boi ca canonical generator lan cac
+# script replicate/compose khac. Xem references/nd30-page-numbering-technique.md
+# va references/nd30-landscape-appendix-section.md.
+# ---------------------------------------------------------------------------
+
+def _append_page_field(paragraph) -> None:
+    begin = OxmlElement('w:fldChar')
+    begin.set(qn('w:fldCharType'), 'begin')
+    instr = OxmlElement('w:instrText')
+    instr.set(qn('xml:space'), 'preserve')
+    instr.text = ' PAGE '
+    sep = OxmlElement('w:fldChar')
+    sep.set(qn('w:fldCharType'), 'separate')
+    txt = OxmlElement('w:t')
+    txt.text = '1'
+    end = OxmlElement('w:fldChar')
+    end.set(qn('w:fldCharType'), 'end')
+    run = paragraph.add_run()
+    for node in (begin, instr, sep, txt, end):
+        run._r.append(node)
+
+
+def ensure_page_numbers(doc: Document, *, sections: list[Section] | None = None) -> None:
+    """Dat so trang GIUA LE TREN (header, dung theo NĐ30 - khong phai footer),
+    an so trang o trang dau tien (different-first-page). sections=None ap
+    dung cho MOI section cua doc (hanh vi mac dinh, giu tuong thich nguoc);
+    truyen 1 list section cu the de chi bat cho cac section do - dung khi
+    them 1 landscape section moi cho phu luc va can no cung hien so trang."""
+    target_sections = sections if sections is not None else list(doc.sections)
+    for section in target_sections:
+        section.different_first_page_header_footer = True
+        header = section.header
+        p = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(0)
+        if 'PAGE' not in p._p.xml:
+            _append_page_field(p)
+        first = section.first_page_header
+        if first.paragraphs:
+            first.paragraphs[0].text = ''
+
+
+def set_run_tracking(paragraph, value: int = -2) -> None:
+    """Ap dung w:spacing (character tracking/condensed spacing) cho moi run
+    trong doan. Gia tri twips am = thu hep chu. XEM
+    references/nd30-orphan-word-control.md ve bien an toan khi dung cho
+    muc dich sua tu mo coi (0.2-0.5pt, tuc -4 den -10 twips) - gia tri lon
+    hon se lam chu dinh/long vao nhau."""
+    for run in paragraph.runs:
+        rPr = run._r.get_or_add_rPr()
+        spacing = rPr.find(qn('w:spacing'))
+        if spacing is None:
+            spacing = OxmlElement('w:spacing')
+            rPr.append(spacing)
+        spacing.set(qn('w:val'), str(value))
+
+
+def reset_section_page_setup(section: Section, *, orientation: str = 'portrait',
+                              page_width_mm: float | None = None,
+                              page_height_mm: float | None = None,
+                              top_mm: float = 20, bottom_mm: float = 20,
+                              left_mm: float = 30, right_mm: float = 20) -> None:
+    """Dat lai TUONG MINH kho giay/le cho 1 section. PHAI goi ham nay ngay
+    sau BAT KY thao tac xoa hang loat paragraph/table nao trong 1 van ban
+    NHIEU SECTION, vi xoa paragraph chua sectPr nhung trong pPr se khien
+    phan con lai AM THAM ke thua sectPr cua section SAU do (vi du: than bao
+    cao bi lat sang kho ngang vi ke thua nham sectPr cua section phu luc).
+    Khong duoc tin tuong 'giu nguyen mac dinh' sau khi xoa hang loat - day
+    la loi thuc te da xay ra. Xem
+    references/nd30-landscape-appendix-section.md."""
+    from docx.enum.section import WD_ORIENT
+    is_landscape = orientation == 'landscape'
+    section.orientation = WD_ORIENT.LANDSCAPE if is_landscape else WD_ORIENT.PORTRAIT
+    default_w, default_h = (297, 210) if is_landscape else (210, 297)
+    section.page_width = Mm(page_width_mm if page_width_mm is not None else default_w)
+    section.page_height = Mm(page_height_mm if page_height_mm is not None else default_h)
+    section.top_margin = Mm(top_mm)
+    section.bottom_margin = Mm(bottom_mm)
+    section.left_margin = Mm(left_mm)
+    section.right_margin = Mm(right_mm)

@@ -21,6 +21,9 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Mm, Pt
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from nd30_docx_tools import ensure_page_numbers, set_run_tracking  # noqa: E402
+
 
 @dataclass
 class Spec:
@@ -120,46 +123,6 @@ def three_zone_table(doc: Document, widths=(7.2, 1.2, 8.0), rows: int = 1):
     return table
 
 
-
-def _append_page_field(paragraph):
-    begin = OxmlElement("w:fldChar")
-    begin.set(qn("w:fldCharType"), "begin")
-    instr = OxmlElement("w:instrText")
-    instr.set(qn("xml:space"), "preserve")
-    instr.text = " PAGE "
-    sep = OxmlElement("w:fldChar")
-    sep.set(qn("w:fldCharType"), "separate")
-    txt = OxmlElement("w:t")
-    txt.text = "1"
-    end = OxmlElement("w:fldChar")
-    end.set(qn("w:fldCharType"), "end")
-    run = paragraph.add_run()
-    for node in (begin, instr, sep, txt, end):
-        run._r.append(node)
-
-
-def ensure_page_numbers(doc: Document) -> None:
-    for section in doc.sections:
-        section.different_first_page_header_footer = True
-        header = section.header
-        p = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(0)
-        if 'PAGE' not in p._p.xml:
-            _append_page_field(p)
-        first = section.first_page_header
-        if first.paragraphs:
-            first.paragraphs[0].text = ''
-
-
-def set_run_tracking(paragraph, value: int = -2) -> None:
-    for run in paragraph.runs:
-        rPr = run._r.get_or_add_rPr()
-        spacing = rPr.find(qn('w:spacing'))
-        if spacing is None:
-            spacing = OxmlElement('w:spacing')
-            rPr.append(spacing)
-        spacing.set(qn('w:val'), str(value))
 
 def _set_on_off(pPr, tag: str, enabled: bool = True):
     if pPr is None or not enabled:

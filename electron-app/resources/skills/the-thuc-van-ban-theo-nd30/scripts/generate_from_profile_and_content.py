@@ -14,6 +14,7 @@ from pathlib import Path
 from docx import Document
 
 from compose_from_source_docx import clear_body_preserve_sections
+from compose_preserve_fixed_blocks import compose_preserving_fixed_blocks
 from create_nd30_docx import Spec, build, optimize_pagination, set_doc_defaults
 from nd30_docx_tools import clone_patch_docx, content_to_placeholder_map
 from validate_nd30_spec import validate as validate_word
@@ -69,8 +70,25 @@ def generate_replicate_shell(source_docx: Path, content: dict, output: Path) -> 
     doc.save(output)
 
 
+def generate_preserve_fixed_blocks(source_docx: Path, content: dict, output: Path) -> dict:
+    """Chien luoc THAY THE cho shell-rebuild khi mau nguon can giu nguyen
+    TUYET DOI khoi co dinh (quoc hieu-tieu ngu, ten co quan, noi nhan, chu
+    ky) - xem references/nd30-replicate-fixed-block-preservation.md. content
+    phai theo dung schema cua compose_preserve_fixed_blocks.compose_preserving_fixed_blocks
+    ({'body': [...], 'preserved_text_replacements': {...}}) - KHAC voi
+    canonical content spec dung cho shell-rebuild/canonical. Day la strategy
+    OPT-IN, khong bao gio duoc chon tu dong boi choose_replicate_strategy -
+    nguoi dung/agent phai truyen --replicate-strategy preserve-fixed-blocks
+    tuong minh vi ho la nguoi biet mau nguon can giu nguyen ty le."""
+    return compose_preserving_fixed_blocks(
+        source_docx, content, output,
+        fixed_block_markers=content.get('fixed_block_markers'),
+        usable_width_cm=content.get('usable_width_cm'),
+    )
+
+
 def choose_replicate_strategy(profile: dict, content: dict, source_docx: Path, requested: str) -> str:
-    if requested in {'clone-patch', 'shell-rebuild'}:
+    if requested in {'clone-patch', 'shell-rebuild', 'preserve-fixed-blocks'}:
         return requested
     if profile.get('placeholder_keys'):
         return 'clone-patch'
@@ -89,7 +107,9 @@ def main() -> int:
     parser.add_argument('--mode', choices=['auto', 'canonical', 'replicate'], default='auto')
     parser.add_argument('--source-docx')
     parser.add_argument('--template-dir')
-    parser.add_argument('--replicate-strategy', choices=['auto', 'clone-patch', 'shell-rebuild'], default='auto')
+    parser.add_argument('--replicate-strategy',
+                         choices=['auto', 'clone-patch', 'shell-rebuild', 'preserve-fixed-blocks'],
+                         default='auto')
     parser.add_argument('--audit-json')
     args = parser.parse_args()
 
@@ -135,7 +155,16 @@ def main() -> int:
             return 5
         strategy = choose_replicate_strategy(profile, content, source_docx, args.replicate_strategy)
         audit_payload['replicate_strategy'] = strategy
-        if strategy == 'clone-patch':
+        if strategy == 'preserve-fixed-blocks':
+            compose_result = generate_preserve_fixed_blocks(source_docx, content, output)
+            audit_payload['compose_result'] = compose_result
+            if compose_result.get('fallback_used'):
+                print(f"ERROR: khong the giu khoi co dinh an toan: {compose_result.get('reason')}")
+                print('Truyen content["fixed_block_markers"] = {"body_start_after": "...", '
+                      '"body_end_before": "..."} de chi dinh ranh gioi thu cong.')
+                return 6
+            print(f'Created {output} in replicate mode from {source_docx} using preserve-fixed-blocks')
+        elif strategy == 'clone-patch':
             patch_map = content_to_placeholder_map(content)
             patch_result = clone_patch_docx(source_docx, output, patch_map)
             audit_payload['patch_result'] = patch_result

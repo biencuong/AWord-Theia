@@ -51,6 +51,17 @@ After format review, run a second model-only pass for spelling, wording, logic, 
 7. When layout fidelity matters, prefer clone-and-patch over rebuilding, then run visual diff.
 8. Deliver only the requested final artifacts.
 
+## Step 0: End-to-end request intake
+
+When the task is a real drafting request (not just "generate this spec" or "audit this file"),
+triage BEFORE picking a mode below: (1) read the directive/request to determine document type and
+scope, (2) identify data sources (prior-period report, attached appendices, related plans/
+decisions — ask the user when data is missing, never fabricate), (3) choose a mẫu in priority
+order (user/agency mẫu already in use → built-in mẫu → canonical from scratch), (4) generate then
+run the full ND30 format control pass, (5) deliver the .docx plus a short format-control summary
+for the user to confirm. See `references/nd30-end-to-end-drafting-workflow.md` for the full
+process. If unsure which mode (A-E below) applies, start here first.
+
 ## Workflow decision tree
 
 ### A. New ND30 Word document in canonical mode
@@ -78,6 +89,10 @@ Use this when the user says things like:
 3. Extract a reusable **format profile** with `scripts/extract_docx_template.py`.
 4. Build a matching ND30 **content spec** for the new document.
 5. Prefer `scripts/clone_patch_docx.py` when the source mẫu already contains placeholders or stable anchors.
+5b. If the mẫu's fixed blocks (quốc hiệu-tiêu ngữ, issuing agency, nơi nhận, chữ ký) must stay
+   exactly as-is and there is no clear placeholder, use `scripts/compose_preserve_fixed_blocks.py`
+   (`--replicate-strategy preserve-fixed-blocks`) instead of default shell-rebuild — see
+   `references/nd30-replicate-fixed-block-preservation.md`.
 6. Otherwise generate with `scripts/generate_from_profile_and_content.py --mode replicate`.
 7. Audit the result with `scripts/check_nd30_docx.py`.
 8. Render and inspect the pages if possible, then use `scripts/compare_docx_visual.py` if the user needs a closeness check against the mẫu.
@@ -154,6 +169,10 @@ In this mode:
 - and `scripts/generate_from_profile_and_content.py --mode replicate` is the preferred path.
 
 Do **not** let replicate mode keep a visually similar but ND30-wrong structure without warning the user. If the sample itself violates ND30, say so clearly.
+
+When the source mẫu's fixed blocks need to keep their exact proportion/format, prefer
+`scripts/clone_patch_docx.py` or `scripts/compose_preserve_fixed_blocks.py` over the default
+shell-rebuild of `generate_replicate_shell()` — see `references/nd30-replicate-fixed-block-preservation.md`.
 
 For generated DOCX files, prefer generators that apply pagination controls (`keepNext`, `keepLines`, `widowControl`) and heading emphasis rules. When a page ends with only 1-2 sparse lines or a heading is stranded at the bottom, treat that as a layout-quality issue even if the raw ND30 fields are present.
 
@@ -293,6 +312,10 @@ Before delivering:
 - workbook headers and row structure match the chosen pattern
 - output format matches the request
 - Word layout inspected if rendering was available
+- if replicate mode targeted an existing institutional mẫu, confirmed its fixed blocks (quốc
+  hiệu-tiêu ngữ, agency name, nơi nhận, chữ ký) were NOT rebuilt from scratch
+- long justified paragraphs checked for a real orphan word on the last line
+- page numbering confirmed: page 1 hidden, subsequent pages show centered in the top margin
 
 ## Reference map
 
@@ -312,7 +335,7 @@ Read only what the current step needs:
 - `references/nd30-canonical-vs-replicate-mode.md` → when to choose each mode
 - `references/using-with-docx-and-office-automation.md` → combination rules with generic skills
 - `references/nd30-language-review-and-template-admission.md` → LLM wording/logic review and template acceptance workflow
-- `references/internal-template-library.md` → internal fine-tuned mẫu library and source corpus
+- `references/internal-template-library.md` → how to register a confirmed-stable user/agency mẫu for reuse
 - `scripts/validate_nd30_content_spec.py` → preferred validator for canonical content specs
 - `scripts/extract_docx_template.py` → profile extractor
 - `scripts/check_nd30_docx.py` → ND30 audit and template comparison helper
@@ -324,6 +347,18 @@ Read only what the current step needs:
 - `assets/examples/` → ready-to-adapt content specs, profiles, and workbook examples
 - `assets/templates/` → built-in mẫu DOCX and workbook shells
 - `assets/profiles/` → built-in extracted profile JSON files for the mẫu DOCX in `assets/templates/`
+- `references/nd30-end-to-end-drafting-workflow.md` → general drafting process from directive to delivered docx
+- `references/nd30-replicate-fixed-block-preservation.md` → what must never be rebuilt when replicating a source mẫu
+- `references/nd30-line-rules-and-vml-shapes.md` → font-metrics measurement and VML shape-line technique for underlines
+- `references/nd30-table-fixed-layout.md` → tblLayout=fixed technique for newly-created tables only
+- `references/nd30-landscape-appendix-section.md` → adding a landscape section without losing section-break page setup
+- `references/nd30-page-numbering-technique.md` → different-first-page + PAGE field technique
+- `references/nd30-orphan-word-control.md` → detecting and safely condensing a true orphan last word
+- `references/nd30-spacing-and-line-rules.md` → standard spacing/line-spacing convention and when it overrides the default
+- `references/nd30-safe-iterative-build-workflow.md` → safe repeat-build loop for multi-round fixes
+- `references/nd30-known-pitfalls-checklist.md` → short append-only pitfall index
+- `scripts/nd30_shape_and_measure.py` → font measurement, VML line, table fixed-layout, landscape section, orphan-fix helpers
+- `scripts/compose_preserve_fixed_blocks.py` → replicate strategy that preserves fixed blocks verbatim
 
 
 Optimize pagination and reduce widows/orphans on an existing DOCX:
@@ -333,6 +368,10 @@ python scripts/optimize_docx_layout.py input.docx output.docx --tightness balanc
 ```
 
 
-## Internal fine-tuned templates
+## Institutional mẫu registered over time
 
-This package includes a fine-tuned internal library built from real agency documents in `assets/templates/internal/` with extracted profiles in `assets/profiles/internal/` and the original supporting corpus in `assets/internal-corpus/`. Prefer these when the user wants closeness to the institution's actual layout, but still run ND30 audit and the LLM language review branch.
+When a user/agency mẫu is confirmed stable across repeated real use (audited, accepted per the
+Template admission workflow above), register it with `scripts/register_template_profile.py` and
+store it directly under `assets/templates/` alongside its profile in `assets/profiles/` — this
+skill uses a flat structure, not a separate `internal/` subtree. See
+`references/internal-template-library.md`.

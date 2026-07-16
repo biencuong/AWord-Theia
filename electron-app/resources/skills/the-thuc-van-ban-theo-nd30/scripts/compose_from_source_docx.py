@@ -18,14 +18,43 @@ from pathlib import Path
 from docx import Document
 
 from create_nd30_docx import Spec, build, set_doc_defaults
+from nd30_docx_tools import reset_section_page_setup
 
 
-def clear_body_preserve_sections(doc: Document) -> None:
+def clear_body_preserve_sections(doc: Document, *, reassert_page_setup: bool = True) -> None:
+    """Xoa toan bo noi dung body, CHI giu lai sectPr CUOI CUNG cua body.
+
+    CANH BAO: neu source co NHIEU section (vd than bao cao portrait + phu
+    luc landscape), cac sectPr NHUNG TRONG pPr cua section truoc do se bi
+    xoa cung voi paragraph chua no - phan con lai se am tham ke thua sectPr
+    CUOI CUNG (co the sai orientation/kho giay). Day la loi thuc te da gap
+    (than van ban bi lat sang kho ngang vi ke thua nham sectPr cua phu luc).
+
+    reassert_page_setup=True (mac dinh) chup lai TRUOC KHI xoa dung kho
+    giay/huong/le cua section DAU TIEN thuc su (khong phai gia tri NĐ30
+    mac dinh cung), roi ap lai dung nhung gia tri do sau khi xoa - vua vo
+    hieu hoa loi ke thua nham section, vua khong lam mat cac le tuy chinh
+    hop le (trong khoang NĐ30) cua mau nguon."""
+    orig_section = doc.sections[0]
+    snapshot = None
+    if reassert_page_setup:
+        from docx.enum.section import WD_ORIENT
+        snapshot = {
+            'orientation': 'landscape' if orig_section.orientation == WD_ORIENT.LANDSCAPE else 'portrait',
+            'page_width_mm': orig_section.page_width.mm,
+            'page_height_mm': orig_section.page_height.mm,
+            'top_mm': orig_section.top_margin.mm,
+            'bottom_mm': orig_section.bottom_margin.mm,
+            'left_mm': orig_section.left_margin.mm,
+            'right_mm': orig_section.right_margin.mm,
+        }
     body = doc._element.body
     sect_pr = body.sectPr
     for child in list(body):
         if child is not sect_pr:
             body.remove(child)
+    if snapshot is not None:
+        reset_section_page_setup(doc.sections[0], **snapshot)
 
 
 def main(argv: list[str]) -> int:
