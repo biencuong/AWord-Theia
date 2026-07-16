@@ -83,3 +83,17 @@ body {
 #send:hover { background: var(--cam2); }
 #send:disabled { opacity: .5; cursor: default; }
 #status { font-size: 11px; color: var(--fg-dim); padding: 3px 16px; border-top: 1px solid var(--border); background: var(--panel2); }
+
+/* Lớp phủ khởi động (tự cài/cập nhật Claude) */
+#bootoverlay { position: fixed; inset: 0; z-index: 100; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; }
+#bootoverlay.hidden { display: none; }
+.boot-inner { text-align: center; color: var(--fg); }
+.boot-inner .big-logo { width: 72px; height: 72px; border-radius: 16px; margin: 0 auto 18px;
+  background: linear-gradient(135deg, var(--cam2), var(--cam)); display: flex; align-items: center;
+  justify-content: center; font-size: 44px; font-weight: 700; color: #fff; box-shadow: 0 8px 28px rgba(224,102,42,.4); }
+#boot-msg { font-size: 15px; }
+#boot-sub { font-size: 12px; color: var(--fg-dim); margin-top: 8px; max-width: 460px; }
+.boot-spin { width: 26px; height: 26px; margin: 16px auto 0; border: 3px solid var(--border);
+  border-top-color: var(--cam); border-radius: 50%; animation: bootquay .9s linear infinite; }
+@keyframes bootquay { to { transform: rotate(360deg); } }

@@ -10,6 +10,8 @@ const isTauri = !!T;
 
 // --- Lớp transport ---
 const api = isTauri ? {
+  bootstrap: () => T.core.invoke('bootstrap'),
+  onBoot: cb => T.event.listen('boot', e => cb(e.payload)),
   chat: content => T.core.invoke('chat', { message: content }),
   onEvent: cb => T.event.listen('claude', e => cb(e.payload)),
   listFiles: dir => T.core.invoke('list_files', { dir: dir || '.' }),
@@ -17,6 +19,8 @@ const api = isTauri ? {
   openExternal: path => T.core.invoke('open_external', { path }),
   stop: () => T.core.invoke('stop'),
 } : {
+  bootstrap: () => { },
+  onBoot: () => { },
   chat: content => fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }),
   onEvent: cb => { const es = new EventSource('/stream'); es.onmessage = ev => { try { cb(JSON.parse(ev.data)); } catch { } }; es.onerror = () => status.textContent = 'Mất kết nối máy chủ…'; },
   listFiles: async dir => (await fetch('/files?dir=' + encodeURIComponent(dir || '.'))).json(),
@@ -119,6 +123,42 @@ if (isTauri && T.window) {
   if (c[2]) c[2].onclick = () => win.close();
 } else {
   $('.winctrls')?.style && ($('.winctrls').style.visibility = 'hidden'); // chạy trong trình duyệt: ẩn nút giả
+}
+
+// --- Khởi động: tự phát hiện/cài/cập nhật Claude (chỉ Tauri) ---
+const bootOverlay = $('#bootoverlay'), bootMsg = $('#boot-msg'), bootSub = $('#boot-sub');
+function hienBoot(msg, sub) { bootMsg.textContent = msg; bootSub.textContent = sub || ''; bootOverlay.classList.remove('hidden'); }
+function anBoot() { bootOverlay.classList.add('hidden'); }
+
+function xuLyBoot(m) {
+  if (!m || !m.status) return;
+  switch (m.status) {
+    case 'dang_cai':
+      hienBoot('Đang cài đặt Claude Code (lần đầu)…', 'Đang tải bản mới nhất từ Anthropic. Vui lòng chờ, có thể mất một lát.');
+      break;
+    case 'cai_xong':
+      anBoot(); status.textContent = 'Đã cài Claude ' + (m.version || '') + ' · sẵn sàng'; napFiles('.');
+      break;
+    case 'kiem_tra_cap_nhat':
+      status.textContent = 'Đang kiểm tra cập nhật Claude…';
+      break;
+    case 'cap_nhat_xong':
+    case 'cap_nhat_bo_qua':
+      status.textContent = 'Sẵn sàng';
+      break;
+    case 'san_sang':
+      anBoot(); status.textContent = 'Model: sẵn sàng · Claude ' + (m.version || '');
+      break;
+    case 'loi':
+      hienBoot('Chưa dùng được Claude', (m.message || '') + ' — Đóng cửa sổ này, kiểm tra mạng rồi mở lại AWord.');
+      break;
+  }
+}
+
+if (isTauri) {
+  hienBoot('Đang chuẩn bị AWord…', 'Kiểm tra Claude trên máy…');
+  api.onBoot(xuLyBoot);
+  api.bootstrap();
 }
 
 api.onEvent(xuLySuKien);
