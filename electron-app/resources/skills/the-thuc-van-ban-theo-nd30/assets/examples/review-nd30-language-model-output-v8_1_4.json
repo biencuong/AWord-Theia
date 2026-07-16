@@ -1,0 +1,33 @@
+{
+  "summary": {
+    "critical": 0,
+    "warn": 1,
+    "suggest": 0
+  },
+  "findings": [
+    {
+      "id": 1,
+      "category": "wording",
+      "severity": "warn",
+      "section": "body",
+      "quote": "Đề nghị các đơn vị khẩn trương nhanh chóng thực hiện ngay nội dung nêu trên.",
+      "issue": "Cụm từ có nhiều từ gần nghĩa, làm câu nặng.",
+      "reason": "“khẩn trương”, “nhanh chóng”, “ngay” chồng nghĩa.",
+      "suggestion": "Rút gọn để câu gọn hơn mà không đổi ý.",
+      "safe_to_apply": true,
+      "needs_confirmation": false
+    }
+  ],
+  "normalized_terms": [],
+  "rewrite_suggestions": [
+    {
+      "id": 1,
+      "section": "body",
+      "original": "Đề nghị các đơn vị khẩn trương nhanh chóng thực hiện ngay nội dung nêu trên.",
+      "rewritten": "Đề nghị các đơn vị khẩn trương thực hiện nội dung nêu trên.",
+      "change_type": "safe_rewrite",
+      "reason": "Lược bỏ từ gần nghĩa, giữ nguyên ý chỉ đạo."
+    }
+  ],
+  "open_questions": []
+}

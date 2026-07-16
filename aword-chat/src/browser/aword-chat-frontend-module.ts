@@ -7,9 +7,8 @@ import { AwordWelcomeContribution } from './aword-welcome-contribution';
 
 import '../../src/browser/style/index.css';
 
-// Ghi chú: widget mẫu "Hello World" (aword-chat-widget.tsx/aword-chat-contribution.ts) được giữ nguyên
-// trong repo để tham khảo sau này nhưng KHÔNG bind ở đây — package aword-chat giờ phục vụ mục đích thật:
-// ẩn menu Terminal, menu Trợ giúp (Giới thiệu/Cập nhật), và trang Chào mừng khi khởi động.
+// Package aword-chat: tùy biến AWord trên nền Theia — menu (ẩn Terminal, tinh gọn Xem/Trợ giúp),
+// trang Chào mừng, khởi động chat-first (tự tạo workspace + mở khung chat Claude giữa màn hình).
 // LƯU Ý an toàn DI: không bind ReactDialog tuỳ biến làm service (từng gây lỗi Inversify LAZY_IN_SYNC
 // làm gãy plugin Claude Code) — dialog luôn dựng trực tiếp bằng `new`; widget/factory chuẩn thì an toàn.
 export default new ContainerModule(bind => {

@@ -1,0 +1,32 @@
+{
+  "workbook_type": "phu-luc-bang",
+  "title": "PHỤ LỤC I",
+  "subtitle": "BẢNG TỔNG HỢP NHU CẦU TRANG THIẾT BỊ",
+  "sheet_name": "Phu-luc-I",
+  "columns": [
+    "STT",
+    "Đơn vị",
+    "Tên thiết bị",
+    "Đơn vị tính",
+    "Số lượng",
+    "Ghi chú"
+  ],
+  "rows": [
+    {
+      "STT": 1,
+      "Đơn vị": "Phòng Giáo dục A",
+      "Tên thiết bị": "Máy chiếu",
+      "Đơn vị tính": "Chiếc",
+      "Số lượng": 12,
+      "Ghi chú": "Ưu tiên cấp THCS"
+    },
+    {
+      "STT": 2,
+      "Đơn vị": "Trường THPT B",
+      "Tên thiết bị": "Máy tính để bàn",
+      "Đơn vị tính": "Bộ",
+      "Số lượng": 25,
+      "Ghi chú": "Phòng máy 1"
+    }
+  ]
+}

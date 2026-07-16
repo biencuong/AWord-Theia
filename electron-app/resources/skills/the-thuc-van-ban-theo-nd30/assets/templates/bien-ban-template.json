@@ -1,0 +1,21 @@
+{
+  "document_type": "bien-ban",
+  "parent_agency": "{{parent_agency}}",
+  "issuing_agency": "{{issuing_agency}}",
+  "subject": "{{subject}}",
+  "meeting_start": "{{meeting_start}}",
+  "meeting_location": "{{meeting_location}}",
+  "meeting_attendees": "{{meeting_attendees}}",
+  "meeting_chair": "{{meeting_chair}}",
+  "meeting_secretary": "{{meeting_secretary}}",
+  "body_paragraphs": [
+    "{{body_text}}"
+  ],
+  "meeting_end": "{{meeting_end}}",
+  "secretary_name": "{{secretary_name}}",
+  "chair_name": "{{chair_name}}",
+  "noi_nhan": [
+    "{{noi_nhan_1}}",
+    "Lưu: VT, Hồ sơ."
+  ]
+}

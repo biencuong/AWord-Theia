@@ -1,15 +1,39 @@
-import { injectable } from '@theia/core/shared/inversify';
-import { MenuModelRegistry, CommandRegistry, Command } from '@theia/core';
+import { injectable, inject } from '@theia/core/shared/inversify';
+import { MenuModelRegistry, CommandRegistry, Command, CommandService, URI } from '@theia/core';
 import { AbstractViewContribution, CommonMenus, FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
+import { BinaryBuffer } from '@theia/core/lib/common/buffer';
+import { FileService } from '@theia/filesystem/lib/browser/file-service';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
+import { QUY_TAC_CLAUDE_MD } from './aword-setup-prompts';
 
 export const AwordWelcomeCommand: Command = {
     id: 'aword:welcome',
     label: 'Trang chào mừng'
 };
 
+// Đánh dấu "đã chào mừng" trong localStorage: trang chào mừng chỉ tự mở LẦN ĐẦU;
+// các lần sau khởi động thẳng vào khung chat Claude (trải nghiệm kiểu Claude for Windows).
+const KHOA_DA_CHAO_MUNG = 'aword.daChaoMung';
+// Thư mục làm việc mặc định tạo trong Documents của người dùng ở lần chạy đầu.
+const TEN_WORKSPACE_MAC_DINH = 'AWord';
+const THU_MUC_CON_MAC_DINH = ['ABOUT ME', 'TEMPLATES', 'PROJECTS', 'CLAUDE OUTPUTS'];
+
 @injectable()
 export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelcomeWidget> implements FrontendApplicationContribution {
+
+    @inject(WorkspaceService)
+    protected readonly workspaceService: WorkspaceService;
+
+    @inject(FileService)
+    protected readonly fileService: FileService;
+
+    @inject(EnvVariablesServer)
+    protected readonly envServer: EnvVariablesServer;
+
+    @inject(CommandService)
+    protected readonly commandService: CommandService;
 
     constructor() {
         super({
@@ -19,9 +43,28 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         });
     }
 
-    // Mở trang chào mừng ở vùng soạn thảo chính mỗi lần khởi động.
+    // Khởi động kiểu "chat trước tiên":
+    // - Chưa từng mở thư mục nào → tự tạo Documents\AWord (kèm cấu trúc chuẩn + CLAUDE.md) và mở luôn,
+    //   người dùng không phải qua bước "Mở thư mục". Việc mở workspace nạp lại cửa sổ, nhánh dưới chạy tiếp.
+    // - Đã có workspace → mở khung chat Claude ở vùng soạn thảo chính; trang chào mừng chỉ hiện lần đầu.
+    // - Người dùng CHỦ ĐỘNG đóng workspace (đã có mục gần đây) → tôn trọng, chỉ hiện trang chào mừng.
     async onDidInitializeLayout(app: FrontendApplication): Promise<void> {
-        await this.openView({ activate: true, reveal: true });
+        if (this.workspaceService.tryGetRoots().length === 0) {
+            let ganDay: string[] = [];
+            try { ganDay = await this.workspaceService.recentWorkspaces(); } catch { /* backend chưa sẵn sàng */ }
+            if ((ganDay?.length ?? 0) === 0 && await this.taoVaMoWorkspaceMacDinh()) {
+                return; // cửa sổ sắp nạp lại với workspace mới
+            }
+            await this.openView({ activate: true, reveal: true });
+            return;
+        }
+        if (!window.localStorage.getItem(KHOA_DA_CHAO_MUNG)) {
+            window.localStorage.setItem(KHOA_DA_CHAO_MUNG, '1');
+            await this.openView({ activate: false, reveal: true });
+            // Lần đầu: thu gọn panel trái để khung chat rộng rãi — Explorer mở lại bằng cách bấm icon.
+            try { app.shell.collapsePanel('left'); } catch { /* bố cục chưa sẵn sàng — không sao */ }
+        }
+        this.moClaudeGiuaManHinh();
     }
 
     override registerCommands(commands: CommandRegistry): void {
@@ -38,5 +81,40 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
             label: AwordWelcomeCommand.label,
             order: '2'
         });
+    }
+
+    // Tạo Documents\AWord với cấu trúc chuẩn (ABOUT ME/TEMPLATES/PROJECTS/CLAUDE OUTPUTS + CLAUDE.md)
+    // rồi mở làm workspace. Trả về true nếu đã kích hoạt mở (cửa sổ sẽ nạp lại).
+    protected async taoVaMoWorkspaceMacDinh(): Promise<boolean> {
+        try {
+            const home = new URI(await this.envServer.getHomeDirUri());
+            const wsUri = home.resolve('Documents').resolve(TEN_WORKSPACE_MAC_DINH);
+            if (!await this.fileService.exists(wsUri)) {
+                await this.fileService.createFolder(wsUri);
+                for (const con of THU_MUC_CON_MAC_DINH) {
+                    await this.fileService.createFolder(wsUri.resolve(con));
+                }
+                await this.fileService.createFile(wsUri.resolve('CLAUDE.md'), BinaryBuffer.fromString(QUY_TAC_CLAUDE_MD));
+            }
+            this.workspaceService.open(wsUri);
+            return true;
+        } catch {
+            return false; // không tạo được (đĩa/quyền) — rơi về trang chào mừng để người dùng tự mở thư mục
+        }
+    }
+
+    // Mở khung chat Claude làm tab chính giữa màn hình. Plugin nạp bất đồng bộ sau khi
+    // layout sẵn sàng nên lệnh có thể chưa tồn tại — thử lại tối đa ~30 giây.
+    protected async moClaudeGiuaManHinh(): Promise<void> {
+        for (let lan = 0; lan < 30; lan++) {
+            try {
+                await this.commandService.executeCommand('claude-vscode.editor.open');
+                return;
+            } catch {
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        }
+        // Dự phòng: mở ở thanh bên nếu lệnh mở giữa màn hình không có.
+        try { await this.commandService.executeCommand('claude-vscode.sidebar.open'); } catch { /* plugin không nạp được */ }
     }
 }

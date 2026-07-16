@@ -1,0 +1,6 @@
+﻿playwright
+python-docx
+pymupdf
+pdfplumber
+lxml
+rarfile

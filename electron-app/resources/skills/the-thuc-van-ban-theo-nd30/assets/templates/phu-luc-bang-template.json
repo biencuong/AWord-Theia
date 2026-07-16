@@ -1,0 +1,14 @@
+{
+  "workbook_type": "phu-luc-bang",
+  "title": "PHỤ LỤC BẢNG",
+  "subtitle": "Mẫu khởi tạo theo ND30",
+  "sheet_name": "PhuLucBang",
+  "columns": [
+    "STT",
+    "Nội dung",
+    "Đơn vị tính",
+    "Số lượng",
+    "Ghi chú"
+  ],
+  "rows": []
+}

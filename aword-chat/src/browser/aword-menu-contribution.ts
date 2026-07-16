@@ -1,7 +1,7 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
 import {
     Command, CommandContribution, CommandRegistry, CommandService,
-    MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, MutableCompoundMenuNode,
+    CompoundMenuNode, MenuContribution, MenuModelRegistry, MenuNode, MAIN_MENU_BAR, MutableCompoundMenuNode,
     MessageService, SelectionService, URI
 } from '@theia/core';
 import { CommonMenus, ConfirmDialog, Dialog } from '@theia/core/lib/browser';
@@ -156,9 +156,11 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         // extension không được đảm bảo; lắng nghe sự kiện đảm bảo gỡ đúng lúc menu Terminal xuất hiện, dù trước hay sau.
         this.hideTerminalMenu(menus);
         this.pruneHelpMenu(menus);
+        this.pruneViewMenu(menus);
         menus.onDidChange(() => {
             this.hideTerminalMenu(menus);
             this.pruneHelpMenu(menus);
+            this.pruneViewMenu(menus);
         });
     }
 
@@ -290,6 +292,29 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         if (terminalNode && menuBar && MutableCompoundMenuNode.is(menuBar)) {
             menuBar.removeNode(terminalNode);
         }
+    }
+
+    // Menu Xem: gỡ các view lập trình không dùng cho nghiệp vụ văn phòng (Problems,
+    // Source Control, Outline, Call/Type Hierarchy — do plugin-ext kéo theo, không gỡ được
+    // khỏi bundle). View vẫn mở được qua Command Palette khi thật sự cần.
+    private pruneViewMenu(menus: MenuModelRegistry): void {
+        const an = new Set<string>([
+            'problemsView:toggle', 'scmView:toggle', 'outlineView:toggle',
+            'callhierarchy:toggle', 'typehierarchy:toggle'
+        ]);
+        const goDeQuy = (node?: MenuNode): void => {
+            if (!node || !CompoundMenuNode.is(node) || !MutableCompoundMenuNode.is(node)) {
+                return;
+            }
+            for (const child of [...node.children]) {
+                if (an.has(child.id)) {
+                    node.removeNode(child);
+                } else {
+                    goDeQuy(child);
+                }
+            }
+        };
+        goDeQuy(menus.getMenu(CommonMenus.VIEW));
     }
 
     // Menu Trợ giúp chỉ giữ lại các mục của AWord; gỡ mọi mục khác

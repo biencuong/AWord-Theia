@@ -1,0 +1,24 @@
+{
+  "document_type": "cong-van",
+  "parent_agency": "{{parent_agency}}",
+  "issuing_agency": "{{issuing_agency}}",
+  "document_number": "{{document_number}}",
+  "document_symbol": "{{document_symbol}}",
+  "location": "{{location}}",
+  "issue_date": "{{issue_date}}",
+  "subject": "V/v {{subject_short}}",
+  "kinh_gui": [
+    "{{kinh_gui_1}}",
+    "{{kinh_gui_2}}"
+  ],
+  "body_paragraphs": [
+    "{{body_text}}"
+  ],
+  "signer_position": "{{signer_position}}",
+  "signer_name": "{{signer_name}}",
+  "noi_nhan": [
+    "Như trên",
+    "Lưu: VT, {{draft_unit}}."
+  ],
+  "contact_line": "{{contact_line}}"
+}

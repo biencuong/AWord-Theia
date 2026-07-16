@@ -49,20 +49,27 @@ hiệu lực phải nói rõ và nêu văn bản thay thế (nếu có).
 
 ## Công cụ đọc tài liệu (doc/docx/xlsx/xls/pdf/ảnh)
 
+Khi người dùng cần đọc/tóm tắt/phân tích file văn bản → dùng skill `doc-van-ban-local`
+(có sẵn trên máy): quy trình chọn file, xử lý đường dẫn Unicode, đọc từng định dạng và
+cách trình bày kết quả đều ở đó.
+
 Máy đã cài sẵn Python + thư viện (python-docx, openpyxl, xlrd, pypdf, pymupdf, pdfplumber,
 pillow, pywin32...) — bộ cài AWord đóng kèm và tự cài offline ở lần khởi động đầu.
 
-Cách đọc từng loại:
+Tóm tắt cách đọc từng loại:
 - `.docx` → python-docx; `.xlsx` → openpyxl; `.xls` (cũ) → xlrd.
 - `.doc`/`.xls` đời cũ (nhị phân): ưu tiên chuyển qua Word/Excel bằng COM (pywin32) — máy
   công sở thường có Microsoft Office; không có Office thì báo rõ cho người dùng.
 - `.pdf` có lớp text → pdfplumber/pymupdf lấy text trực tiếp.
 - ẢNH (.png/.jpg...) → ĐỌC TRỰC TIẾP bằng thị giác của Claude (Read tệp ảnh) — KHÔNG cần
   OCR/thư viện. Claude là mô hình đa phương thức, nhìn ảnh và đọc chữ trong ảnh được.
-- `.pdf` SCAN (ảnh chụp, không có lớp text): KHÔNG dùng OCR (tesseract kém tiếng Việt).
-  Quy trình: dùng pymupdf render TỪNG TRANG thành ảnh PNG (độ phân giải ~200dpi, lưu tạm)
-  rồi Read từng ảnh — Claude đọc nội dung bằng thị giác. Nhận diện PDF scan: pdfplumber/
-  pymupdf trích ra rất ít hoặc không có text dù trang có nội dung.
+- `.pdf` SCAN (ảnh chụp, không có lớp text): KHÔNG dùng OCR (tesseract/easyocr kém tiếng
+  Việt), KHÔNG gửi nội dung ra dịch vụ ngoài. Chạy script đóng kèm skill:
+  `python "%USERPROFILE%\.claude\skills\doc-van-ban-local\scripts\pdf_sang_anh.py" "file.pdf"`
+  — render JPEG thang xám 150dpi CÓ CACHE (nhanh gấp 3–5 lần PNG 200dpi, chạy lại không
+  render lại), in ra danh sách ảnh; Read từng ảnh để đọc bằng thị giác. Chỉ cần vài trang
+  thì thêm `--trang 1-5`; chữ nhỏ khó đọc thì `--dpi 200`; cần phân biệt dấu đỏ/con dấu
+  thì `--mau`. Nhận diện PDF scan: pdfplumber trích ra rất ít/không có text dù trang có nội dung.
 
 LUẬT VỀ THƯ VIỆN (bắt buộc): nếu chạy skill/script mà báo THIẾU một thư viện, phải CÀI
 ĐẶT CỐ ĐỊNH lên máy ngay bằng `python -m pip install --user <gói>` (KHÔNG dùng cài tạm

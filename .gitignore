@@ -6,3 +6,5 @@ lib
 !*-app/package.json
 !electron-app/scripts/
 !electron-app/build/
+!electron-app/resources/
+electron-app/resources/pytools/

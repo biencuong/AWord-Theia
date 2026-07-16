@@ -4,15 +4,16 @@ import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { CommandService, MessageService, URI } from '@theia/core';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { PROMPT_THIET_LAP_WORKSPACE, PROMPT_DE_XUAT_PLUGIN } from './aword-setup-prompts';
+import { PROMPT_THIET_LAP_WORKSPACE } from './aword-setup-prompts';
 
 // Hướng dẫn sử dụng nhanh — giữ ngắn gọn, mỗi mục một hành động cụ thể.
 const HUONG_DAN: { icon: string; text: string }[] = [
-    { icon: '📁', text: 'Mở thư mục tài liệu/dự án của bạn (Tệp → Mở thư mục, hoặc nút bên trái).' },
-    { icon: '🤖', text: 'Mở Claude ở thanh bên phải (biểu tượng Claude, hoặc Ctrl+Escape) rồi gõ yêu cầu bằng tiếng Việt.' },
-    { icon: '@', text: 'Gõ @ trong khung chat để đính kèm tệp làm ngữ cảnh; bôi đen đoạn văn bản rồi hỏi về đoạn đó.' },
+    { icon: '🤖', text: 'Khung chat Claude mở sẵn giữa màn hình mỗi lần khởi động — gõ yêu cầu bằng tiếng Việt và Enter để gửi (Ctrl+Escape để quay lại khung chat bất cứ lúc nào).' },
+    { icon: '📁', text: 'AWord tự tạo thư mục làm việc Documents\\AWord ở lần đầu; muốn làm việc trên thư mục khác thì Tệp → Mở thư mục.' },
+    { icon: '@', text: 'Gõ @ trong khung chat để đính kèm tệp làm ngữ cảnh; hoặc chuột phải tệp trong Explorer → "Thêm vào Claude Code (@)"; kéo-thả tệp vào khung chat cũng được.' },
+    { icon: '📄', text: 'Đọc mọi loại văn bản: docx, xlsx, pdf — kể cả PDF scan và ảnh chụp; cứ đưa tệp và yêu cầu "đọc/tóm tắt", Claude tự xử lý.' },
     { icon: '✏️', text: 'Claude đọc và sửa tệp trực tiếp — mỗi thay đổi đều hiện diff để bạn duyệt trước khi chấp nhận.' },
-    { icon: '⚡', text: 'AWord có sẵn 18 kỹ năng (soạn thảo docx, bảng tính, trình chiếu, xử lý văn bản đến...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
+    { icon: '⚡', text: 'AWord có sẵn 20 kỹ năng (soạn thảo docx theo Nghị định 30, bảng tính, trình chiếu, xử lý văn bản đến...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
     { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
 ];
@@ -79,7 +80,6 @@ export class AwordWelcomeWidget extends ReactWidget {
                             (ABOUT ME / TEMPLATES / PROJECTS / CLAUDE OUTPUTS) kèm quy tắc soạn thảo Nghị định 30.
                         </p>
                         <button className='theia-button main aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_THIET_LAP_WORKSPACE, 'thiết lập không gian làm việc')}>🚀 Thiết lập không gian làm việc</button>
-                        <button className='theia-button secondary aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_DE_XUAT_PLUGIN, 'đề xuất plugin')}>🧩 Đề xuất plugin theo công việc</button>
 
                         <h3>Mở gần đây</h3>
                         {this.ganDay.length === 0
@@ -128,8 +128,9 @@ export class AwordWelcomeWidget extends ReactWidget {
     }
 
     protected moClaude(): void {
-        this.commandService.executeCommand('claude-vscode.sidebar.open').catch(() =>
-            this.commandService.executeCommand('claude-vscode.editor.open')).catch(() => { /* plugin chưa sẵn sàng */ });
+        // Ưu tiên mở giữa màn hình (đồng bộ với hành vi khởi động chat-first); thanh bên là dự phòng.
+        this.commandService.executeCommand('claude-vscode.editor.open').catch(() =>
+            this.commandService.executeCommand('claude-vscode.sidebar.open')).catch(() => { /* plugin chưa sẵn sàng */ });
     }
 
     // Khung chat của Claude là webview đóng — không bơm chữ trực tiếp được;
@@ -139,7 +140,7 @@ export class AwordWelcomeWidget extends ReactWidget {
             await navigator.clipboard.writeText(prompt);
             this.moClaude();
             this.messageService.info(
-                `Đã sao chép nội dung ${tenViec}. Bấm vào ô nhập của Claude (bên phải), dán bằng Ctrl+V rồi nhấn Enter để bắt đầu.`,
+                `Đã sao chép nội dung ${tenViec}. Bấm vào ô nhập của khung chat Claude, dán bằng Ctrl+V rồi nhấn Enter để bắt đầu.`,
                 { timeout: 15000 }
             );
         } catch {

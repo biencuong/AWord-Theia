@@ -36,7 +36,7 @@
     "clean": "rimraf lib",
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest --config configs/jest.config.ts"
+    "test": "jest --config configs/jest.config.ts --passWithNoTests"
   },
   "theiaExtensions": [
     {

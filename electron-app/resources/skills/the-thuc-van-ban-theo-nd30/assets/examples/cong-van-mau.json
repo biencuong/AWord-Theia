@@ -1,0 +1,28 @@
+{
+  "document_type": "cong-van",
+  "parent_agency": "UBND TỈNH HÀ GIANG",
+  "issuing_agency": "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+  "document_number": "123",
+  "document_symbol": "SGDDT-VP",
+  "location": "Hà Giang",
+  "issue_date": "2026-04-15",
+  "subject": "V/v triển khai rà soát nhu cầu tập huấn",
+  "kinh_gui": [
+    "Các phòng giáo dục và đào tạo",
+    "Các đơn vị trực thuộc"
+  ],
+  "body_paragraphs": [
+    "Thực hiện nhiệm vụ năm học 2025-2026, Sở Giáo dục và Đào tạo đề nghị các đơn vị rà soát nhu cầu tập huấn, bồi dưỡng của đội ngũ cán bộ quản lý, giáo viên và nhân viên.",
+    "Báo cáo gửi về Sở Giáo dục và Đào tạo trước ngày 25/4/2026 để tổng hợp, xây dựng kế hoạch tổ chức thực hiện."
+  ],
+  "noi_nhan": [
+    "Như trên",
+    "Lưu: VT, VP."
+  ],
+  "signer_authority": "KT.",
+  "signer_on_behalf_of": "GIÁM ĐỐC",
+  "signer_position": "PHÓ GIÁM ĐỐC",
+  "signer_name": "Nguyễn Văn A",
+  "contact_line": "Địa chỉ: Tổ 1, phường Nguyễn Trãi, TP Hà Giang | ĐT: 02193xxxxxx | Email: vanphong@example.gov.vn",
+  "drafter_mark": "VP/AB.(02)"
+}

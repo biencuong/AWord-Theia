@@ -1,0 +1,38 @@
+{
+  "document_type": "quyet-dinh-truc-tiep",
+  "parent_agency": "{{parent_agency}}",
+  "issuing_agency": "{{issuing_agency}}",
+  "document_number": "{{document_number}}",
+  "document_symbol": "{{document_symbol}}",
+  "location": "{{location}}",
+  "issue_date": "{{issue_date}}",
+  "subject": "Về việc {{subject}}",
+  "authority_line": "{{authority_line}}",
+  "legal_bases": [
+    "Căn cứ {{legal_basis_1}};",
+    "Căn cứ {{legal_basis_2}};"
+  ],
+  "articles": [
+    {
+      "title": "{{article_1_title}}",
+      "body": [
+        "{{article_1_body}}"
+      ]
+    },
+    {
+      "title": "{{article_2_title}}",
+      "body": [
+        "{{article_2_body}}"
+      ]
+    }
+  ],
+  "signer_authority": "{{signer_authority}}",
+  "signer_on_behalf_of": "{{signer_on_behalf_of}}",
+  "signer_position": "{{signer_position}}",
+  "signer_name": "{{signer_name}}",
+  "noi_nhan": [
+    "Như Điều 2",
+    "{{noi_nhan_1}}",
+    "Lưu: VT, {{draft_unit}}."
+  ]
+}

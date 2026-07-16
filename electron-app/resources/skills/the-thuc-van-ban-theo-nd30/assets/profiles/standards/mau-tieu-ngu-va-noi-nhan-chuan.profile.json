@@ -1,0 +1,5055 @@
+{
+  "profile_version": "2.1",
+  "source_document": "mau-tieu-ngu-va-noi-nhan-chuan.docx",
+  "source_path": "/mnt/data/v814_full_work/the-thuc-van-ban-theo-nd30/assets/templates/standards/mau-tieu-ngu-va-noi-nhan-chuan.docx",
+  "detected_document_type": "cong-van",
+  "section_metrics": {
+    "page_width_mm": 210.0,
+    "page_height_mm": 297.0,
+    "top_margin_mm": 20.0,
+    "bottom_margin_mm": 20.0,
+    "left_margin_mm": 30.0,
+    "right_margin_mm": 20.0,
+    "header_distance_mm": 10.0,
+    "footer_distance_mm": 10.0,
+    "gutter_mm": 0.0
+  },
+  "headers": [],
+  "footers": [],
+  "table_count": 2,
+  "style_names": [
+    "Balloon Text",
+    "Balloon Text Char",
+    "Default Paragraph Font",
+    "FollowedHyperlink",
+    "Footer",
+    "Footer Char",
+    "Footnote Text Char",
+    "Header",
+    "Header Char",
+    "Hyperlink",
+    "List Paragraph",
+    "No List",
+    "No Spacing",
+    "Normal",
+    "Normal (Web)",
+    "Normal Table",
+    "Strong",
+    "Table Grid",
+    "Unresolved Mention",
+    "Unresolved Mention1",
+    "footnote reference",
+    "footnote text"
+  ],
+  "paragraphs_preview": [
+    {
+      "index": 0,
+      "origin": "body/table[r0c0]",
+      "text": "UBND TỈNH TUYÊN QUANG",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 1,
+      "origin": "body/table[r0c0]",
+      "text": "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 3,
+      "origin": "body/table[r0c0]",
+      "text": "Số: /SGDĐT-HSSV-KHCN TT",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": null,
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 4,
+      "origin": "body/table[r0c0]",
+      "text": "V/v Chuẩn bị các điều kiện triển khai học bạ số năm học 2025-2026",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        12.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "spacing": {
+          "before": "120",
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 6,
+      "origin": "body/table[r0c1]",
+      "text": "UBND TỈNH TUYÊN QUANG",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 7,
+      "origin": "body/table[r0c1]",
+      "text": "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 9,
+      "origin": "body/table[r0c1]",
+      "text": "Số: /SGDĐT-HSSV-KHCN TT",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": null,
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 10,
+      "origin": "body/table[r0c1]",
+      "text": "V/v Chuẩn bị các điều kiện triển khai học bạ số năm học 2025-2026",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        12.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "spacing": {
+          "before": "120",
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 12,
+      "origin": "body/table[r0c2]",
+      "text": "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "34",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 13,
+      "origin": "body/table[r0c2]",
+      "text": "Ðộc lập - Tự do - Hạnh phúc",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "34",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 15,
+      "origin": "body/table[r0c2]",
+      "text": "Tuyên Quang, ngày tháng 01 năm 2026",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 1.0,
+      "xml": {
+        "indent": {
+          "left": "34",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 16,
+      "origin": "body/table[r1c0]",
+      "text": "Kính gửi:",
+      "alignment": 2,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-108",
+          "right": "-108",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "right"
+      }
+    },
+    {
+      "index": 18,
+      "origin": "body/table[r1c1]",
+      "text": "- Sở Khoa học và Công nghệ;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 19,
+      "origin": "body/table[r1c1]",
+      "text": "- Sở Tài chính;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 20,
+      "origin": "body/table[r1c1]",
+      "text": "- Công an tỉnh;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 21,
+      "origin": "body/table[r1c1]",
+      "text": "- Trường Đại học Tân Trào;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 22,
+      "origin": "body/table[r1c1]",
+      "text": "- UBND các xã, phường;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 23,
+      "origin": "body/table[r1c1]",
+      "text": "- Các đơn vị trực thuộc Sở GDĐT;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 24,
+      "origin": "body/table[r1c1]",
+      "text": "- Các trường TH, TH&THCS, THCS toàn tỉnh;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 27,
+      "origin": "body/table[r1c2]",
+      "text": "- Sở Khoa học và Công nghệ;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 28,
+      "origin": "body/table[r1c2]",
+      "text": "- Sở Tài chính;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 29,
+      "origin": "body/table[r1c2]",
+      "text": "- Công an tỉnh;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 30,
+      "origin": "body/table[r1c2]",
+      "text": "- Trường Đại học Tân Trào;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 31,
+      "origin": "body/table[r1c2]",
+      "text": "- UBND các xã, phường;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 32,
+      "origin": "body/table[r1c2]",
+      "text": "- Các đơn vị trực thuộc Sở GDĐT;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 33,
+      "origin": "body/table[r1c2]",
+      "text": "- Các trường TH, TH&THCS, THCS toàn tỉnh;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {}
+    },
+    {
+      "index": 35,
+      "origin": "body",
+      "text": "Căn cứ Công văn số 3551/UBND-VHXH ngày 14/11/2025 của UBND tỉnh Tuyên Quang về việc tăng cường chỉ đạo triển khai Học bạ số trong các cơ sở giáo dục phổ thông và giáo dục thường xuyên;",
+      "alignment": 3,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 36,
+      "origin": "body",
+      "text": "Căn cứ Công văn số 7282/BGDĐT-GDPT ngày 11/11/2025 của Bộ Giáo dục và Đào tạo về việc tăng cường chỉ đạo triển khai Học bạ số trong các cơ sở giáo dục phổ thông, giáo dục thường xuyên; Công văn số 7802/BGDĐT-GDPT ngày 27/11/2025 về việc hướng dẫn thực hiện Học bạ số đối với giáo dục phổ thông và giáo dục thường xuyên năm học 2025–2026;",
+      "alignment": 3,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 37,
+      "origin": "body",
+      "text": "Trên cơ sở kết quả triển khai thí điểm Học bạ số năm học 2024–2025, hiện trạng hạ tầng kỹ thuật và nguồn lực triển khai Học bạ số; nhằm bảo đảm việc triển khai Học bạ số đạt hiệu quả, đồng bộ, gắn với lộ trình chuyển đổi số của tỉnh và quốc gia, Sở Giáo dục và Đào tạo đề nghị các sở, ngành và đơn vị phối hợp, hỗ trợ triển khai một số nội dung sau:",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 38,
+      "origin": "body",
+      "text": "1. Sở Khoa học và Công nghệ",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 39,
+      "origin": "body",
+      "text": "- Hướng dẫn, hỗ trợ đăng ký chữ ký số chuyên dùng cho cán bộ quản lý, giáo viên các cơ sở giáo dục trên địa bàn tỉnh theo Nghị định số 68/2024/NĐ-CP ngày 25/6/2024; đồng thời nghiên cứu, đề xuất phương án hỗ trợ đối với các cơ sở giáo dục ngoài công lập không thuộc đối tượng áp dụng của Nghị định này.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 40,
+      "origin": "body",
+      "text": "- Tiếp tục đẩy nhanh tiến độ hỗ trợ hạ tầng máy chủ theo đề xuất tại Công văn số 433/SGDĐT-HSSV&KHCNTT ngày 25/8/2025 của Sở Giáo dục và Đào tạo về việc đề nghị hỗ trợ hạ tầng máy chủ Cơ sở dữ liệu ngành Giáo dục và mô hình chuyển đổi số, nhằm bảo đảm môi trường vận hành, lưu trữ dữ liệu người học, kết quả học tập, thông tin giáo viên… Đây là nguồn dữ liệu gốc phục vụ tạo lập Học bạ số.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 41,
+      "origin": "body",
+      "text": "- Chỉ đạo các doanh nghiệp viễn thông, công nghệ thông tin tăng cường triển khai internet tốc độ cao đến các vùng khó khăn, vùng sâu, vùng biên giới; ưu tiên bảo đảm các cơ sở giáo dục được kết nối internet ổn định, đáp ứng yêu cầu triển khai Học bạ số và các nhiệm vụ chuyển đổi số của ngành Giáo dục.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 42,
+      "origin": "body",
+      "text": "2. Sở Tài chính",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 43,
+      "origin": "body",
+      "text": "Hướng dẫn thủ tục cấp kinh phí; tham mưu UBND tỉnh bổ sung kinh phí chi thường xuyên cho các cơ sở giáo dục để triển khai Học bạ số theo quy định.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 44,
+      "origin": "body",
+      "text": "3. Công an tỉnh",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 45,
+      "origin": "body",
+      "text": "- Chỉ đạo Công an các xã, phường hỗ trợ người học và cơ sở giáo dục trong việc cấp mới, cập nhật, điều chỉnh và xác thực định danh điện tử VNeID (nếu có), bảo đảm kịp thời phục vụ tổ chức các kỳ thi, đăng ký tuyển sinh và tích hợp Học bạ số.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 46,
+      "origin": "body",
+      "text": "- Phối hợp hỗ trợ, hướng dẫn triển khai các giải pháp bảo đảm an ninh, an toàn thông tin cho hệ thống phần mềm; triển khai tích hợp Học bạ số với nền tảng VNeID theo lộ trình.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 47,
+      "origin": "body",
+      "text": "4. UBND các xã, phường và Trường Đại học Tân Trào",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 48,
+      "origin": "body",
+      "text": "- Chỉ đạo các cơ sở giáo dục thuộc phạm vi quản lý rà soát hiện trạng cơ sở hạ tầng; đề xuất nâng cấp, đầu tư, trang bị mới nhằm bảo đảm điều kiện triển khai Học bạ số.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 49,
+      "origin": "body",
+      "text": "- Quan tâm đầu tư hạ tầng kỹ thuật cho các cơ sở giáo dục phục vụ chuyển đổi số giáo dục nói chung và Học bạ số nói riêng.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 50,
+      "origin": "body",
+      "text": "- Phân công nhân sự theo dõi, triển khai Học bạ số theo phân cấp quản lý.",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 51,
+      "origin": "body",
+      "text": "5. Các cơ sở giáo dục phổ thông và giáo dục thường xuyên",
+      "alignment": 3,
+      "style_name": "Normal (Web)",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 52,
+      "origin": "body",
+      "text": "- Rà soát, chuẩn bị đầy đủ các điều kiện kỹ thuật (bao gồm lựa chọn phần mềm quản lý nhà trường có chức năng tạo lập Học bạ số, đăng ký chữ ký số chuyên dùng miễn phí,…), nhân sự và nguồn lực, bảo đảm sẵn sàng triển khai Học bạ số. Trên cơ sở rà soát các điều kiện, tiêu chuẩn, đăng ký lộ trình triển khai Học bạ số tại địa chỉ: https://forms.gle/MUAV27PYej8BctDH9, hoàn thành chậm nhất ngày 20/01/2026.",
+      "alignment": 3,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 53,
+      "origin": "body",
+      "text": "- Tổ chức triển khai Học bạ số theo kế hoạch của Sở Giáo dục và Đào tạo (kế hoạch chi tiết sẽ được ban hành sau); tổ chức tuyên truyền bằng nhiều hình thức, nâng cao nhận thức, tầm quan trọng trong việc thực hiện Học bạ số đến toàn thể cán bộ quản lý, giáo viên, học sinh và cha mẹ học sinh.",
+      "alignment": 3,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 54,
+      "origin": "body",
+      "text": "Trên đây là nội dung chuẩn bị các điều kiện triển khai Học bạ số năm học 2025–2026. Đề nghị các sở, ngành và Trường Đại học Tân Trào phối hợp thực hiện; yêu cầu các cơ sở giáo dục nghiêm túc triển khai, bảo đảm đúng tiến độ và thời hạn quy định. Trong quá trình thực hiện nếu có khó khăn, vướng mắc vui lòng liên hệ Sở GDDT qua Phòng Học sinh sinh viên, Khoa học công nghệ và thông tin (ông Bùi Biên Cương, chuyên viên phụ trách, số điện thoại 0983606845) để cùng phối hợp thực hiện./.",
+      "alignment": 3,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        13.5
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "720",
+          "hanging": null
+        },
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        },
+        "jc": "both"
+      }
+    },
+    {
+      "index": 55,
+      "origin": "body/table[r0c0]",
+      "text": "Nơi nhận:",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        12.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 1.0,
+      "xml": {
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": "288",
+          "lineRule": "auto"
+        }
+      }
+    },
+    {
+      "index": 56,
+      "origin": "body/table[r0c0]",
+      "text": "- Như trên;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        11.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "70",
+          "hanging": null
+        }
+      }
+    },
+    {
+      "index": 57,
+      "origin": "body/table[r0c0]",
+      "text": "- UBND tỉnh (b/c);",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        11.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "70",
+          "hanging": null
+        }
+      }
+    },
+    {
+      "index": 58,
+      "origin": "body/table[r0c0]",
+      "text": "- Lãnh đạo Sở GDĐT;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        11.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "70",
+          "hanging": null
+        }
+      }
+    },
+    {
+      "index": 59,
+      "origin": "body/table[r0c0]",
+      "text": "- Các phòng thuộc Sở GDĐT;",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        11.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "70",
+          "hanging": null
+        }
+      }
+    },
+    {
+      "index": 60,
+      "origin": "body/table[r0c0]",
+      "text": "- Lưu: VT, HSSV-KHCN TT (Cương).",
+      "alignment": null,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [
+        11.0
+      ],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 0.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": null,
+          "right": null,
+          "firstLine": "70",
+          "hanging": null
+        }
+      }
+    },
+    {
+      "index": 62,
+      "origin": "body/table[r0c2]",
+      "text": "KT. GIÁM ĐỐC",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-57",
+          "right": "-57",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 63,
+      "origin": "body/table[r0c2]",
+      "text": "PHÓ GIÁM ĐỐC",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [],
+      "all_caps": true,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-57",
+          "right": "-57",
+          "firstLine": null,
+          "hanging": null
+        },
+        "jc": "center"
+      }
+    },
+    {
+      "index": 68,
+      "origin": "body/table[r0c2]",
+      "text": "Đinh Thế Hiệp",
+      "alignment": 1,
+      "style_name": "Normal",
+      "font_names": [],
+      "font_sizes": [],
+      "all_caps": false,
+      "contains_placeholder": false,
+      "bold_ratio": 1.0,
+      "italic_ratio": 0.0,
+      "xml": {
+        "indent": {
+          "left": "-58",
+          "right": null,
+          "firstLine": null,
+          "hanging": null
+        },
+        "spacing": {
+          "before": null,
+          "after": null,
+          "line": "288",
+          "lineRule": "auto"
+        },
+        "jc": "center"
+      }
+    }
+  ],
+  "nonempty_paragraph_count": 55,
+  "placeholder_keys": [],
+  "title_candidates": [
+    "UBND TỈNH TUYÊN QUANG",
+    "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+    "UBND TỈNH TUYÊN QUANG",
+    "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+    "ÐỘC LẬP - TỰ DO - HẠNH PHÚC"
+  ],
+  "named_title_candidate": null,
+  "key_lines": [
+    "UBND TỈNH TUYÊN QUANG",
+    "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+    "Số: /SGDĐT-HSSV-KHCN TT",
+    "V/v Chuẩn bị các điều kiện triển khai học bạ số năm học 2025-2026",
+    "UBND TỈNH TUYÊN QUANG",
+    "SỞ GIÁO DỤC VÀ ĐÀO TẠO",
+    "Số: /SGDĐT-HSSV-KHCN TT",
+    "V/v Chuẩn bị các điều kiện triển khai học bạ số năm học 2025-2026",
+    "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+    "Ðộc lập - Tự do - Hạnh phúc",
+    "Tuyên Quang, ngày tháng 01 năm 2026",
+    "Kính gửi:",
+    "- Sở Khoa học và Công nghệ;",
+    "- Sở Tài chính;",
+    "- Công an tỉnh;",
+    "- Trường Đại học Tân Trào;",
+    "- UBND các xã, phường;",
+    "- Các đơn vị trực thuộc Sở GDĐT;",
+    "- Các trường TH, TH&THCS, THCS toàn tỉnh;",
+    "- Sở Khoa học và Công nghệ;",
+    "- Sở Tài chính;",
+    "- Công an tỉnh;",
+    "- Trường Đại học Tân Trào;",
+    "- UBND các xã, phường;",
+    "- Các đơn vị trực thuộc Sở GDĐT;",
+    "- Các trường TH, TH&THCS, THCS toàn tỉnh;",
+    "Căn cứ Công văn số 3551/UBND-VHXH ngày 14/11/2025 của UBND tỉnh Tuyên Quang về việc tăng cường chỉ đạo triển khai Học bạ số trong các cơ sở giáo dục phổ thông và giáo dục thường xuyên;",
+    "Căn cứ Công văn số 7282/BGDĐT-GDPT ngày 11/11/2025 của Bộ Giáo dục và Đào tạo về việc tăng cường chỉ đạo triển khai Học bạ số trong các cơ sở giáo dục phổ thông, giáo dục thường xuyên; Công văn số 7802/BGDĐT-GDPT ngày 27/11/2025 về việc hướng dẫn thực hiện Học bạ số đối với giáo dục phổ thông và giáo dục thường xuyên năm học 2025–2026;",
+    "Trên cơ sở kết quả triển khai thí điểm Học bạ số năm học 2024–2025, hiện trạng hạ tầng kỹ thuật và nguồn lực triển khai Học bạ số; nhằm bảo đảm việc triển khai Học bạ số đạt hiệu quả, đồng bộ, gắn với lộ trình chuyển đổi số của tỉnh và quốc gia, Sở Giáo dục và Đào tạo đề nghị các sở, ngành và đơn vị phối hợp, hỗ trợ triển khai một số nội dung sau:",
+    "1. Sở Khoa học và Công nghệ"
+  ],
+  "core_flags": {
+    "has_quoc_hieu": true,
+    "has_tieu_ngu": false,
+    "has_number_line": true,
+    "has_date_line": false,
+    "has_noi_nhan_or_luu": true
+  },
+  "has_quoc_hieu": true,
+  "has_tieu_ngu": false,
+  "has_number_line": true,
+  "has_date_line": false,
+  "styles": {
+    "Normal": {
+      "id": "Normal",
+      "name": "Normal",
+      "type": "paragraph",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": null,
+      "qFormat": true,
+      "fonts": {
+        "size": "28"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "DefaultParagraphFont": {
+      "id": "DefaultParagraphFont",
+      "name": "Default Paragraph Font",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "1",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "TableNormal": {
+      "id": "TableNormal",
+      "name": "Normal Table",
+      "type": "table",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "NoList": {
+      "id": "NoList",
+      "name": "No List",
+      "type": "numbering",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "TableGrid": {
+      "id": "TableGrid",
+      "name": "Table Grid",
+      "type": "table",
+      "basedOn": "TableNormal",
+      "next": null,
+      "linked": null,
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "BalloonText": {
+      "id": "BalloonText",
+      "name": "Balloon Text",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": "BalloonTextChar",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {
+        "ascii": "Tahoma",
+        "hAnsi": "Tahoma",
+        "eastAsia": null,
+        "cs": null,
+        "size": "16"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "BalloonTextChar": {
+      "id": "BalloonTextChar",
+      "name": "Balloon Text Char",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": "BalloonText",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {
+        "ascii": "Tahoma",
+        "hAnsi": "Tahoma",
+        "eastAsia": null,
+        "cs": "Tahoma",
+        "size": "16"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "Hyperlink": {
+      "id": "Hyperlink",
+      "name": "Hyperlink",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {
+        "color": "0000FF"
+      }
+    },
+    "NormalWeb": {
+      "id": "NormalWeb",
+      "name": "Normal (Web)",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": null,
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {
+        "size": "24"
+      },
+      "paragraph": {
+        "spacing": {
+          "before": "100",
+          "after": "100",
+          "line": null,
+          "lineRule": null
+        }
+      },
+      "run": {}
+    },
+    "Strong": {
+      "id": "Strong",
+      "name": "Strong",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "22",
+      "qFormat": true,
+      "fonts": {},
+      "paragraph": {},
+      "run": {
+        "bold": true
+      }
+    },
+    "Header": {
+      "id": "Header",
+      "name": "header",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": "HeaderChar",
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "HeaderChar": {
+      "id": "HeaderChar",
+      "name": "Header Char",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": "Header",
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {
+        "size": "28"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "Footer": {
+      "id": "Footer",
+      "name": "footer",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": "FooterChar",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "FooterChar": {
+      "id": "FooterChar",
+      "name": "Footer Char",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": "Footer",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {
+        "size": "28"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "UnresolvedMention1": {
+      "id": "UnresolvedMention1",
+      "name": "Unresolved Mention1",
+      "type": "character",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {
+        "color": "605E5C"
+      }
+    },
+    "NoSpacing": {
+      "id": "NoSpacing",
+      "name": "No Spacing",
+      "type": "paragraph",
+      "basedOn": null,
+      "next": null,
+      "linked": null,
+      "uiPriority": "1",
+      "qFormat": true,
+      "fonts": {
+        "ascii": "Arial",
+        "hAnsi": "Arial",
+        "eastAsia": null,
+        "cs": null,
+        "size": "22"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "FootnoteText": {
+      "id": "FootnoteText",
+      "name": "footnote text",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": "FootnoteTextChar",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {
+        "size": "20"
+      },
+      "paragraph": {},
+      "run": {}
+    },
+    "FootnoteTextChar": {
+      "id": "FootnoteTextChar",
+      "name": "Footnote Text Char",
+      "type": "character",
+      "basedOn": "DefaultParagraphFont",
+      "next": null,
+      "linked": "FootnoteText",
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "FootnoteReference": {
+      "id": "FootnoteReference",
+      "name": "footnote reference",
+      "type": "character",
+      "basedOn": "DefaultParagraphFont",
+      "next": null,
+      "linked": null,
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {}
+    },
+    "ListParagraph": {
+      "id": "ListParagraph",
+      "name": "List Paragraph",
+      "type": "paragraph",
+      "basedOn": "Normal",
+      "next": null,
+      "linked": null,
+      "uiPriority": "34",
+      "qFormat": true,
+      "fonts": {},
+      "paragraph": {
+        "indent": {
+          "left": "720",
+          "right": null,
+          "firstLine": null,
+          "hanging": null
+        }
+      },
+      "run": {}
+    },
+    "UnresolvedMention": {
+      "id": "UnresolvedMention",
+      "name": "Unresolved Mention",
+      "type": "character",
+      "basedOn": "DefaultParagraphFont",
+      "next": null,
+      "linked": null,
+      "uiPriority": "99",
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {
+        "color": "605E5C"
+      }
+    },
+    "FollowedHyperlink": {
+      "id": "FollowedHyperlink",
+      "name": "FollowedHyperlink",
+      "type": "character",
+      "basedOn": "DefaultParagraphFont",
+      "next": null,
+      "linked": null,
+      "uiPriority": null,
+      "qFormat": false,
+      "fonts": {},
+      "paragraph": {},
+      "run": {
+        "color": "954F72"
+      }
+    }
+  },
+  "numbering": {
+    "1": {
+      "abstractNumId": "23",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "360",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "2": {
+      "abstractNumId": "30",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1-",
+          "start": "1",
+          "indent": {
+            "left": "1690",
+            "hanging": "1020"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1750",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2470",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3190",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3910",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4630",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5350",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6070",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6790",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "3": {
+      "abstractNumId": "1",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "4": {
+      "abstractNumId": "27",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "5": {
+      "abstractNumId": "20",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "+",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "6": {
+      "abstractNumId": "17",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1710",
+            "hanging": "990"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "3",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "7": {
+      "abstractNumId": "15",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "lowerLetter",
+          "lvlText": "%1.",
+          "start": "4",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "8": {
+      "abstractNumId": "5",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "9": {
+      "abstractNumId": "21",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "10": {
+      "abstractNumId": "4",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "11": {
+      "abstractNumId": "0",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "12": {
+      "abstractNumId": "11",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "13": {
+      "abstractNumId": "26",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "14": {
+      "abstractNumId": "19",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "15": {
+      "abstractNumId": "12",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "1350",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "2070",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2790",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3510",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "4230",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4950",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5670",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6390",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "7110",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "16": {
+      "abstractNumId": "3",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "2",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "7200",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "7920",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "8640",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "17": {
+      "abstractNumId": "29",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": null,
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "18": {
+      "abstractNumId": "25",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "19": {
+      "abstractNumId": "9",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "20": {
+      "abstractNumId": "10",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "2",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "21": {
+      "abstractNumId": "18",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "22": {
+      "abstractNumId": "7",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "23": {
+      "abstractNumId": "14",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "24": {
+      "abstractNumId": "6",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "25": {
+      "abstractNumId": "2",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "720",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1440",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2160",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2880",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3600",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4320",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5040",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5760",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6480",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "26": {
+      "abstractNumId": "13",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "27": {
+      "abstractNumId": "31",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "decimal",
+          "lvlText": "%1.",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "lowerLetter",
+          "lvlText": "%2.",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "lowerRoman",
+          "lvlText": "%3.",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "decimal",
+          "lvlText": "%4.",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "lowerLetter",
+          "lvlText": "%5.",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "lowerRoman",
+          "lvlText": "%6.",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "180"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "decimal",
+          "lvlText": "%7.",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "lowerLetter",
+          "lvlText": "%8.",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "lowerRoman",
+          "lvlText": "%9.",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "180"
+          }
+        }
+      ]
+    },
+    "28": {
+      "abstractNumId": "22",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "2",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "29": {
+      "abstractNumId": "28",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "30": {
+      "abstractNumId": "24",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "31": {
+      "abstractNumId": "16",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    },
+    "32": {
+      "abstractNumId": "8",
+      "levels": [
+        {
+          "ilvl": "0",
+          "numFmt": "bullet",
+          "lvlText": "-",
+          "start": "1",
+          "indent": {
+            "left": "1080",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "1",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "1800",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "2",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "2520",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "3",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "3240",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "4",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "3960",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "5",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "4680",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "6",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "5400",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "7",
+          "numFmt": "bullet",
+          "lvlText": "o",
+          "start": "1",
+          "indent": {
+            "left": "6120",
+            "hanging": "360"
+          }
+        },
+        {
+          "ilvl": "8",
+          "numFmt": "bullet",
+          "lvlText": "",
+          "start": "1",
+          "indent": {
+            "left": "6840",
+            "hanging": "360"
+          }
+        }
+      ]
+    }
+  },
+  "tables": [
+    {
+      "index": 0,
+      "rows": 2,
+      "properties": {
+        "width": {
+          "value": "9214",
+          "type": "dxa"
+        },
+        "borders": {}
+      },
+      "grid": [
+        "2268",
+        "1560",
+        "5386"
+      ],
+      "sample_cells": [
+        [
+          {
+            "row": 0,
+            "col": 0,
+            "text": "UBND TỈNH TUYÊN QUANG SỞ GIÁO DỤC VÀ ĐÀO TẠO Số: /SGDĐT- HSSV -KHCN TT V/v Chuẩn bị các điều kiện triển khai học bạ số năm học 2025-2026",
+            "width": "3828",
+            "gridSpan": "2"
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "text": "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM Ðộc lập - Tự do - Hạnh phúc Tuyên Quang , ngày tháng 01 năm 202 6",
+            "width": "5386"
+          }
+        ],
+        [
+          {
+            "row": 1,
+            "col": 0,
+            "text": "Kính gửi:",
+            "width": "2268"
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "text": "- Sở Khoa học và Công nghệ ; - Sở Tài chính ; - Công an tỉnh; - Trường Đại học Tân Trào; - UBND cá c xã, phường; - Các đơn vị trực thuộc Sở GDĐT ; - Các trường TH, TH&THCS, THCS toàn tỉnh ;",
+            "width": "6946",
+            "gridSpan": "2"
+          }
+        ]
+      ]
+    },
+    {
+      "index": 1,
+      "rows": 1,
+      "properties": {
+        "width": {
+          "value": "5000",
+          "type": "pct"
+        },
+        "borders": {}
+      },
+      "grid": [
+        "3818",
+        "410",
+        "4844"
+      ],
+      "sample_cells": [
+        [
+          {
+            "row": 0,
+            "col": 0,
+            "text": "Nơi nhận: - Như trên ; - UBND tỉnh (b/c) ; - Lãnh đạo Sở GDĐT ; - Các phòng thuộc Sở GDĐT; - Lưu : VT , HSSV-KHCN TT ( Cương ) .",
+            "width": "2104"
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "text": "",
+            "width": "226"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "text": "KT. GIÁM ĐỐC PHÓ GIÁM ĐỐC Đinh Thế Hiệp",
+            "width": "2669"
+          }
+        ]
+      ]
+    }
+  ],
+  "headers_footers": {
+    "headers": [
+      {
+        "file": "word/header1.xml",
+        "exists": true
+      }
+    ],
+    "footers": [
+      {
+        "file": "word/footer1.xml",
+        "exists": true
+      }
+    ]
+  },
+  "sections": [
+    {
+      "index": 0,
+      "page_size": {
+        "w": "11907",
+        "h": "16840",
+        "orient": null
+      },
+      "page_margins": {
+        "top": "1134",
+        "right": "1134",
+        "bottom": "1134",
+        "left": "1701",
+        "header": "567",
+        "footer": "567",
+        "gutter": "0"
+      },
+      "cols": null,
+      "titlePg": true,
+      "references": [
+        {
+          "tag": "headerReference",
+          "type": "default",
+          "id": "rId9"
+        },
+        {
+          "tag": "footerReference",
+          "type": "default",
+          "id": "rId10"
+        }
+      ]
+    }
+  ],
+  "theme": {
+    "latin_typefaces": {
+      "major": "Calibri Light",
+      "minor": "Calibri"
+    },
+    "east_asia_typefaces": {
+      "major": "",
+      "minor": ""
+    }
+  },
+  "text_parts": [
+    "word/document.xml",
+    "word/endnotes.xml",
+    "word/footer1.xml",
+    "word/footnotes.xml",
+    "word/header1.xml"
+  ],
+  "structural_signature": [
+    {
+      "centered": true,
+      "all_caps": true,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c0]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": true,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c0]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": true,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c0]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c0]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": false
+    },
+    {
+      "centered": true,
+      "all_caps": true,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c1]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": true,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c1]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": true,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c1]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c1]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": false
+    },
+    {
+      "centered": true,
+      "all_caps": true,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c2]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c2]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": true,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r0c2]",
+      "style_name": "Normal",
+      "jc": "center",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": false,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": true,
+      "has_noi_nhan": false,
+      "origin": "body/table[r1c0]",
+      "style_name": "Normal",
+      "jc": "right",
+      "has_tabs": false,
+      "has_indent": true
+    },
+    {
+      "centered": false,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r1c1]",
+      "style_name": "Normal",
+      "jc": null,
+      "has_tabs": false,
+      "has_indent": false
+    },
+    {
+      "centered": false,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r1c1]",
+      "style_name": "Normal",
+      "jc": null,
+      "has_tabs": false,
+      "has_indent": false
+    },
+    {
+      "centered": false,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r1c1]",
+      "style_name": "Normal",
+      "jc": null,
+      "has_tabs": false,
+      "has_indent": false
+    },
+    {
+      "centered": false,
+      "all_caps": false,
+      "has_so": false,
+      "has_kinh_gui": false,
+      "has_noi_nhan": false,
+      "origin": "body/table[r1c1]",
+      "style_name": "Normal",
+      "jc": null,
+      "has_tabs": false,
+      "has_indent": false
+    }
+  ]
+}

@@ -69,6 +69,3 @@ ${QUY_TAC_CLAUDE_MD}
 ---
 
 Bắt đầu bằng câu hỏi đầu tiên ngay bây giờ.`;
-
-// Prompt 2: đề xuất plugin theo vai trò công việc.
-export const PROMPT_DE_XUAT_PLUGIN = `Tôi mới sử dụng AWord. Trước tiên hãy hỏi tôi vai trò và công việc hằng ngày (hỏi từng câu một), sau đó tìm và đề xuất các plugin/extension phù hợp trên Open VSX để cài đặt. Với mỗi plugin: nêu rõ nó giải quyết việc gì cho tôi, ưu nhược điểm, và hướng dẫn cài qua biểu tượng Tiện ích ở thanh bên trái. Chỉ đề xuất những plugin thực sự cần thiết cho công việc của tôi, không liệt kê tràn lan.`;
