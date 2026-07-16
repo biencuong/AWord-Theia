@@ -37,6 +37,12 @@ Backend parse stream-json → phát sự kiện; frontend render:
 - **Diff khi sửa/tạo tệp** (Edit/Write/MultiEdit): đỏ = bỏ, xanh = thêm.
 - Menu Tệp/Chỉnh sửa/Xem/Trợ giúp hoạt động; Explorer bấm tệp → chèn `@tệp`.
 - **Lưu/khôi phục phiên**: mở app tự `--continue`; nút "＋ Mới" mở phiên tươi.
+- **Thanh điều khiển như extension**: chọn **Model** (opus/sonnet/haiku → `--model`), **Mức độ**
+  (low..max → `--effort`), **Chế độ** (acceptEdits/plan/bypassPermissions → `--permission-mode`).
+  Đổi = áp dụng NÓNG, giữ ngữ cảnh (`chat_switch` = kill + respawn kèm `--continue`).
+- **Cấp quyền thư mục**: nút/menu → hộp chọn thư mục (crate `rfd`) → `--add-dir` → Claude truy cập được.
+- **Ẩn cửa sổ cmd**: mọi spawn `claude.exe`/PowerShell dùng `creation_flags(CREATE_NO_WINDOW)` —
+  đã kiểm chứng release không còn cửa sổ console hiện.
 
 ## KHÔNG đóng kèm claude.exe
 

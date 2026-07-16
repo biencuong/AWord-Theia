@@ -45,6 +45,30 @@
 
       <div id="messages"></div>
 
+      <!-- Thanh điều khiển: model, mức độ, chế độ, cấp quyền thư mục (như extension) -->
+      <div id="controls">
+        <select id="sel-model" title="Chọn model">
+          <option value="opus">🧠 Opus · mạnh nhất</option>
+          <option value="sonnet" selected>⚡ Sonnet · cân bằng</option>
+          <option value="haiku">🍃 Haiku · nhanh</option>
+        </select>
+        <select id="sel-effort" title="Mức độ suy nghĩ">
+          <option value="">Mức độ: mặc định</option>
+          <option value="low">Mức độ: thấp</option>
+          <option value="medium">Mức độ: trung bình</option>
+          <option value="high">Mức độ: cao</option>
+          <option value="xhigh">Mức độ: rất cao</option>
+          <option value="max">Mức độ: tối đa</option>
+        </select>
+        <select id="sel-mode" title="Chế độ làm việc">
+          <option value="acceptEdits" selected>Chế độ: Tự động (sửa tệp)</option>
+          <option value="plan">Chế độ: Kế hoạch (không sửa)</option>
+          <option value="bypassPermissions">Chế độ: Toàn quyền</option>
+        </select>
+        <span class="ctl-spacer"></span>
+        <button id="btn-adddir" title="Cấp quyền một thư mục cho Claude truy cập">📁 Cấp quyền thư mục</button>
+      </div>
+
       <div id="composer">
         <textarea id="input" rows="1" placeholder="Nhập yêu cầu bằng tiếng Việt rồi nhấn Enter (Shift+Enter để xuống dòng)…"></textarea>
         <button id="send" title="Gửi (Enter)">&#x27A4;</button>

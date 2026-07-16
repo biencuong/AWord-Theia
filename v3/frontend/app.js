@@ -18,15 +18,18 @@ if (window.__APPJS_RUNS === 1) (function () {
     bootstrap: () => T.core.invoke('bootstrap'),
     onBoot: cb => T.event.listen('boot', e => cb(e.payload)),
     onChat: cb => T.event.listen('chat', e => cb(e.payload)),
-    chatStart: resume => T.core.invoke('chat_start', { resume }),
+    chatStart: (resume, model, effort, mode) => T.core.invoke('chat_start', { resume, model, effort, mode }),
+    chatSwitch: (model, effort, mode) => T.core.invoke('chat_switch', { model, effort, mode }),
     chatSend: message => T.core.invoke('chat_send', { message }),
     chatStop: () => T.core.invoke('chat_stop'),
     chatNew: () => T.core.invoke('chat_new'),
+    addDirectory: () => T.core.invoke('add_directory'),
     listFiles: dir => T.core.invoke('list_files', { dir: dir || '.' }),
     openWorkspace: () => T.core.invoke('open_workspace'),
   } : {
     bootstrap: () => { }, onBoot: () => { }, onChat: () => { },
-    chatStart: () => { }, chatSend: () => { }, chatStop: () => { }, chatNew: () => { },
+    chatStart: () => { }, chatSwitch: () => { }, chatSend: () => { }, chatStop: () => { }, chatNew: () => { },
+    addDirectory: async () => null,
     listFiles: async dir => (await fetch('/files?dir=' + encodeURIComponent(dir || '.'))).json(),
     openWorkspace: () => { },
   };
@@ -235,6 +238,28 @@ if (window.__APPJS_RUNS === 1) (function () {
     ketThucLuot(null); status.textContent = 'Đã dừng.';
   };
 
+  // --- Điều khiển: model / mức độ / chế độ / cấp quyền thư mục ---
+  const selModel = $('#sel-model'), selEffort = $('#sel-effort'), selMode = $('#sel-mode');
+  function layOpts() { return { model: selModel.value, effort: selEffort.value, mode: selMode.value }; }
+  function apDungOpts() {
+    if (!daBatDau) return; // chưa khởi động chat thì đổi lần đầu sẽ áp khi bắt đầu
+    const o = layOpts();
+    status.textContent = 'Đang áp dụng cài đặt (giữ ngữ cảnh)…';
+    Promise.resolve(api.chatSwitch(o.model, o.effort, o.mode))
+      .then(() => { status.textContent = 'Đã áp dụng · ' + selModel.options[selModel.selectedIndex].text; })
+      .catch(() => { status.textContent = 'Không áp dụng được cài đặt.'; });
+  }
+  selModel.onchange = apDungOpts; selEffort.onchange = apDungOpts; selMode.onchange = apDungOpts;
+
+  async function capQuyenThuMuc() {
+    status.textContent = 'Đang mở hộp chọn thư mục…';
+    try {
+      const p = await api.addDirectory();
+      status.textContent = p ? ('Đã cấp quyền thư mục: ' + p) : 'Chưa chọn thư mục.';
+    } catch { status.textContent = 'Không cấp quyền được thư mục.'; }
+  }
+  $('#btn-adddir').onclick = capQuyenThuMuc;
+
   // --- Explorer ---
   async function napFiles(dir) {
     try {
@@ -278,6 +303,7 @@ if (window.__APPJS_RUNS === 1) (function () {
   const MENUS = {
     tep: [
       { label: '＋ Cuộc trò chuyện mới', act: () => $('#btn-new').onclick() },
+      { label: '📁 Cấp quyền thư mục cho Claude…', act: capQuyenThuMuc },
       { label: '📂 Mở thư mục làm việc', act: () => api.openWorkspace() },
       { sep: 1 },
       { label: 'Thoát', act: () => win && win.close() },
@@ -333,7 +359,8 @@ if (window.__APPJS_RUNS === 1) (function () {
   function batDauChat(resume) {
     if (!isTauri) { status.textContent = 'Chế độ xem thử trong trình duyệt — chạy bản đóng gói để dùng.'; return; }
     if (daBatDau) return; daBatDau = true;
-    api.chatStart(resume); input.focus();
+    const o = layOpts();
+    api.chatStart(resume, o.model, o.effort, o.mode); input.focus();
   }
   function xuLyBoot(m) {
     if (!m || !m.status) return;

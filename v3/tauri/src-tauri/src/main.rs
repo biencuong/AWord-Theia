@@ -9,6 +9,7 @@ use base64::Engine;
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde_json::{json, Value};
 use std::io::{BufRead, BufReader, Read, Write};
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Child, ChildStdin, Stdio};
 use std::sync::Mutex;
@@ -27,12 +28,30 @@ struct ChatProc {
     stdin: ChildStdin,
 }
 
+// Tuỳ chọn phiên chat: model, mức độ (effort), chế độ làm việc (permission mode).
+struct ChatOpts {
+    model: String,  // opus | sonnet | haiku (rỗng = theo settings)
+    effort: String, // low|medium|high|xhigh|max (rỗng = theo settings)
+    mode: String,   // acceptEdits | plan | bypassPermissions
+}
+impl Default for ChatOpts {
+    fn default() -> Self {
+        Self { model: "sonnet".into(), effort: String::new(), mode: "acceptEdits".into() }
+    }
+}
+
 #[derive(Default)]
 struct AppState {
     pty: Mutex<Option<PtySession>>,
     chat: Mutex<Option<ChatProc>>,
+    opts: Mutex<ChatOpts>,
+    extra_dirs: Mutex<Vec<String>>, // thư mục thêm cho Claude truy cập (--add-dir)
     claude_path: Mutex<Option<String>>,
 }
+
+// Ẩn cửa sổ console khi spawn tiến trình (claude/powershell) — tránh nhá cmd.
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 fn home() -> PathBuf {
     PathBuf::from(std::env::var("USERPROFILE").unwrap_or_else(|_| ".".into()))
@@ -86,7 +105,7 @@ fn find_claude_path() -> Option<(String, bool)> {
 }
 
 fn get_version(exe: &str) -> String {
-    std::process::Command::new(exe).arg("--version").output().ok()
+    std::process::Command::new(exe).arg("--version").creation_flags(CREATE_NO_WINDOW).output().ok()
         .and_then(|o| String::from_utf8(o.stdout).ok())
         .map(|s| s.trim().to_string())
         .unwrap_or_default()
@@ -124,6 +143,7 @@ fn cai_claude() -> bool {
     std::process::Command::new("powershell")
         .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
             "& ([scriptblock]::Create((Invoke-RestMethod https://claude.ai/install.ps1))) latest"])
+        .creation_flags(CREATE_NO_WINDOW)
         .status()
         .map(|s| s.success())
         .unwrap_or(false)
@@ -274,13 +294,24 @@ fn ensure_chat(app: &AppHandle, state: &State<AppState>, resume: bool) -> Result
 
     let mut cmd = std::process::Command::new(&exe);
     cmd.args(["--print", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose", "--include-partial-messages"]);
-    // Chế độ headless không có hộp thoại duyệt quyền như terminal → tự duyệt SỬA TỆP để
-    // Claude soạn/sửa văn bản được (đúng mục đích AWord). Bash vẫn theo settings.json.
-    cmd.args(["--permission-mode", "acceptEdits"]);
+    // Tuỳ chọn model/mức độ/chế độ do người dùng chọn (như extension). Chế độ headless không có
+    // hộp thoại duyệt quyền → mặc định acceptEdits để Claude soạn/sửa văn bản được.
+    let (model, effort, mode) = {
+        let o = state.opts.lock().unwrap();
+        (o.model.clone(), o.effort.clone(), o.mode.clone())
+    };
+    if !model.is_empty() { cmd.args(["--model", &model]); }
+    if !effort.is_empty() { cmd.args(["--effort", &effort]); }
+    if !mode.is_empty() { cmd.args(["--permission-mode", &mode]); }
+    // Thư mục thêm mà người dùng cấp quyền cho Claude.
+    for d in state.extra_dirs.lock().unwrap().iter() {
+        cmd.args(["--add-dir", d]);
+    }
     if resume && has_prior_session() {
         cmd.arg("--continue");
     }
-    cmd.current_dir(workspace())
+    cmd.creation_flags(CREATE_NO_WINDOW) // ẩn cửa sổ cmd
+        .current_dir(workspace())
         .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
 
     let mut child = cmd.spawn().map_err(|e| format!("Không chạy được claude: {e}"))?;
@@ -374,10 +405,33 @@ fn ensure_chat(app: &AppHandle, state: &State<AppState>, resume: bool) -> Result
     Ok(())
 }
 
-// Mở/bảo đảm phiên chat (resume=true để khôi phục cuộc trò chuyện trước).
+// Mở/bảo đảm phiên chat (resume=true để khôi phục cuộc trò chuyện trước) với model/mức độ/chế độ.
 #[tauri::command]
-fn chat_start(app: AppHandle, state: State<AppState>, resume: bool) -> Result<(), String> {
+fn chat_start(app: AppHandle, state: State<AppState>, resume: bool, model: String, effort: String, mode: String) -> Result<(), String> {
+    *state.opts.lock().unwrap() = ChatOpts { model, effort, mode };
     ensure_chat(&app, &state, resume)
+}
+
+// Đổi model/mức độ/chế độ: khởi động lại claude kèm --continue để GIỮ ngữ cảnh cuộc trò chuyện.
+#[tauri::command]
+fn chat_switch(app: AppHandle, state: State<AppState>, model: String, effort: String, mode: String) -> Result<(), String> {
+    *state.opts.lock().unwrap() = ChatOpts { model, effort, mode };
+    if let Some(mut c) = state.chat.lock().unwrap().take() { let _ = c.child.kill(); }
+    ensure_chat(&app, &state, true)
+}
+
+// Cấp quyền một thư mục cho Claude: mở hộp chọn thư mục, thêm --add-dir, khởi động lại (giữ ngữ cảnh).
+#[tauri::command]
+fn add_directory(app: AppHandle, state: State<AppState>) -> Option<String> {
+    let dir = rfd::FileDialog::new().set_title("Chọn thư mục cấp quyền cho Claude").pick_folder()?;
+    let s = dir.to_string_lossy().into_owned();
+    {
+        let mut dirs = state.extra_dirs.lock().unwrap();
+        if !dirs.contains(&s) { dirs.push(s.clone()); }
+    }
+    if let Some(mut c) = state.chat.lock().unwrap().take() { let _ = c.child.kill(); }
+    let _ = ensure_chat(&app, &state, true);
+    Some(s)
 }
 
 // Gửi một tin nhắn của người dùng.
@@ -445,7 +499,7 @@ fn main() {
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             bootstrap, pty_spawn, pty_write, pty_resize, pty_kill,
-            chat_start, chat_send, chat_stop, chat_new,
+            chat_start, chat_switch, chat_send, chat_stop, chat_new, add_directory,
             list_files, open_workspace
         ])
         .run(tauri::generate_context!())

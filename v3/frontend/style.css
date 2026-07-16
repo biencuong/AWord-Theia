@@ -100,7 +100,15 @@ body {
 .dl.dim { color: var(--fg-dim); font-style: italic; }
 
 /* Ô nhập */
-#composer { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--border); background: var(--panel); }
+/* Thanh điều khiển: model / mức độ / chế độ / thư mục */
+#controls { display: flex; align-items: center; gap: 8px; padding: 7px 16px 0; flex-wrap: wrap; }
+#controls select { background: var(--panel2); color: var(--fg); border: 1px solid var(--border); border-radius: 7px; padding: 4px 8px; font: inherit; font-size: 12px; cursor: pointer; outline: none; }
+#controls select:hover { border-color: var(--cam); }
+#controls .ctl-spacer { flex: 1; }
+#controls #btn-adddir { background: transparent; color: var(--fg-dim); border: 1px solid var(--border); border-radius: 7px; padding: 4px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+#controls #btn-adddir:hover { background: #ffffff14; color: var(--fg); }
+
+#composer { display: flex; gap: 8px; padding: 8px 16px 10px; border-top: 1px solid var(--border); background: var(--panel); }
 #input { flex: 1; resize: none; max-height: 180px; background: var(--panel2); color: var(--fg); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font: inherit; font-size: 14px; outline: none; line-height: 1.4; }
 #input:focus { border-color: var(--cam); }
 #send { width: 42px; border: 0; border-radius: 9px; background: var(--cam); color: #fff; font-size: 17px; cursor: pointer; align-self: stretch; }
