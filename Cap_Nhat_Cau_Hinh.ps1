@@ -4,8 +4,8 @@
 #   - các máy chủ MCP đã kết nối (mcpServers),
 #   - mọi khóa cá nhân khác mà bản mới không định nghĩa.
 # Mảng (ví dụ permissions.allow) được hợp nhất, loại trùng lặp.
-# Bộ cài AWord gọi script này khi người dùng chọn "Cập nhật" — bản cũ đã được sao lưu
-# thành settings.truoc-cap-nhat.json ngay trước đó. Chạy độc lập cũng được (không cần Admin).
+# Bộ cài AWord gọi script này khi người dùng chọn "Cập nhật". Bản cũ được SAO LƯU theo THỜI GIAN
+# (settings.backup-yyyyMMdd-HHmmss.json) để không đè lên bản sao lưu lần trước. Không cần Admin.
 
 $ErrorActionPreference = 'Stop'
 $thuMuc  = Join-Path $env:USERPROFILE '.claude'
@@ -13,6 +13,10 @@ $fileCu  = Join-Path $thuMuc 'settings.json'
 $fileMoi = Join-Path $thuMuc 'settings.example.json'
 if (-not (Test-Path $fileMoi)) { exit 0 }
 if (-not (Test-Path $fileCu))  { Copy-Item $fileMoi $fileCu; exit 0 }
+
+# Sao lưu theo thời gian trước khi hợp nhất (giữ mọi bản cũ, không mất của người dùng)
+$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+Copy-Item $fileCu (Join-Path $thuMuc "settings.backup-$stamp.json") -Force
 
 try { $cauHinhCu = Get-Content $fileCu -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $cauHinhCu = $null }
 $cauHinhMoi = Get-Content $fileMoi -Raw -Encoding UTF8 | ConvertFrom-Json
