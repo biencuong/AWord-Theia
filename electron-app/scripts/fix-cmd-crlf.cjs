@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const rootDir = path.join(__dirname, '..', '..');
-const files = ['Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Dong_Goi_AWord.bat'];
+const files = ['Ket_Noi_KhoDuLieu.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Kiem_Tra_AWord.cmd', 'Dong_Goi_AWord.bat'];
 
 for (const name of files) {
     const p = path.join(rootDir, name);

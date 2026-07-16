@@ -1,5 +1,5 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
-import { MenuModelRegistry, CommandRegistry, Command, CommandService, URI } from '@theia/core';
+import { MenuModelRegistry, CommandRegistry, Command, URI } from '@theia/core';
 import { AbstractViewContribution, CommonMenus, FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { BinaryBuffer } from '@theia/core/lib/common/buffer';
@@ -32,8 +32,8 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
 
-    @inject(CommandService)
-    protected readonly commandService: CommandService;
+    @inject(CommandRegistry)
+    protected readonly commandRegistry: CommandRegistry;
 
     constructor() {
         super({
@@ -103,18 +103,25 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         }
     }
 
-    // Mở khung chat Claude làm tab chính giữa màn hình. Plugin nạp bất đồng bộ sau khi
-    // layout sẵn sàng nên lệnh có thể chưa tồn tại — thử lại tối đa ~30 giây.
+    // Mở khung chat Claude làm tab chính giữa màn hình. Plugin nạp bất đồng bộ nên phải
+    // CHỜ LỆNH ĐƯỢC ĐĂNG KÝ rồi mới gọi, và chỉ gọi ĐÚNG MỘT LẦN.
+    // TUYỆT ĐỐI không gọi-thử-lặp-lại: nếu lệnh đã tồn tại nhưng chạy lỗi (vd claude.exe
+    // không khởi động được trên máy đó), mỗi lần gọi lại là một lần spawn CLI —
+    // từng gây lỗi thực tế bắn ra hàng chục cửa sổ claude khi khởi động.
     protected async moClaudeGiuaManHinh(): Promise<void> {
-        for (let lan = 0; lan < 30; lan++) {
-            try {
-                await this.commandService.executeCommand('claude-vscode.editor.open');
-                return;
-            } catch {
-                await new Promise(r => setTimeout(r, 1000));
-            }
+        const lenhGiuaManHinh = 'claude-vscode.editor.open';
+        const lenhThanhBen = 'claude-vscode.sidebar.open';
+        for (let lan = 0; lan < 60 && !this.commandRegistry.getCommand(lenhGiuaManHinh); lan++) {
+            await new Promise(r => setTimeout(r, 500));
         }
-        // Dự phòng: mở ở thanh bên nếu lệnh mở giữa màn hình không có.
-        try { await this.commandService.executeCommand('claude-vscode.sidebar.open'); } catch { /* plugin không nạp được */ }
+        if (!this.commandRegistry.getCommand(lenhGiuaManHinh)) {
+            return; // plugin không nạp được trong 30s — không cố thêm
+        }
+        try {
+            await this.commandRegistry.executeCommand(lenhGiuaManHinh);
+        } catch {
+            // Một lần dự phòng duy nhất; vẫn lỗi thì dừng — plugin sẽ tự hiện thông báo lỗi của nó.
+            try { await this.commandRegistry.executeCommand(lenhThanhBen); } catch { /* dừng, không lặp */ }
+        }
     }
 }
