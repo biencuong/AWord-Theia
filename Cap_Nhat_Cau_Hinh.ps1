@@ -45,18 +45,34 @@ function Hop-Nhat($goc, $them) {
     }
 }
 
-# Nhớ token thật của máy trước khi hợp nhất (bản mới sẽ đè bằng placeholder)
-$tokenCu = $null
-if ($cauHinhCu.env -and $cauHinhCu.env.ANTHROPIC_AUTH_TOKEN) {
+# Ghi nhớ trạng thái gateway của máy TRƯỚC khi hợp nhất — quyết định cách xử lý token:
+#   1. Máy KHÔNG có gateway lẫn token (dùng đăng nhập claude.ai): không được áp env
+#      ANTHROPIC_* của bản mới (gateway + token placeholder sẽ phá đăng nhập đang chạy).
+#   2. Máy có gateway TRÙNG với bản mới: giữ token thật của máy (token vẫn hợp lệ).
+#   3. Máy có gateway KHÁC bản mới (đổi nhà cung cấp): dùng token của bản mới —
+#      token cũ thuộc gateway cũ, giữ lại sẽ hỏng xác thực trên gateway mới.
+$urlCu = $null; $tokenCu = $null
+if ($cauHinhCu.env) {
+    $urlCu   = $cauHinhCu.env.ANTHROPIC_BASE_URL
     $tokenCu = $cauHinhCu.env.ANTHROPIC_AUTH_TOKEN
 }
+$urlMoi = $null
+if ($cauHinhMoi.env) { $urlMoi = $cauHinhMoi.env.ANTHROPIC_BASE_URL }
 
 Hop-Nhat $cauHinhCu $cauHinhMoi
 
-# Trả lại token thật nếu máy đã có (chỉ nhận token bản mới khi token cũ trống/placeholder)
-if ($tokenCu -and $tokenCu -notmatch '^[xX]{3,}$') {
+if (-not $urlCu -and -not $tokenCu) {
+    # Trường hợp 1: máy đăng nhập claude.ai — gỡ mọi khóa ANTHROPIC_* vừa bị thêm vào
+    if ($cauHinhCu.env) {
+        foreach ($ten in @($cauHinhCu.env.PSObject.Properties.Name)) {
+            if ($ten -like 'ANTHROPIC_*') { $cauHinhCu.env.PSObject.Properties.Remove($ten) }
+        }
+    }
+} elseif ($tokenCu -and $tokenCu -notmatch '^[xX]{3,}$' -and $urlCu -eq $urlMoi) {
+    # Trường hợp 2: cùng gateway — trả lại token thật của máy
     $cauHinhCu.env.ANTHROPIC_AUTH_TOKEN = $tokenCu
 }
+# Trường hợp 3 (đổi gateway): giữ nguyên token bản mới — không làm gì thêm.
 
 $json = $cauHinhCu | ConvertTo-Json -Depth 12
 [System.IO.File]::WriteAllText($fileCu, $json, (New-Object System.Text.UTF8Encoding($false)))
