@@ -7,22 +7,30 @@
 
 use base64::Engine;
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
-use serde_json::json;
-use std::io::{Read, Write};
+use serde_json::{json, Value};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::PathBuf;
+use std::process::{Child, ChildStdin, Stdio};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, State};
 
-// Một phiên terminal đang chạy claude.
+// Một phiên terminal đang chạy claude (chế độ terminal — dự phòng).
 struct PtySession {
     master: Box<dyn portable_pty::MasterPty + Send>, // để resize
     writer: Box<dyn Write + Send>,                   // để gõ vào
     child: Box<dyn portable_pty::Child + Send + Sync>, // để kết thúc
 }
 
+// Tiến trình claude headless cho khung CHAT (giao diện giống extension VSCode).
+struct ChatProc {
+    child: Child,
+    stdin: ChildStdin,
+}
+
 #[derive(Default)]
 struct AppState {
     pty: Mutex<Option<PtySession>>,
+    chat: Mutex<Option<ChatProc>>,
     claude_path: Mutex<Option<String>>,
 }
 
@@ -125,9 +133,26 @@ fn set_claude_path(app: &AppHandle, p: &str) {
     *app.state::<AppState>().claude_path.lock().unwrap() = Some(p.to_string());
 }
 
-// Mở phiên terminal chạy claude tương tác, kích thước cols×rows.
+// Có phiên làm việc cũ cho thư mục làm việc chưa? (Claude lưu ~/.claude/projects/<cwd mã hóa>/*.jsonl)
+fn has_prior_session() -> bool {
+    let ws = workspace().to_string_lossy().to_string();
+    let enc: String = ws.chars().map(|c| if c == ':' || c == '\\' || c == '/' { '-' } else { c }).collect();
+    let dir = home().join(".claude").join("projects").join(enc);
+    std::fs::read_dir(&dir)
+        .map(|rd| rd.flatten().any(|e| e.path().extension().map_or(false, |x| x == "jsonl")))
+        .unwrap_or(false)
+}
+
+// Mở thư mục làm việc trong Explorer.
 #[tauri::command]
-fn pty_spawn(app: AppHandle, state: State<AppState>, cols: u16, rows: u16) -> Result<(), String> {
+fn open_workspace() {
+    let _ = std::process::Command::new("explorer").arg(workspace()).spawn();
+}
+
+// Mở phiên terminal chạy claude tương tác, kích thước cols×rows.
+// resume=true và có phiên cũ -> `claude --continue` (khôi phục cuộc trò chuyện gần nhất).
+#[tauri::command]
+fn pty_spawn(app: AppHandle, state: State<AppState>, cols: u16, rows: u16, resume: bool) -> Result<(), String> {
     {
         // Đã có phiên còn sống thì thôi.
         let mut g = state.pty.lock().unwrap();
@@ -152,6 +177,10 @@ fn pty_spawn(app: AppHandle, state: State<AppState>, cols: u16, rows: u16) -> Re
 
     let mut cmd = CommandBuilder::new(&exe);
     cmd.cwd(workspace());
+    // Khôi phục phiên gần nhất nếu có (lưu phiên làm việc giữa các lần mở app).
+    if resume && has_prior_session() {
+        cmd.arg("--continue");
+    }
     // Truyền toàn bộ biến môi trường hiện tại (PATH, USERPROFILE, LOCALAPPDATA...) để claude
     // tìm được ~/.claude, gateway, MCP... y như chạy trong terminal thật.
     for (k, v) in std::env::vars() {
@@ -211,6 +240,177 @@ fn pty_kill(state: State<AppState>) {
     }
 }
 
+// ===== Khung CHAT (headless stream-json) — giao diện giống extension Claude trên VSCode =====
+
+fn short_text(v: &Value, max: usize) -> String {
+    let s = if let Some(t) = v.as_str() {
+        t.to_string()
+    } else if let Some(arr) = v.as_array() {
+        arr.iter().filter_map(|b| b["text"].as_str()).collect::<Vec<_>>().join(" ")
+    } else {
+        String::new()
+    };
+    let s = s.trim().replace('\n', " ");
+    if s.chars().count() > max { format!("{}…", s.chars().take(max).collect::<String>()) } else { s }
+}
+
+// Bảo đảm tiến trình chat đang sống; nếu chưa → spawn (kèm --continue nếu resume & có phiên cũ).
+fn ensure_chat(app: &AppHandle, state: &State<AppState>, resume: bool) -> Result<(), String> {
+    {
+        let mut g = state.chat.lock().unwrap();
+        if let Some(c) = g.as_mut() {
+            if c.child.try_wait().ok().flatten().is_none() {
+                return Ok(()); // còn sống
+            }
+        }
+    }
+    let exe = {
+        let mut pp = state.claude_path.lock().unwrap();
+        if pp.is_none() {
+            if let Some((p, _)) = find_claude_path() { *pp = Some(p); }
+        }
+        pp.clone().ok_or_else(|| "Chưa cài Claude.".to_string())?
+    };
+
+    let mut cmd = std::process::Command::new(&exe);
+    cmd.args(["--print", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose", "--include-partial-messages"]);
+    // Chế độ headless không có hộp thoại duyệt quyền như terminal → tự duyệt SỬA TỆP để
+    // Claude soạn/sửa văn bản được (đúng mục đích AWord). Bash vẫn theo settings.json.
+    cmd.args(["--permission-mode", "acceptEdits"]);
+    if resume && has_prior_session() {
+        cmd.arg("--continue");
+    }
+    cmd.current_dir(workspace())
+        .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+
+    let mut child = cmd.spawn().map_err(|e| format!("Không chạy được claude: {e}"))?;
+    let stdin = child.stdin.take().ok_or("Không mở được stdin")?;
+    let stdout = child.stdout.take().ok_or("Không mở được stdout")?;
+
+    // Luồng đọc stdout: parse stream-json -> phát 'chat'.
+    let app2 = app.clone();
+    std::thread::spawn(move || {
+        let reader = BufReader::new(stdout);
+        // Trạng thái gom input của khối tool_use đang chảy (input_json_delta).
+        let mut in_tool = false;
+        let mut tool_json = String::new();
+        let mut tool_id = String::new();
+        let mut tool_name = String::new();
+        for line in reader.lines().map_while(Result::ok) {
+            let line = line.trim();
+            if line.is_empty() { continue; }
+            let v: Value = match serde_json::from_str(line) { Ok(v) => v, Err(_) => continue };
+            match v["type"].as_str().unwrap_or("") {
+                "system" if v["subtype"] == "init" => {
+                    let _ = app2.emit("chat", json!({"kind":"init","model":v["model"].as_str().unwrap_or("")}));
+                }
+                // Chảy từng phần: text theo token, tool theo đúng thứ tự khối.
+                "stream_event" => {
+                    let ev = &v["event"];
+                    match ev["type"].as_str().unwrap_or("") {
+                        "content_block_start" => {
+                            let cb = &ev["content_block"];
+                            if cb["type"] == "tool_use" {
+                                in_tool = true; tool_json.clear();
+                                tool_id = cb["id"].as_str().unwrap_or("").to_string();
+                                tool_name = cb["name"].as_str().unwrap_or("").to_string();
+                                let _ = app2.emit("chat", json!({"kind":"tool_start","id":tool_id,"name":tool_name}));
+                            } else if cb["type"] == "text" {
+                                in_tool = false;
+                                let _ = app2.emit("chat", json!({"kind":"text_start"}));
+                            }
+                        }
+                        "content_block_delta" => {
+                            let d = &ev["delta"];
+                            if d["type"] == "text_delta" {
+                                if let Some(t) = d["text"].as_str() {
+                                    let _ = app2.emit("chat", json!({"kind":"text","text":t}));
+                                }
+                            } else if d["type"] == "input_json_delta" {
+                                if let Some(pj) = d["partial_json"].as_str() { tool_json.push_str(pj); }
+                            }
+                        }
+                        "content_block_stop" => {
+                            if in_tool {
+                                let input: Value = serde_json::from_str(&tool_json).unwrap_or_else(|_| json!({}));
+                                let _ = app2.emit("chat", json!({"kind":"tool_input","id":tool_id,"name":tool_name,"input":input}));
+                                in_tool = false;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                // Kết quả trả về của công cụ.
+                "user" => {
+                    if let Some(content) = v["message"]["content"].as_array() {
+                        for b in content {
+                            if b["type"] == "tool_result" {
+                                let _ = app2.emit("chat", json!({
+                                    "kind":"tool_result",
+                                    "id": b["tool_use_id"].as_str().unwrap_or(""),
+                                    "is_error": b["is_error"].as_bool().unwrap_or(false),
+                                    "preview": short_text(&b["content"], 160),
+                                }));
+                            }
+                        }
+                    }
+                }
+                "result" => {
+                    let _ = app2.emit("chat", json!({
+                        "kind":"result",
+                        "text": v["result"].as_str().unwrap_or(""),
+                        "is_error": v["is_error"].as_bool().unwrap_or(false),
+                        "cost": v["total_cost_usd"].as_f64(),
+                    }));
+                }
+                // Bỏ qua "assistant" (bản đầy đủ) — đã chảy qua stream_event.
+                _ => {}
+            }
+        }
+        let _ = app2.emit("chat", json!({"kind":"exit"}));
+    });
+
+    *state.chat.lock().unwrap() = Some(ChatProc { child, stdin });
+    Ok(())
+}
+
+// Mở/bảo đảm phiên chat (resume=true để khôi phục cuộc trò chuyện trước).
+#[tauri::command]
+fn chat_start(app: AppHandle, state: State<AppState>, resume: bool) -> Result<(), String> {
+    ensure_chat(&app, &state, resume)
+}
+
+// Gửi một tin nhắn của người dùng.
+#[tauri::command]
+fn chat_send(app: AppHandle, state: State<AppState>, message: String) -> Result<(), String> {
+    ensure_chat(&app, &state, true)?;
+    let mut g = state.chat.lock().unwrap();
+    if let Some(c) = g.as_mut() {
+        let line = json!({"type":"user","message":{"role":"user","content":message}}).to_string();
+        c.stdin.write_all(line.as_bytes()).map_err(|e| format!("{e}"))?;
+        c.stdin.write_all(b"\n").map_err(|e| format!("{e}"))?;
+        c.stdin.flush().map_err(|e| format!("{e}"))?;
+    }
+    Ok(())
+}
+
+// Dừng lượt hiện tại (kết thúc tiến trình; lượt sau tự khởi động lại có --continue).
+#[tauri::command]
+fn chat_stop(state: State<AppState>) {
+    if let Some(mut c) = state.chat.lock().unwrap().take() {
+        let _ = c.child.kill();
+    }
+}
+
+// Cuộc trò chuyện MỚI (không khôi phục): kết thúc tiến trình cũ rồi mở phiên tươi.
+#[tauri::command]
+fn chat_new(app: AppHandle, state: State<AppState>) -> Result<(), String> {
+    if let Some(mut c) = state.chat.lock().unwrap().take() {
+        let _ = c.child.kill();
+    }
+    ensure_chat(&app, &state, false)
+}
+
 fn in_ws(rel: &str) -> Option<PathBuf> {
     let ws = workspace();
     let abs = ws.join(rel);
@@ -244,7 +444,9 @@ fn main() {
     tauri::Builder::default()
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
-            bootstrap, pty_spawn, pty_write, pty_resize, pty_kill, list_files
+            bootstrap, pty_spawn, pty_write, pty_resize, pty_kill,
+            chat_start, chat_send, chat_stop, chat_new,
+            list_files, open_workspace
         ])
         .run(tauri::generate_context!())
         .expect("loi khoi chay AWord Lite");

@@ -4,50 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AWord</title>
-<link rel="stylesheet" href="vendor/xterm.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Thanh tiêu đề tùy biến: logo AWord + menu (giống bản hiện tại) -->
+  <!-- Thanh tiêu đề: logo AWord + menu (hoạt động) -->
   <div id="titlebar" data-tauri-drag-region>
     <div class="logo">A</div>
     <div class="appname">AWord</div>
     <nav class="menubar">
-      <span class="menu">Tệp</span>
-      <span class="menu">Chỉnh sửa</span>
-      <span class="menu">Xem</span>
-      <span class="menu">Trợ giúp</span>
+      <span class="menu" data-menu="tep">Tệp</span>
+      <span class="menu" data-menu="sua">Chỉnh sửa</span>
+      <span class="menu" data-menu="xem">Xem</span>
+      <span class="menu" data-menu="trogiup">Trợ giúp</span>
     </nav>
     <div class="titletext">AWord — Giải pháp AI &amp; Chuyển đổi số</div>
-    <div class="winctrls"><span>&#x2013;</span><span>&#x25A1;</span><span class="close">&#x2715;</span></div>
+    <div class="winctrls"><span title="Thu nhỏ">&#x2013;</span><span title="Phóng to">&#x25A1;</span><span class="close" title="Đóng">&#x2715;</span></div>
   </div>
 
   <div id="body">
-    <!-- Thanh hoạt động (activity bar) trái -->
     <div id="activitybar">
-      <div class="act active" title="Khám phá">&#x1F4C1;</div>
-      <div class="act" title="Claude Code">&#x1F916;</div>
+      <div class="act active" title="Trò chuyện">&#x1F4AC;</div>
+      <div class="act" id="act-files" title="Khám phá tệp">&#x1F4C1;</div>
     </div>
 
-    <!-- Explorer -->
     <aside id="explorer">
       <div class="side-title">KHÁM PHÁ</div>
       <div id="ws-name"></div>
       <ul id="filetree"></ul>
-      <div class="explorer-hint">Bấm tệp để chèn <b>@tệp</b> vào Claude.</div>
+      <div class="explorer-hint">Bấm tệp để đính kèm <b>@tệp</b> vào câu hỏi.</div>
     </aside>
 
-    <!-- Vùng chính: Claude Code THẬT chạy trong terminal -->
+    <!-- Vùng chính: khung CHAT -->
     <main id="main">
       <div id="chattoolbar">
-        <span class="tab active">🤖 Claude Code</span>
+        <span class="tab active">🤖 Claude</span>
         <span class="spacer"></span>
-        <button id="btn-restart" title="Kết thúc và mở lại phiên Claude">↻ Khởi động lại</button>
+        <button id="btn-new" title="Cuộc trò chuyện mới">＋ Mới</button>
+        <button id="btn-stop" title="Dừng lượt hiện tại" disabled>■ Dừng</button>
       </div>
-      <div id="terminal"></div>
+
+      <div id="messages"></div>
+
+      <div id="composer">
+        <textarea id="input" rows="1" placeholder="Nhập yêu cầu bằng tiếng Việt rồi nhấn Enter (Shift+Enter để xuống dòng)…"></textarea>
+        <button id="send" title="Gửi (Enter)">&#x27A4;</button>
+      </div>
       <div id="status">Đang kết nối…</div>
     </main>
   </div>
+
+  <!-- Menu bật xuống -->
+  <div id="menupop" class="hidden"></div>
 
   <!-- Lớp phủ khi lần đầu tự cài Claude -->
   <div id="bootoverlay" class="hidden">
@@ -59,8 +66,17 @@
     </div>
   </div>
 
-  <script src="vendor/xterm.js"></script>
-  <script src="vendor/addon-fit.js"></script>
+  <!-- Hộp Giới thiệu -->
+  <div id="about" class="hidden">
+    <div class="about-card">
+      <div class="big-logo">A</div>
+      <h3>AWord</h3>
+      <p>Trợ lý AI cho cán bộ, công chức — soạn thảo &amp; xử lý văn bản.</p>
+      <p class="about-dim" id="about-ver">Đang lấy phiên bản Claude…</p>
+      <button id="about-close">Đóng</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
