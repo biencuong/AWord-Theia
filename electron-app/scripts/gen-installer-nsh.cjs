@@ -134,6 +134,20 @@ lines.push(
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\shell\\AWord"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\Background\\shell\\AWord"',
     '!macroend',
+    '',
+    '; Trang HOÀN TẤT: bấm "Kết thúc" -> trình cài ĐÓNG NGAY (ExecShellAsUser không chặn),',
+    '; AWord mở ở NỀN sau ~2 giây (để cửa sổ trình cài biến mất trước) — tránh cảm giác treo',
+    '; do AWord khởi động lần đầu hơi lâu. Chạy qua PowerShell ẩn (không cửa sổ), Start-Process',
+    '; nên tiến trình AWord tách rời, sống độc lập sau khi trình cài thoát.',
+    '!macro customFinishPage',
+    '  Function StartApp',
+    '    ${StdUtils.ExecShellAsUser} $0 "powershell.exe" "open" "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command $\\"Start-Sleep -Seconds 2; Start-Process -FilePath \'$INSTDIR\\AWord.exe\'$\\""',
+    '  FunctionEnd',
+    '  !define MUI_FINISHPAGE_RUN',
+    '  !define MUI_FINISHPAGE_RUN_TEXT "Mở AWord (chạy ở nền)"',
+    '  !define MUI_FINISHPAGE_RUN_FUNCTION "StartApp"',
+    '  !insertmacro MUI_PAGE_FINISH',
+    '!macroend',
     ''
 );
 

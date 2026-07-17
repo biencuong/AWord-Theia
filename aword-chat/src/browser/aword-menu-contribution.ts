@@ -27,11 +27,13 @@ export const AwordAddToClaudeCommand: Command = {
     label: 'Thêm vào Claude Code (@)'
 };
 
-// Đường dẫn menu "Terminal" do @theia/terminal đăng ký: [...MAIN_MENU_BAR, '7_terminal'].
-// Các menu top-level GỠ khỏi thanh menu cho gọn (không cần cho việc văn phòng):
-// Terminal (do @theia/terminal), Chọn vùng/Selection (do monaco MenubarSelectionMenu).
-// Tính năng vẫn dùng được qua Command Palette (Ctrl+Shift+P).
-const MENU_BAR_AN = ['7_terminal', '3_selection'];
+// Các menu top-level GỠ khỏi thanh menu cho gọn (không cần cho việc văn phòng) — ID theo
+// thứ tự chuẩn của monaco menubar. Tính năng vẫn dùng được qua Command Palette (Ctrl+Shift+P).
+//   3_selection  = Chọn vùng (monaco MenubarSelectionMenu)
+//   5_go         = Đi tới    (monaco MenubarGoMenu — điều hướng lập trình, không cần cho văn phòng)
+//   7_terminal   = Terminal  (@theia/terminal)
+// removeNode chỉ gỡ khi node tồn tại → thêm ID không có sẵn là vô hại (no-op).
+const MENU_BAR_AN = ['3_selection', '5_go', '7_terminal'];
 // Repo phát hành — phải khớp electron-app/scripts/inject-auto-update.cjs và Phat_Hanh_AWord.ps1.
 const GITHUB_REPO = 'biencuong/AWord-Theia';
 const TRANG_CHU = 'https://aword.vn';
