@@ -76,10 +76,15 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         }
         // Mặc định mở trình Khám phá (Explorer) với thư mục làm việc ở panel trái.
         await this.moExplorer(app);
-        // TRÌ HOÃN mở khung Claude ra khỏi đường khởi động then-chốt: chờ ứng dụng "rảnh tay"
-        // rồi mới mở (webview + spawn claude.exe ~253MB là việc nặng). Để layout/Explorer hiện
-        // trước, không chặn UI. Vẫn đảm bảo chỉ mở đúng một lần (logic trong moClaudeGiuaManHinh).
-        this.moKhiRanh(() => this.moClaudeGiuaManHinh(app));
+        // KHÔNG ép mở thêm Claude ở GIỮA màn hình: extension Claude Code đã tự mở sẵn MỘT khung
+        // Claude mặc định (thanh bên, theo preferredLocation=sidebar) + Theia khôi phục panel Claude
+        // của phiên trước. Ép mở thêm ở giữa gây HAI cửa sổ Claude (thừa + nặng thêm 1 webview +
+        // 1 tiến trình). Người dùng cần khung to hơn thì dùng menu Bố cục → "Claude ra giữa"
+        // (menu này gọi lệnh claude-vscode.editor.open trực tiếp, không qua đây).
+        // Dọn Claude thừa: layout phiên trước (bản cũ) có thể còn panel Claude ở GIỮA — đóng nó đi
+        // NẾU đã có Claude mặc định ở thanh bên (chỉ đóng khi chắc chắn còn Claude khác → không rơi
+        // về trạng thái không có Claude nào).
+        this.moKhiRanh(() => this.donClaudeThua(app));
     }
 
     // Chạy cb khi renderer rảnh (requestIdleCallback); không có thì lùi 500ms.
@@ -142,6 +147,27 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         } catch {
             return false; // không tạo được (đĩa/quyền) — rơi về trang chào mừng để người dùng tự mở thư mục
         }
+    }
+
+    // Dọn panel Claude thừa ở vùng GIỮA: đóng nó CHỈ KHI đang còn Claude khác (thanh bên do
+    // extension mở mặc định) — không bao giờ đóng hết. Thử ngay, rồi nghe sự kiện thêm widget
+    // (tối đa 8s) để bắt cả khi Claude thanh bên/khôi phục layout xuất hiện trễ. Nhận diện Claude
+    // theo id hoặc nhãn tiêu đề (webview của plugin không có id cố định).
+    protected donClaudeThua(app: FrontendApplication): void {
+        const laClaude = (w: { id: string; title?: { label?: string } }) =>
+            /claude/i.test(w.id) || /claude/i.test(w.title?.label ?? '');
+        const thu = (): boolean => {
+            const giua = app.shell.getWidgets('main').filter(laClaude);
+            const conKhac = app.shell.widgets.some(w => laClaude(w) && !giua.includes(w));
+            if (giua.length > 0 && conKhac) {
+                for (const w of giua) { try { w.close(); } catch { /* đang tái tạo — bỏ qua */ } }
+                return true;
+            }
+            return false;
+        };
+        if (thu()) { return; }
+        const sub = app.shell.onDidAddWidget(() => { if (thu()) { sub.dispose(); } });
+        setTimeout(() => sub.dispose(), 8000);
     }
 
     // Mở khung chat Claude làm tab chính giữa màn hình. Plugin nạp bất đồng bộ nên phải
