@@ -11,6 +11,7 @@ import { ApplicationServer } from '@theia/core/lib/common/application-protocol';
 import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handler';
 import { NavigatorContextMenu } from '@theia/navigator/lib/browser/navigator-contribution';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
+import { AWORD_LOGO_SVG } from './aword-logo';
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
@@ -47,7 +48,7 @@ function buildAboutMessageNode(): HTMLElement {
     header.className = 'aword-about-header';
     const logo = document.createElement('div');
     logo.className = 'aword-about-logo';
-    logo.textContent = 'A';
+    logo.innerHTML = AWORD_LOGO_SVG;
     const titleBox = document.createElement('div');
     const title = document.createElement('div');
     title.className = 'aword-about-title';

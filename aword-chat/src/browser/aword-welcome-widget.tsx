@@ -5,6 +5,7 @@ import { CommandService, MessageService, URI } from '@theia/core';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { PROMPT_THIET_LAP_WORKSPACE } from './aword-setup-prompts';
+import { AWORD_LOGO_SVG } from './aword-logo';
 
 // Hướng dẫn sử dụng nhanh — giữ ngắn gọn, mỗi mục một hành động cụ thể.
 const HUONG_DAN: { icon: string; text: string }[] = [
@@ -61,7 +62,7 @@ export class AwordWelcomeWidget extends ReactWidget {
         return <div className='aword-welcome'>
             <div className='aword-welcome-inner'>
                 <div className='aword-about-header aword-welcome-header'>
-                    <div className='aword-about-logo'>A</div>
+                    <div className='aword-about-logo' dangerouslySetInnerHTML={{ __html: AWORD_LOGO_SVG }} />
                     <div>
                         <div className='aword-about-title'>AWord</div>
                         <div className='aword-about-subtitle'>Giải pháp AI &amp; Chuyển đổi số cho cơ quan, doanh nghiệp</div>

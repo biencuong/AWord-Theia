@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="awTile" gradientUnits="userSpaceOnUse" x1="40" y1="24" x2="220" y2="232">
+      <stop offset="0" stop-color="#ffab3c"/>
+      <stop offset="0.55" stop-color="#f2701b"/>
+      <stop offset="1" stop-color="#d8460f"/>
+    </linearGradient>
+    <filter id="awShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect x="26" y="26" width="204" height="204" rx="50" fill="url(#awTile)" filter="url(#awShadow)"/>
+  <g fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M132 116 L184 64"/>
+    <polyline points="158,62 186,62 186,90"/>
+  </g>
+  <path fill="#ffffff" d="M86 72 C88.2 87 90.3 89.1 105 91.3 C90.3 93.5 88.2 95.6 86 110.6 C83.8 95.6 81.7 93.5 67 91.3 C81.7 89.1 83.8 87 86 72 Z"/>
+  <g fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 188 L93 122 L116 188"/>
+    <path d="M81 166 H105"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round">
+    <path d="M132 150 H176"/>
+    <path d="M132 168 H165"/>
+    <path d="M132 186 H152"/>
+  </g>
+</svg>

@@ -1,21 +1,15 @@
-KHUYẾN NGHỊ: Bản này thay đổi nhiều về cấu hình và giao diện — nên CÀI MỚI bằng bộ cài
-này. Khi bộ cài hỏi về settings.json và CLAUDE.md, hãy chọn "Yes" (cập nhật):
-- settings.json được HỢP NHẤT, không thay thế — giữ nguyên mã kết nối AI, Kho dữ liệu (MCP)
-  đã kết nối và tùy chỉnh cá nhân, chỉ bổ sung thông số tối ưu mới.
-- Bản cũ luôn được tự sao lưu thành *.truoc-cap-nhat.* để khôi phục khi cần.
+Bản cập nhật tinh gọn — nhẹ và mượt hơn. Khi bộ cài hỏi về settings.json và CLAUDE.md, cứ
+chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT chứ không thay thế — GIỮ NGUYÊN mã kết nối AI,
+Kho dữ liệu (MCP) đã kết nối và mọi tùy chỉnh cá nhân; bản cũ luôn được tự sao lưu.
 
-Nội dung chính:
-- Mở app là vào thẳng khung chat Claude giữa màn hình (kiểu Claude for Windows);
-  lần đầu tự tạo thư mục làm việc Documents\AWord, không phải chọn thư mục.
-- Claude trả lời nhanh hơn (cấu hình cân bằng tốc độ mới); có màn hình chờ khi khởi động.
-- Đọc PDF scan/ảnh chụp nhanh gấp 3-5 lần (kỹ năng doc-van-ban-local mới, có bộ nhớ đệm).
-- Thêm Tìm kiếm toàn văn trong thư mục làm việc (Ctrl+Shift+F) và tiện ích soạn thảo Markdown.
-- Cập nhật Claude Code 2.1.211; plugin xem Office chỉ nạp khi mở tài liệu — khởi động nhanh hơn.
-- Giao diện gọn hơn: bỏ chợ tiện ích và các mục menu lập trình không dùng cho văn phòng.
-- Màn hình khởi động nền sáng, gọn đẹp hơn.
-- Mở lên vào thẳng trình Khám phá với thư mục làm việc; ẩn các biểu tượng lập trình
-  (Quản lý mã nguồn, Kiểm thử, Gỡ lỗi) không dùng cho văn phòng.
-- Xử lý xung đột với Claude cài sẵn trên máy: tự ưu tiên bản mới hơn, không thì dùng bản đóng kèm.
-- Khắc phục lỗi mở nhiều cửa sổ Claude khi khởi động.
-- Thêm "Kiểm tra AWord" trong Start Menu để chẩn đoán nhanh khi Claude không mở được.
-- Phiên bản nay đánh theo thời gian phát hành (ví dụ 2026/07/16 18:31) để dễ nhận biết bản mới.
+Nội dung chính bản này:
+- **Icon & logo mới, sắc nét**: vẽ lại logo AWord dạng vector (hết mờ), nền cam nổi bật trên mọi
+  nền màn hình; áp dụng cho biểu tượng ứng dụng, trang Giới thiệu và trang chào mừng.
+- **Màn hình khởi động (splash) mới**: nền tối sang trọng, logo cam phát sáng — ấn tượng hơn.
+- Nhẹ hơn khi khởi động: KHÔNG mở thêm cửa sổ Claude ở giữa nữa (app đã có sẵn một khung Claude
+  mặc định ở thanh bên) — bớt một webview và một tiến trình. Nếu máy còn cửa sổ Claude ở giữa
+  sót lại từ bản cũ, app tự đóng cho gọn (luôn giữ lại đúng một khung Claude).
+  Cần khung Claude to hơn: dùng menu "Bố cục" → "Claude ra giữa".
+- Bộ cài mượt hơn: bấm "Kết thúc" là cửa sổ cài ĐÓNG NGAY, AWord tự mở ở nền ngay sau đó —
+  hết cảm giác bị treo lúc khởi động lần đầu.
+- Giao diện gọn hơn: ẩn thêm menu "Đi tới" (các tính năng vẫn dùng được qua Ctrl+Shift+P).

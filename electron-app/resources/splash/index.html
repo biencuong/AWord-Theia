@@ -10,36 +10,59 @@
     font-family: "Segoe UI", system-ui, sans-serif;
   }
   body {
-    /* Nền sáng, dịu mắt — tương phản có chủ đích với giao diện tối của app */
-    background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f4f6fb 55%, #e9edf6 100%);
-    color: #2a2f3a;
+    /* Nền tối sang trọng + quầng sáng cam sau logo — làm logo cam nổi bật, ấn tượng */
+    background:
+      radial-gradient(120% 90% at 50% 34%, rgba(240,110,30,0.28) 0%, rgba(240,110,30,0) 55%),
+      linear-gradient(160deg, #241a17 0%, #17151b 52%, #0e0d13 100%);
+    color: #f4f5f8;
   }
   .wrap {
     height: 100%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
+    align-items: center; justify-content: center; gap: 15px;
   }
   .logo {
-    width: 84px; height: 84px; border-radius: 20px;
-    background: linear-gradient(135deg, #ff9a5a, #e0662a);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 50px; font-weight: 700; color: #fff;
-    box-shadow: 0 10px 30px rgba(224, 102, 42, .35), 0 2px 6px rgba(224, 102, 42, .25);
+    width: 104px; height: 104px;
+    filter: drop-shadow(0 12px 30px rgba(240, 110, 30, .55)) drop-shadow(0 2px 8px rgba(0,0,0,.4));
+    animation: tho 2.6s ease-in-out infinite;
   }
+  .logo svg { width: 100%; height: 100%; display: block; }
+  @keyframes tho { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
   .ten {
-    font-size: 30px; font-weight: 600; letter-spacing: .5px; color: #1f2430;
+    font-size: 32px; font-weight: 700; letter-spacing: .5px;
+    background: linear-gradient(90deg, #ffc27a, #ff8a3d 55%, #f26a1b);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .phu { font-size: 13px; color: #6b7280; margin-top: -6px; }
+  .phu { font-size: 12.5px; color: #b9bcc7; margin-top: -8px; letter-spacing: .3px; }
   .vong {
-    margin-top: 10px; width: 28px; height: 28px;
-    border: 3px solid #dfe4ee; border-top-color: #e0662a;
-    border-radius: 50%; animation: quay 0.9s linear infinite;
+    margin-top: 12px; width: 26px; height: 26px;
+    border: 3px solid rgba(255,255,255,.14); border-top-color: #ff7a2a;
+    border-radius: 50%; animation: quay 0.85s linear infinite;
   }
   @keyframes quay { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="logo">A</div>
+    <div class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+        <defs>
+          <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="40" y1="24" x2="220" y2="232">
+            <stop offset="0" stop-color="#ffb347"/><stop offset="0.55" stop-color="#f2701b"/><stop offset="1" stop-color="#e04c10"/>
+          </linearGradient>
+        </defs>
+        <rect x="26" y="26" width="204" height="204" rx="50" fill="url(#g)"/>
+        <g fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M132 116 L184 64"/><polyline points="158,62 186,62 186,90"/>
+        </g>
+        <path fill="#fff" d="M86 72 C88.2 87 90.3 89.1 105 91.3 C90.3 93.5 88.2 95.6 86 110.6 C83.8 95.6 81.7 93.5 67 91.3 C81.7 89.1 83.8 87 86 72 Z"/>
+        <g fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M70 188 L93 122 L116 188"/><path d="M81 166 H105"/>
+        </g>
+        <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round">
+          <path d="M132 150 H176"/><path d="M132 168 H165"/><path d="M132 186 H152"/>
+        </g>
+      </svg>
+    </div>
     <div class="ten">AWord</div>
     <div class="phu">Giải pháp AI &amp; Chuyển đổi số — đang khởi động…</div>
     <div class="vong"></div>
