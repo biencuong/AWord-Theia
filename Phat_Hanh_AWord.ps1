@@ -80,8 +80,15 @@ if ($gh) {
     # Dung dang nhap gh co san (khong can GITHUB_TOKEN). GH_TOKEN rong de gh dung keyring.
     $notesTmp = Join-Path $env:TEMP "aword-release-notes.md"
     Set-Content -Path $notesTmp -Value $Notes -Encoding UTF8
-    & $gh release view $tag 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
+    # KHONG redirect stderr cua lenh native khi EAP=Stop: tren PowerShell 5.1, "2>$null"
+    # bien dong stderr thanh NativeCommandError TERMINATING -> script chet dung luc tag
+    # chua ton tai (tuc MOI lan phat hanh ban moi). Ha EAP tam thoi + kiem LASTEXITCODE.
+    $eapCu = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    & $gh release view $tag | Out-Null
+    $tagTonTai = ($LASTEXITCODE -eq 0)
+    $ErrorActionPreference = $eapCu
+    if ($tagTonTai) {
         Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
         & $gh release upload $tag $exe --clobber
     } else {
