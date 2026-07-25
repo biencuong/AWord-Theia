@@ -15,6 +15,11 @@ nghiệp vụ của cơ quan — LUÔN tra kho trước khi trả lời, không 
 - `kho_get(id)` — đọc chi tiết hoặc toàn văn một văn bản.
 - `kho_co_quan`, `kho_nhan_su`, `kho_ai_phu_trach` — bối cảnh cơ quan, người/phòng phụ trách
   khi tham mưu hoặc phân công.
+- `kho_tai_ve(id)` — tải FILE GỐC đính kèm (PDF ký số, ảnh...) của một văn bản về máy này
+  khi cần đọc bản gốc/đính kèm hồ sơ: file nhỏ trả base64 (giải mã, lưu ra file), file lớn
+  trả đường dẫn `tai_qua_http` — tải bằng HTTP theo hướng dẫn trong kết quả (curl/PowerShell
+  với cùng header Authorization). KHÔNG dùng `dinh_kem[].path` của `kho_get` — đó là đường
+  dẫn trên máy chủ kho, máy này không mở được.
 - Mẫu văn bản — phân công rõ: KHO chỉ CẤP FILE MẪU, việc ĐIỀN nội dung do bạn làm tại máy
   này. Quy trình: (1) `kho_mau_goi_y(vấn đề)` / `kho_mau_list` chọn mẫu; (2) `kho_mau_tai_ve(id)`
   tải FILE MẪU GỐC (base64 — giải mã, lưu thành .docx vào "CLAUDE OUTPUTS/"); (3) TỰ ĐIỀN
@@ -110,8 +115,12 @@ tốn thời gian. Chỉ cài gói CÒN THIẾU, không cài lại thứ đã c�
 
 ## Nếu chưa thấy các công cụ `kho_*`
 
-MCP server `khodulieu` chưa được kết nối trên máy này. Hướng dẫn người dùng: mở Start Menu,
-chạy "Kết nối Kho dữ liệu (AWord)" (hoặc tệp `Ket_Noi_KhoDuLieu.cmd` trong thư mục cài AWord),
-nhập địa chỉ máy chủ và mã khóa do quản trị viên cấp, rồi mở lại AWord.
+Phân biệt 2 tình huống trước khi hướng dẫn:
+1. Máy này TRƯỚC ĐÂY đã từng dùng được `kho_*` (hoặc người dùng nói vậy) → thường chỉ là
+   mất kết nối TẠM THỜI (máy chủ kho tắt/mạng LAN trục trặc). KHÔNG cần chạy lại tệp kết
+   nối — khuyên người dùng kiểm tra mạng/báo quản trị viên bật máy chủ kho, rồi mở lại AWord.
+2. Máy mới chưa kết nối lần nào → hướng dẫn: mở Start Menu, chạy "Kết nối Kho dữ liệu
+   (AWord)" (hoặc tệp `Ket_Noi_KhoDuLieu.cmd` trong thư mục cài AWord), nhập địa chỉ máy
+   chủ và mã khóa do quản trị viên cấp, rồi mở lại AWord.
 <!-- AWORD:END — Hết khối do AWord quản lý. Viết quy tắc RIÊNG của bạn bên dưới dòng này; phần đó sẽ được giữ nguyên qua các lần cập nhật. -->
 

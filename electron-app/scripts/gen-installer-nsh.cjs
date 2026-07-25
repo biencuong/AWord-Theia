@@ -104,7 +104,9 @@ lines.push(
     '  ; Hòa hợp binary Claude (hybrid): ưu tiên claude cài sẵn trên máy nếu mới hơn/bằng và',
     '  ; chạy được, không thì giữ bản đóng kèm (offline). Chạy ngay khi cài + shortcut chạy lại tay.',
     '  File "${PROJECT_DIR}\\..\\Cap_Nhat_Claude.ps1"',
-    '  CreateShortCut "$SMPROGRAMS\\Cập nhật Claude (AWord).lnk" "$INSTDIR\\Cap_Nhat_Claude.ps1" "" "$INSTDIR\\AWord.exe" 0',
+    // Shortcut .ps1 phải chạy qua powershell.exe — trỏ thẳng file .ps1 thì verb mặc định
+    // của Windows là Edit -> bấm vào mở Notepad chứ không chạy.
+    `  CreateShortCut "$SMPROGRAMS\\Cập nhật Claude (AWord).lnk" "powershell.exe" '-NoProfile -ExecutionPolicy Bypass -File "$INSTDIR\\Cap_Nhat_Claude.ps1" -InstallDir "$INSTDIR"' "$INSTDIR\\AWord.exe" 0`,
     "  ExecWait 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File \"$INSTDIR\\Cap_Nhat_Claude.ps1\" -InstallDir \"$INSTDIR\"'",
     '',
     '  ; Menu chuột phải: tệp bất kỳ',

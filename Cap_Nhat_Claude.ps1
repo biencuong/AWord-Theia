@@ -109,8 +109,15 @@ if ($bestPath -and $verGoc -and (SoSanh $bestVer $verGoc) -ge 0) {
     # May co ban >= ban goc dong kem: dung ban may neu dang hieu luc chua phai ban do
     if ($verActive -ne $bestVer) {
         Copy-Item $bestPath $bundled -Force
-        Set-Content -Path $activeFile -Value $bestVer -Encoding ASCII
-        Ghi "=> DUNG claude cua may ($bestVer) tu: $bestPath"
+        # CHI ghi sidecar khi copy THANH CONG (app dang chay se lock claude.exe -> copy
+        # fail im lang vi SilentlyContinue; neu van ghi version moi thi cac lan sau deu
+        # tuong "da xong" va binary that khong bao gio duoc thay)
+        if ($? -and (Test-Path $bundled) -and ((Get-Item $bundled).Length -eq (Get-Item $bestPath).Length)) {
+            Set-Content -Path $activeFile -Value $bestVer -Encoding ASCII
+            Ghi "=> DUNG claude cua may ($bestVer) tu: $bestPath"
+        } else {
+            Ghi "=> KHONG thay duoc claude.exe (dang bi khoa? Dong AWord roi chay lai) - giu ban cu."
+        }
     } else {
         Ghi "=> Da dung claude may ($bestVer) tu truoc - khong doi."
     }
@@ -118,8 +125,12 @@ if ($bestPath -and $verGoc -and (SoSanh $bestVer $verGoc) -ge 0) {
     # May khong co ban phu hop: bao dam dang dung BAN GOC dong kem
     if ((Test-Path $backup) -and $verActive -ne $verGoc) {
         Copy-Item $backup $bundled -Force
+        if (-not $?) {
+            Ghi "=> KHONG khoi phuc duoc ban dong kem (file dang bi khoa?) - giu nguyen."
+        } else {
         Set-Content -Path $activeFile -Value $verGoc -Encoding ASCII
         Ghi "=> Khoi phuc ban dong kem ($verGoc) - claude may khong co/cu hon/hong."
+        }
     } else {
         Ghi "=> Giu ban dong kem ($verGoc) - offline, khong can claude may."
     }

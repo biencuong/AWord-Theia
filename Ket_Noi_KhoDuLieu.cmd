@@ -7,8 +7,12 @@ REM  Chay 1 lan sau khi cai AWord. Chay lai de doi may chu/doi key.
 REM  Khong can quyen Quan tri (Administrator).
 REM ============================================================
 
-REM -- Quan tri vien: sua dia chi may chu mac dinh truoc khi phat hanh --
+REM -- Dia chi mac dinh: uu tien file kho.url (giu qua cac lan cap nhat AWord,
+REM    vi file .cmd nay bi installer ghi de moi ban); khong co thi dung dia chi cung --
 set "URL_MACDINH=http://192.168.1.50:8600/mcp"
+if exist "%~dp0kho.url" (
+  set /p URL_MACDINH=<"%~dp0kho.url"
+)
 
 echo.
 echo  ================================================
@@ -54,32 +58,58 @@ if not defined KHO_KEY (
   exit /b 1
 )
 
-REM ---- Buoc 3: dang ky (go ban cu neu co de luon sach, chay lai an toan) ----
+REM ---- Buoc 3: dang ky (sao luu cau hinh truoc; add loi thi KHOI PHUC ban cu) ----
 echo.
+set "CFG=%USERPROFILE%\.claude.json"
+if exist "%CFG%" copy /y "%CFG%" "%CFG%.kho-backup" >nul 2>&1
 "%CLAUDE_EXE%" mcp remove khodulieu -s user >nul 2>&1
 "%CLAUDE_EXE%" mcp add --scope user --transport http khodulieu "%KHO_URL%" --header "Authorization: Bearer %KHO_KEY%"
 if errorlevel 1 (
   echo.
-  echo [LOI] Dang ky khong thanh cong. Kiem tra lai dia chi/ma khoa vua nhap roi chay lai.
+  echo [LOI] Dang ky khong thanh cong - dang KHOI PHUC ket noi cu (neu co)...
+  if exist "%CFG%.kho-backup" copy /y "%CFG%.kho-backup" "%CFG%" >nul 2>&1
+  echo       Kiem tra lai dia chi/ma khoa vua nhap roi chay lai tep nay.
   echo.
   pause
   exit /b 1
 )
+REM Ghi nho dia chi vua dung cho lan chay sau (song sot qua cap nhat AWord)
+>"%~dp0kho.url" echo %KHO_URL%
 
-REM ---- Buoc 4: kiem tra ket noi thuc te ----
+REM ---- Buoc 4: kiem tra ket noi thuc te va KET LUAN ro rang ----
 echo.
 echo Da dang ky xong. Dang kiem tra ket noi toi may chu (co the mat vai giay)...
 echo.
-"%CLAUDE_EXE%" mcp list
+set "CHK=%TEMP%\kho_mcp_check.txt"
+"%CLAUDE_EXE%" mcp list 2>nul | findstr /i /c:"khodulieu" > "%CHK%"
+type "%CHK%"
 echo.
-echo  ------------------------------------------------
-echo  - Neu dong "khodulieu" bao ket noi thanh cong: XONG.
-echo    Mo AWord, hoi Claude ve van ban/quy dinh cua co quan de dung thu.
-echo  - Neu bao loi ket noi: kiem tra (1) may chu kho dang chay,
-echo    (2) dung dia chi %KHO_URL%,
-echo    (3) ma khoa con hieu luc (loi 401 = ma sai/bi thu hoi, xin cap lai).
-echo    Da dang ky xong thi KHONG can chay lai khi chi loi mang tam thoi.
-echo  ------------------------------------------------
+findstr /i /c:"fail" "%CHK%" >nul 2>&1
+if not errorlevel 1 (
+  echo  ------------------------------------------------
+  echo  [CHUA KET NOI DUOC] Da dang ky nhung may chu khong tra loi.
+  echo   1^) May chu kho co dang chay khong? ^(bao quan tri vien^)
+  echo   2^) Dung dia chi %KHO_URL% chua?
+  echo   3^) Ma khoa con hieu luc khong? ^(loi 401 = ma sai/bi thu hoi^)
+  echo   Neu chi la mat mang tam thoi: KHONG can chay lai tep nay,
+  echo   mo AWord lai khi mang on la dung duoc.
+  echo  ------------------------------------------------
+) else (
+  findstr /i /c:"connect" "%CHK%" >nul 2>&1
+  if not errorlevel 1 (
+    echo  ------------------------------------------------
+    echo  [THANH CONG] Da ket noi Kho du lieu co quan.
+    echo  Mo AWord, hoi Claude ve van ban/quy dinh cua co quan de dung thu.
+    echo  ------------------------------------------------
+  ) else (
+    echo  ------------------------------------------------
+    echo  [KHONG XAC DINH] Xem dong ket qua phia tren:
+    echo   - Co chu "Connected" la THANH CONG.
+    echo   - Co chu "Failed" la CHUA ket noi duoc ^(xem huong dan trong tep nay^).
+    echo  ------------------------------------------------
+  )
+)
+del /q "%CHK%" >nul 2>&1
 echo.
 pause
 endlocal

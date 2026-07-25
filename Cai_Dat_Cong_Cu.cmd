@@ -30,8 +30,10 @@ py -3.12 -c "import sys" >nul 2>&1 && set "PY_CMD=py -3.12"
 if not defined PY_CMD (
   python -c "import sys; raise SystemExit(0 if sys.version_info[:2]==(3,12) else 1)" >nul 2>&1 && set "PY_CMD=python"
 )
-REM Neu da cai san 3.12 tu lan truoc (bo dong kem) -> dung luon
-if not defined PY_CMD if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY_CMD=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+REM Neu da cai san 3.12 tu lan truoc (bo dong kem) -> dung luon.
+REM QUAN TRONG: duong dan day du phai NAM TRONG NHAY KEP ngay trong bien (ten nguoi dung
+REM co dau cach nhu "Nguyen Van A" se lam cmd tach lenh sai neu khong nhay).
+if not defined PY_CMD if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY_CMD="%LOCALAPPDATA%\Programs\Python\Python312\python.exe""
 if defined PY_CMD goto :python_xong
 
 echo [CAI] Chua co Python phu hop - dang cai Python 3.12 (dong kem, user-scope)...
@@ -43,7 +45,7 @@ if errorlevel 1 goto :python_loi
 REM Cua so nay chua co PATH moi - goi truc tiep python vua cai
 set "PY_USER=%LOCALAPPDATA%\Programs\Python\Python312"
 if exist "%PY_USER%\python.exe" (
-  set "PY_CMD=%PY_USER%\python.exe"
+  set "PY_CMD="%PY_USER%\python.exe""
 ) else (
   set "PY_CMD=py -3"
 )
