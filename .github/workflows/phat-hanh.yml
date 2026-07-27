@@ -44,8 +44,10 @@ jobs:
         with:
           python-version: "3.12"
 
+      # npm ci theo package-lock.json de tree giong het may dev (tranh hoist yargs cu
+      # cua lerna 2.4.0 len root lam thieu 'yargs/helpers' khi theia build).
       - name: Cai dependencies (npm workspaces, tu build aword-chat qua prepare)
-        run: npm install
+        run: npm ci
 
       - name: Danh ma phien ban
         id: ver

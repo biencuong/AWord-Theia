@@ -17,7 +17,8 @@
     "test": "cd aword-chat && npm test"
   },
   "devDependencies": {
-    "lerna": "2.4.0"
+    "lerna": "2.4.0",
+    "yargs": "^17.7.2"
   },
   "workspaces": [
     "aword-chat", "browser-app", "electron-app"
