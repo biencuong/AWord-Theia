@@ -1,0 +1,113 @@
+# Phat hanh AWord tren GitHub Actions — build bo cai Windows tren cloud, khong dung
+# may ca nhan (tranh Smart App Control chan native module ffmpeg.node khi rebuild).
+#
+# Hai cach chay:
+#   1) Thu cong: tab Actions > "Phat hanh AWord" > Run workflow
+#      - tu danh ma phien ban theo thoi gian (nhu Phat_Hanh_AWord.ps1)
+#      - tick "chi_build" de BUILD THU: khong tao Release, chi luu artifact
+#   2) Day tag: git tag v20260727.9.30 && git push origin v20260727.9.30
+#      -> build va phat hanh DUNG phien ban cua tag.
+# Ca hai deu: tao Release v<version> + tai len AWord-Setup-<version>.exe;
+# ghi chu release lay tu GHI_CHU_PHAT_HANH.md. App da cai se tu nhan ban moi.
+name: Phat hanh AWord
+
+on:
+  workflow_dispatch:
+    inputs:
+      chi_build:
+        description: "Chi build thu (khong tao Release, chi luu artifact)"
+        type: boolean
+        default: false
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phat-hanh
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Python chi de pip download wheels dong kem (fetch-pytools), khong de chay AWord.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cai dependencies (npm workspaces, tu build aword-chat qua prepare)
+        run: npm install
+
+      - name: Danh ma phien ban
+        id: ver
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = node electron-app/scripts/set-version.cjs "${{ github.ref_name }}"
+          } else {
+            $version = node electron-app/scripts/stamp-version.cjs
+          }
+          $version = "$version".Trim()
+          if (-not $version -or $LASTEXITCODE -ne 0) { Write-Error "Khong danh duoc ma phien ban."; exit 1 }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Phien ban: $version"
+
+      # plugins/ va resources/pytools/ bi .gitignore (nhi phan lon) -> may CI phai tu tai.
+      - name: Tai plugins Theia (open-vsx)
+        working-directory: electron-app
+        run: npx theia download:plugins
+
+      - name: Tai bo cong cu Python dong kem (pytools)
+        run: node electron-app/scripts/fetch-pytools.mjs
+
+      - name: Bundle (rebuild native cho electron + webpack production)
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run bundle
+
+      - name: Dong goi bo cai (prepackage + electron-builder NSIS)
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run package
+
+      - name: Kiem tra bo cai
+        run: |
+          $exe = "electron-app/dist/AWord-Setup-${{ steps.ver.outputs.version }}.exe"
+          if (-not (Test-Path $exe)) { Write-Error "Khong tim thay $exe"; exit 1 }
+          Write-Host ("Bo cai: {0} ({1} MB)" -f $exe, [math]::Round((Get-Item $exe).Length/1MB))
+
+      - name: Luu artifact (che do build thu)
+        if: github.event_name == 'workflow_dispatch' && inputs.chi_build
+        uses: actions/upload-artifact@v4
+        with:
+          name: AWord-Setup-${{ steps.ver.outputs.version }}
+          path: electron-app/dist/AWord-Setup-*.exe
+          retention-days: 7
+
+      - name: Tao GitHub Release + tai len bo cai
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.chi_build) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ steps.ver.outputs.version }}"
+          $tag = "v$version"
+          $exe = "electron-app/dist/AWord-Setup-$version.exe"
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
+            gh release upload $tag $exe --clobber
+          } else {
+            gh release create $tag $exe --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA
+          }
+          if ($LASTEXITCODE -ne 0) { Write-Error "Tao release that bai."; exit 1 }
+          Write-Host "XONG: https://github.com/${{ github.repository }}/releases/tag/$tag"
