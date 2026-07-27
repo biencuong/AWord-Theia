@@ -1,19 +1,31 @@
-# Phat hanh AWord tren GitHub Actions — build bo cai Windows tren cloud, khong dung
-# may ca nhan (tranh Smart App Control chan native module ffmpeg.node khi rebuild).
+# Phat hanh AWord tren GitHub Actions — build bo cai Windows + macOS tren cloud,
+# khong dung may ca nhan (tranh Smart App Control chan native module khi build local).
 #
-# Hai cach chay:
+# Cach chay:
 #   1) Thu cong: tab Actions > "Phat hanh AWord" > Run workflow
-#      - tu danh ma phien ban theo thoi gian (nhu Phat_Hanh_AWord.ps1)
-#      - tick "chi_build" de BUILD THU: khong tao Release, chi luu artifact
-#   2) Day tag: git tag v20260727.9.30 && git push origin v20260727.9.30
-#      -> build va phat hanh DUNG phien ban cua tag.
-# Ca hai deu: tao Release v<version> + tai len AWord-Setup-<version>.exe;
-# ghi chu release lay tu GHI_CHU_PHAT_HANH.md. App da cai se tu nhan ban moi.
+#      - nen_tang: all / win / mac (mac dinh all)
+#      - phien_ban: bo trong = tu danh theo gio Viet Nam; dien (vd 20260727.10.51)
+#        de build them nen tang cho release DA CO (upload bo sung vao tag do)
+#      - chi_build: BUILD THU — khong tao Release, chi luu artifact
+#   2) Day tag: git tag v20260728.9.30 && git push origin v20260728.9.30
+#   3) TU DONG sau phat hanh local: Phat_Hanh_AWord.ps1 tao release + tag -> tag
+#      kich hoat workflow nay; guard thay release da co .exe nen chi build BO SUNG
+#      ban mac (.dmg) roi upload vao cung release.
+# Ghi chu release lay tu GHI_CHU_PHAT_HANH.md. App da cai se tu nhan ban moi.
 name: Phat hanh AWord
 
 on:
   workflow_dispatch:
     inputs:
+      nen_tang:
+        description: "Nen tang build"
+        type: choice
+        options: [all, win, mac]
+        default: all
+      phien_ban:
+        description: "Phien ban (trong = tu danh theo gio VN; dien de bo sung vao release da co)"
+        type: string
+        default: ""
       chi_build:
         description: "Chi build thu (khong tao Release, chi luu artifact)"
         type: boolean
@@ -29,31 +41,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Phat hanh local (Phat_Hanh_AWord.ps1) tao release keo theo tag -> tag lai kich hoat
-  # workflow nay. Guard: neu release cua tag DA CO bo cai (phat hanh local xong) thi
-  # bo qua build lai, tranh ton phut CI va ghi de bo cai da phat hanh.
-  guard:
+  # Tinh phien ban MOT LAN cho moi nen tang (stamp rieng tung job se lech phut/giay),
+  # theo GIO VIET NAM (runner chay UTC — stamp theo UTC se NHO hon ban local stamp
+  # gio VN, lam auto-update coi ban moi la cu). Kiem guard: tag da co asset nao thi
+  # bo qua build nen tang do (chong vong lap tag tu phat hanh local kich hoat lai).
+  chuan-bi:
     runs-on: ubuntu-latest
     outputs:
-      bo_qua: ${{ steps.check.outputs.bo_qua }}
+      version: ${{ steps.ver.outputs.version }}
+      co_exe: ${{ steps.guard.outputs.co_exe }}
+      co_dmg: ${{ steps.guard.outputs.co_dmg }}
     steps:
-      - id: check
+      - id: ver
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            v="${{ github.ref_name }}"
+          elif [ -n "${{ inputs.phien_ban }}" ]; then
+            v="${{ inputs.phien_ban }}"
+          else
+            v="$(TZ=Asia/Ho_Chi_Minh date +%Y%m%d).$(TZ=Asia/Ho_Chi_Minh date +%-H).$(TZ=Asia/Ho_Chi_Minh date +%-M)"
+          fi
+          v="${v#v}"
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Phien ban: $v"
+      - id: guard
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bo_qua=false
+          co_exe=false; co_dmg=false
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            if gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" \
-                 --json assets --jq '.assets[].name' 2>/dev/null | grep -q '^AWord-Setup-.*\.exe$'; then
-              bo_qua=true
-              echo "Release ${{ github.ref_name }} da co bo cai - bo qua build lai."
-            fi
+            assets=$(gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" \
+                       --json assets --jq '.assets[].name' 2>/dev/null || true)
+            echo "$assets" | grep -q '^AWord-Setup-.*\.exe$' && co_exe=true
+            echo "$assets" | grep -q '^AWord-.*\.dmg$' && co_dmg=true
           fi
-          echo "bo_qua=$bo_qua" >> "$GITHUB_OUTPUT"
+          echo "co_exe=$co_exe" >> "$GITHUB_OUTPUT"
+          echo "co_dmg=$co_dmg" >> "$GITHUB_OUTPUT"
+          echo "Tag da co exe: $co_exe, dmg: $co_dmg"
 
-  build:
-    needs: guard
-    if: needs.guard.outputs.bo_qua != 'true'
+  build-win:
+    needs: chuan-bi
+    if: needs.chuan-bi.outputs.co_exe != 'true' && inputs.nen_tang != 'mac'
     runs-on: windows-latest
     timeout-minutes: 150
     steps:
@@ -73,18 +101,8 @@ jobs:
       - name: Cai dependencies (npm workspaces, tu build aword-chat qua prepare)
         run: npm ci
 
-      - name: Danh ma phien ban
-        id: ver
-        run: |
-          if ("${{ github.ref_type }}" -eq "tag") {
-            $version = node electron-app/scripts/set-version.cjs "${{ github.ref_name }}"
-          } else {
-            $version = node electron-app/scripts/stamp-version.cjs
-          }
-          $version = "$version".Trim()
-          if (-not $version -or $LASTEXITCODE -ne 0) { Write-Error "Khong danh duoc ma phien ban."; exit 1 }
-          "version=$version" >> $env:GITHUB_OUTPUT
-          Write-Host "Phien ban: $version"
+      - name: Ghi phien ban
+        run: node electron-app/scripts/set-version.cjs "${{ needs.chuan-bi.outputs.version }}"
 
       # plugins/ va resources/pytools/ bi .gitignore (nhi phan lon) -> may CI phai tu tai.
       - name: Tai plugins Theia (open-vsx)
@@ -108,7 +126,7 @@ jobs:
 
       - name: Kiem tra bo cai
         run: |
-          $exe = "electron-app/dist/AWord-Setup-${{ steps.ver.outputs.version }}.exe"
+          $exe = "electron-app/dist/AWord-Setup-${{ needs.chuan-bi.outputs.version }}.exe"
           if (-not (Test-Path $exe)) { Write-Error "Khong tim thay $exe"; exit 1 }
           Write-Host ("Bo cai: {0} ({1} MB)" -f $exe, [math]::Round((Get-Item $exe).Length/1MB))
 
@@ -116,7 +134,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.chi_build
         uses: actions/upload-artifact@v4
         with:
-          name: AWord-Setup-${{ steps.ver.outputs.version }}
+          name: AWord-Setup-${{ needs.chuan-bi.outputs.version }}
           path: electron-app/dist/AWord-Setup-*.exe
           retention-days: 7
 
@@ -125,15 +143,91 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $version = "${{ steps.ver.outputs.version }}"
+          $version = "${{ needs.chuan-bi.outputs.version }}"
           $tag = "v$version"
           $exe = "electron-app/dist/AWord-Setup-$version.exe"
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
+            Write-Host "Release $tag da ton tai - tai bo cai len (ghi de)."
             gh release upload $tag $exe --clobber
           } else {
             gh release create $tag $exe --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA
+            if ($LASTEXITCODE -ne 0) {
+              # Job mac co the vua tao release cung luc (race) - thu upload lai.
+              Start-Sleep -Seconds 10
+              gh release upload $tag $exe --clobber
+            }
           }
           if ($LASTEXITCODE -ne 0) { Write-Error "Tao release that bai."; exit 1 }
           Write-Host "XONG: https://github.com/${{ github.repository }}/releases/tag/$tag"
+
+  build-mac:
+    needs: chuan-bi
+    if: needs.chuan-bi.outputs.co_dmg != 'true' && inputs.nen_tang != 'win'
+    runs-on: macos-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Cai dependencies (npm workspaces, tu build aword-chat qua prepare)
+        run: npm ci
+
+      - name: Ghi phien ban
+        run: node electron-app/scripts/set-version.cjs "${{ needs.chuan-bi.outputs.version }}"
+
+      # Plugin Claude Code pin ban win32-x64 trong package.json -> mac can darwin-arm64.
+      - name: Doi plugin Claude Code sang darwin-arm64
+        run: perl -pi -e 's/win32-x64/darwin-arm64/g' electron-app/package.json
+
+      - name: Tai plugins Theia (open-vsx)
+        working-directory: electron-app
+        run: npx theia download:plugins
+
+      # KHONG dong pytools cho mac (Python installer + wheels trong repo la ban Windows).
+
+      - name: Bundle (rebuild native cho electron + webpack production)
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run bundle
+
+      - name: Dong goi dmg (prepackage + electron-builder, ky ad-hoc)
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run package:mac
+
+      - name: Kiem tra bo cai
+        run: |
+          dmg="electron-app/dist/AWord-${{ needs.chuan-bi.outputs.version }}-arm64.dmg"
+          if [ ! -f "$dmg" ]; then echo "Khong tim thay $dmg"; ls electron-app/dist; exit 1; fi
+          echo "Bo cai: $dmg ($(du -m "$dmg" | cut -f1) MB)"
+
+      - name: Luu artifact (che do build thu)
+        if: github.event_name == 'workflow_dispatch' && inputs.chi_build
+        uses: actions/upload-artifact@v4
+        with:
+          name: AWord-${{ needs.chuan-bi.outputs.version }}-mac
+          path: electron-app/dist/AWord-*.dmg
+          retention-days: 7
+
+      - name: Tao GitHub Release + tai len bo cai
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.chi_build) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ needs.chuan-bi.outputs.version }}"
+          tag="v$version"
+          dmg="electron-app/dist/AWord-$version-arm64.dmg"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag da ton tai - tai bo cai len (ghi de)."
+            gh release upload "$tag" "$dmg" --clobber
+          else
+            gh release create "$tag" "$dmg" --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target "$GITHUB_SHA" \
+              || { echo "Create fail (co the race voi job win) - thu upload."; sleep 10; gh release upload "$tag" "$dmg" --clobber; }
+          fi
+          echo "XONG: https://github.com/${{ github.repository }}/releases/tag/$tag"

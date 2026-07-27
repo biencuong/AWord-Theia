@@ -69,7 +69,11 @@ ${marker}
       const rel = await layJson('https://api.github.com/repos/' + REPO + '/releases/latest');
       const moi = rel.tag_name || rel.name || '';
       if (soSanhPhienBan(moi, app.getVersion()) <= 0) { return; }
-      const asset = (rel.assets || []).find(a => /^AWord-Setup-.*\\.exe$/i.test(a.name));
+      // Chon bo cai dung nen tang: macOS tim .dmg, Windows tim AWord-Setup-*.exe.
+      const macOS = process.platform === 'darwin';
+      const asset = (rel.assets || []).find(a => macOS
+        ? /^AWord-.*\\.dmg$/i.test(a.name)
+        : /^AWord-Setup-.*\\.exe$/i.test(a.name));
       if (!asset) { return; }
       const chon = await dialog.showMessageBox({
         type: 'info',
@@ -82,7 +86,12 @@ ${marker}
       if (chon.response !== 0) { return; }
       const dich = path.join(app.getPath('temp'), asset.name);
       await taiTep(asset.browser_download_url, dich);
-      spawn(dich, [], { detached: true, stdio: 'ignore' }).unref();
+      if (macOS) {
+        // Mo .dmg (mount) - nguoi dung keo AWord vao Applications de thay ban cu.
+        spawn('open', [dich], { detached: true, stdio: 'ignore' }).unref();
+      } else {
+        spawn(dich, [], { detached: true, stdio: 'ignore' }).unref();
+      }
       app.quit();
     };
 
