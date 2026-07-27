@@ -29,7 +29,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Phat hanh local (Phat_Hanh_AWord.ps1) tao release keo theo tag -> tag lai kich hoat
+  # workflow nay. Guard: neu release cua tag DA CO bo cai (phat hanh local xong) thi
+  # bo qua build lai, tranh ton phut CI va ghi de bo cai da phat hanh.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      bo_qua: ${{ steps.check.outputs.bo_qua }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bo_qua=false
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            if gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" \
+                 --json assets --jq '.assets[].name' 2>/dev/null | grep -q '^AWord-Setup-.*\.exe$'; then
+              bo_qua=true
+              echo "Release ${{ github.ref_name }} da co bo cai - bo qua build lai."
+            fi
+          fi
+          echo "bo_qua=$bo_qua" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: guard
+    if: needs.guard.outputs.bo_qua != 'true'
     runs-on: windows-latest
     timeout-minutes: 150
     steps:
