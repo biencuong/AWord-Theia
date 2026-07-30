@@ -1,0 +1,6 @@
+{
+  "bot_token": "TOKEN_BOT_TELEGRAM",
+  "bot_username": "Ten_Bot",
+  "chat_id": null,
+  "_note": "Nhắn 1 tin cho bot rồi chạy: python scripts/telegram_send.py --discover"
+}

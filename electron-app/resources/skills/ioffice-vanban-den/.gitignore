@@ -1,0 +1,22 @@
+# Bí mật & dữ liệu chạy — KHÔNG commit, KHÔNG đưa vào gói skill
+auth.local.json
+telegram.local.json
+llm.local.json
+.browser_profile/
+attachments/
+vanban_di/
+inbox.json
+outbox.json
+index.json
+INDEX.md
+tri_thuc/
+processing_state.json
+close_queue.json
+.locks/
+probe_snapshots/
+*.zip
+__pycache__/
+watcher.log
+topics.json
+HO_SO.md
+references/briefings/

@@ -1,0 +1,15 @@
+# Trợ lý văn thư iOffice — phụ thuộc Python
+playwright>=1.60        # tự động hoá iOffice (Chromium)
+python-docx>=1.1        # đọc .docx + xuất dự thảo .docx
+pdfplumber>=0.11        # trích text PDF có lớp chữ
+pymupdf>=1.27           # render PDF -> ảnh cho OCR (LLM-vision)
+rarfile>=4.0            # giải nén .rar (cần UnRAR/WinRAR trên máy)
+lxml>=5.0               # phân tích DOM khi dò selector
+mcp[cli]>=1.0           # MCP server (chia sẻ cho QwenPaw/Claude)
+pywin32>=306 ; sys_platform == "win32"   # đọc .doc cũ qua MS Word COM (Windows)
+
+# Phụ thuộc HỆ THỐNG (cài ngoài pip):
+#   - playwright install chromium
+#   - WinRAR (UnRAR.exe) để giải nén .rar
+#   - MS Word (đọc .doc) HOẶC LibreOffice headless
+#   - LLM cục bộ OpenAI-compatible có hỗ trợ ảnh (vd QwenPaw) cho OCR/soạn thảo
