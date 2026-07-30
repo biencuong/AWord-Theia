@@ -12,11 +12,19 @@ with sync_playwright() as p:
     page.wait_for_timeout(2000)
     if page.locator('input#passWord').count():
         print("Cần đăng nhập lại.")
-        a = json.load(open(F.AUTH_FILE))
-        page.fill('input#userName', a['username'])
-        page.fill('input#passWord', a['password'])
-        page.click('button#btnLogin')
-        page.wait_for_timeout(3000)
+        # Chỉ tự điền khi người dùng ĐÃ đồng ý lưu mật khẩu trong auth.local.json;
+        # mật khẩu trống/không có file -> KHÔNG tự điền, báo chạy lại ở chế độ có cửa sổ
+        # (fetch_vanban.py --login) để người dùng tự đăng nhập.
+        a = json.load(open(F.AUTH_FILE, encoding='utf-8')) if F.AUTH_FILE.exists() else {}
+        if a.get('username') and a.get('password'):
+            page.fill('input#userName', a['username'])
+            page.fill('input#passWord', a['password'])
+            page.click('button#btnLogin')
+            page.wait_for_timeout(3000)
+        else:
+            ctx.close()
+            sys.exit("Phien het han va khong co mat khau luu san. Chay: "
+                     "python scripts/fetch_vanban.py --login (nguoi dung tu dang nhap).")
     page.goto("https://vpdttq.vnptioffice.vn/qlvbdh/main?lang=vi", wait_until='domcontentloaded')
     page.wait_for_timeout(2000)
     t = page.locator(F.SEL_MENU_VBDEN_CXL).first.inner_text()

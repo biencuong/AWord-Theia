@@ -1,6 +1,7 @@
 # HƯỚNG DẪN — Skill xử lý Văn bản đến iOffice (Sở GDĐT)
 
-Tài khoản: của người dùng, cấu hình trong `auth.local.json` (xem mục Cài đặt). Hệ thống: VNPT iOffice (qlvbdh).
+Tài khoản: của người dùng — trợ lý hỏi khi cần và CHỈ lưu `auth.local.json` vào máy khi
+người dùng đồng ý; mật khẩu mặc định không lưu (tự đăng nhập qua `--login`). Hệ thống: VNPT iOffice (qlvbdh).
 Nguyên tắc: **CHỈ đọc / điều hướng / tải file. KHÔNG bấm nút đổi trạng thái** (Chuyển xử lý, Trình ký, Phát hành, Hoàn thành).
 
 ## 1. Cài đặt (1 lần)

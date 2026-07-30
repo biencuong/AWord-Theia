@@ -16,6 +16,29 @@ Mục tiêu: mỗi ngày, lấy danh sách văn bản đến đang chờ xử l�
 4. **Khi không chắc chắn → hỏi.** Không đoán nhiệm vụ. Nếu trích yếu mơ hồ, thiếu file chính, hoặc văn bản không rõ phân công cho ai → nêu rõ trong bản tổng hợp và hỏi người dùng.
 5. **Tách bước nhỏ → lên phương án → HỎI trước khi thực thi.** Mỗi nghiệp vụ xử lý văn bản phải được CHIA thành nhiều bước nhỏ. Khi có yêu cầu, agent TÙY BIẾN lên phương án thực thi chính xác cho tình huống cụ thể (selector/luồng/điều kiện), trình bày phương án + rủi ro, RỒI HỎI người dùng duyệt trước khi chạy — đặc biệt với thao tác đổi trạng thái/khó hoàn tác. Luôn chạy thử nhỏ (1–2 cái) và kiểm chứng kết quả thật trước khi làm hàng loạt. *(Bài học từ vụ "kết thúc hàng loạt": dò DOM thật → thử 2 cái → kiểm chứng badge giảm thật → mới làm tất cả; xem `conventions.md §1l`.)*
 
+## Cấu hình tài khoản — cơ chế ĐỒNG Ý (bắt buộc, lần đầu dùng skill)
+
+Bản đóng gói KHÔNG kèm bất kỳ tài khoản/mật khẩu nào. Khi cần tài khoản mà chưa có
+`auth.local.json`, trợ lý làm đúng trình tự sau:
+
+1. **HỎI người dùng** tên đăng nhập iOffice (vd `tenban.sgd`) và họ tên hiển thị trên hệ thống.
+   **KHÔNG hỏi mật khẩu qua chat** — việc đăng nhập do người dùng TỰ GÕ trên cửa sổ trình duyệt
+   (`python scripts/fetch_vanban.py --login`); script chỉ dùng lại phiên đã đăng nhập.
+2. Dùng thông tin vừa nhập **trong phiên** qua biến môi trường `IOFFICE_USERNAME` /
+   `IOFFICE_DISPLAY_NAME` (các script đã đọc biến này) — chưa ghi gì xuống đĩa.
+3. **HỎI RÕ người dùng có muốn LƯU vào máy không**, nói đúng nội dung: "Lưu tên đăng nhập vào
+   file `auth.local.json` NẰM TRÊN MÁY NÀY (không đồng bộ, không gửi đi đâu) để lần sau không
+   phải nhập lại?"
+   - **Đồng ý** → ghi `auth.local.json` (mẫu: `auth.local.example.json`; trường `password` ĐỂ TRỐNG).
+   - **Không đồng ý** → KHÔNG ghi file; phiên sau hỏi lại từ bước 1.
+4. Mật khẩu chỉ được lưu khi **người dùng CHỦ ĐỘNG yêu cầu** (muốn chạy tự động hoàn toàn,
+   vd lịch chạy đêm): phải cảnh báo trước "mật khẩu sẽ nằm dạng chữ thường trong file trên máy —
+   ai dùng máy này đều đọc được" và chỉ ghi sau khi họ xác nhận rõ. Mặc định luôn khuyến nghị
+   ĐỂ TRỐNG và đăng nhập tay qua `--login`.
+
+Nguyên tắc trên áp dụng cho MỌI file `*.local.json` của skill (telegram, llm): hỏi → dùng tạm
+trong phiên → chỉ ghi xuống máy khi người dùng đồng ý. Các file này đã nằm trong `.gitignore`.
+
 ## Phân tầng công việc: việc nào CODE làm, việc nào LLM làm
 
 Để tiết kiệm và ổn định, chia rõ:

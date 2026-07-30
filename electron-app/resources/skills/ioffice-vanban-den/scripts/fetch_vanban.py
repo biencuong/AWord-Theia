@@ -22,17 +22,20 @@ GHI CHÚ CHO CLAUDE CODE / CLAUDE IN CHROME:
     references/conventions.md để lần sau khỏi dò lại.
 """
 
-import argparse, json, sys
+import argparse, json, os, sys
 from pathlib import Path
 
 LOGIN_URL = "https://vpdttq.vnptioffice.vn/qlvbdh/main?lang=vi"
-# Tài khoản/tên người dùng đọc từ auth.local.json (xem auth.local.example.json) — không hardcode.
-_AUTH_FILE = Path(__file__).resolve().parent.parent / "auth.local.json"
-_auth = json.loads(_AUTH_FILE.read_text(encoding="utf-8")) if _AUTH_FILE.exists() else {}
-ASSIGNEE_USERNAME = _auth.get("username", "")
-ASSIGNEE_NAME = _auth.get("display_name", ASSIGNEE_USERNAME)
+# Tài khoản KHÔNG hardcode. Thứ tự ưu tiên: --username > biến môi trường IOFFICE_USERNAME
+# (phiên tạm, người dùng CHƯA đồng ý lưu) > auth.local.json (người dùng ĐÃ đồng ý lưu vào máy).
+AUTH_FILE = Path(__file__).resolve().parent.parent / "auth.local.json"
+_auth = json.loads(AUTH_FILE.read_text(encoding="utf-8")) if AUTH_FILE.exists() else {}
+ASSIGNEE_USERNAME = os.environ.get("IOFFICE_USERNAME") or _auth.get("username", "")
+ASSIGNEE_NAME = os.environ.get("IOFFICE_DISPLAY_NAME") or _auth.get("display_name", ASSIGNEE_USERNAME)
 if not ASSIGNEE_USERNAME:
-    sys.exit("Thiếu auth.local.json (copy từ auth.local.example.json và điền username).")
+    sys.exit("CHUA CAU HINH TAI KHOAN iOffice. Tro ly phai HOI nguoi dung ten dang nhap "
+             "(xem SKILL.md muc 'Cau hinh tai khoan'), dung tam qua bien moi truong "
+             "IOFFICE_USERNAME, va CHI ghi auth.local.json khi nguoi dung dong y luu.")
 WANTED_LABELS = ["XLC", "PH"]               # Xử lý chính, Phối hợp
 
 WORKDIR = Path(__file__).resolve().parent.parent      # thư mục skill

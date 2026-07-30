@@ -13,11 +13,12 @@ người tự tạo. Dữ liệu công vụ nằm trên máy mỗi người (kh�
 ```bat
 pip install -r requirements.txt
 playwright install chromium
-:: Tạo cấu hình riêng từ mẫu, rồi điền giá trị thật:
-copy auth.local.example.json auth.local.json
-copy telegram.local.example.json telegram.local.json
-copy llm.local.example.json llm.local.json
 ```
+Cấu hình riêng (`*.local.json`): KHÔNG cần tạo tay — lần đầu dùng, trợ lý sẽ HỎI tên đăng
+nhập và **chỉ ghi `auth.local.json` xuống máy khi bạn đồng ý** (xem SKILL.md mục "Cấu hình
+tài khoản — cơ chế ĐỒNG Ý"). Mật khẩu mặc định KHÔNG lưu — bạn tự đăng nhập trên cửa sổ
+trình duyệt (`python scripts/fetch_vanban.py --login`). Ai muốn tạo tay: copy từ các file
+`*.local.example.json`.
 Lấy `chat_id` Telegram: nhắn 1 tin cho bot → `python scripts/telegram_send.py --discover`.
 
 ## 3. Dùng hằng ngày

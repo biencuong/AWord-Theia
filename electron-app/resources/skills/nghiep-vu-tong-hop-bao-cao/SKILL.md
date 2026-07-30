@@ -9,7 +9,9 @@ description: Tổng hợp báo cáo từ văn bản đến trên VNPT iOffice ch
 
 > **Nguyên tắc bảo mật (BẮT BUỘC):** tài khoản iOffice, cookie phiên và khóa API **không ghi
 > trong skill này** — lấy từ phiên đăng nhập trình duyệt của người dùng và file cấu hình cục bộ
-> (`auth.local.json`, `~\.claude\settings.json`). TUYỆT ĐỐI không ghi bí mật vào file kết quả.
+> (`auth.local.json`, `~\.claude\settings.json`). Chưa có cấu hình thì HỎI người dùng, dùng tạm
+> trong phiên, và **chỉ lưu xuống máy khi người dùng đồng ý** (file chỉ nằm trên máy họ).
+> TUYỆT ĐỐI không ghi bí mật vào file kết quả.
 
 ---
 
