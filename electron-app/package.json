@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "20260730.10.25",
+  "version": "20260730.10.55",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
