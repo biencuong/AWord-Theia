@@ -104,9 +104,14 @@ Tóm tắt cách đọc từng loại:
   Việt), KHÔNG gửi nội dung ra dịch vụ ngoài. Chạy script đóng kèm skill:
   `python "%USERPROFILE%\.claude\skills\doc-van-ban-local\scripts\pdf_sang_anh.py" "file.pdf"`
   — render JPEG thang xám 150dpi CÓ CACHE (nhanh gấp 3–5 lần PNG 200dpi, chạy lại không
-  render lại), in ra danh sách ảnh; Read từng ảnh để đọc bằng thị giác. Chỉ cần vài trang
+  render lại), in ra danh sách ảnh. Ảnh nằm ở `%USERPROFILE%\.claude\aword_pdf_cache\`
+  (AWord đã cấp quyền đọc sẵn — Read KHÔNG bị hỏi quyền từng trang). ĐỌC THEO CỤM:
+  Read NHIỀU ảnh (3–5 trang) trong CÙNG MỘT lượt trả lời rồi tóm tắt dần — tuyệt đối
+  không đọc mỗi lượt 1 trang (chậm, bắt người dùng chờ). Chỉ cần vài trang
   thì thêm `--trang 1-5`; chữ nhỏ khó đọc thì `--dpi 200`; cần phân biệt dấu đỏ/con dấu
-  thì `--mau`. Nhận diện PDF scan: pdfplumber trích ra rất ít/không có text dù trang có nội dung.
+  thì `--mau`; nếu vẫn bị hỏi quyền (máy chưa cập nhật settings) thì thêm
+  `--thu-muc-ra ".pdf_anh"` để ảnh nằm trong thư mục làm việc. Nhận diện PDF scan:
+  pdfplumber trích ra rất ít/không có text dù trang có nội dung.
 
 LUẬT VỀ THƯ VIỆN (bắt buộc): nếu chạy skill/script mà báo THIẾU một thư viện, phải CÀI
 ĐẶT CỐ ĐỊNH lên máy ngay bằng `python -m pip install --user <gói>` (KHÔNG dùng cài tạm

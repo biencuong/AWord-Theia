@@ -16,9 +16,14 @@
   },
   "permissions": {
     "allow": [
-      "Bash(*)"
+      "Bash(*)",
+      "Read(~/.claude/aword_pdf_cache/**)",
+      "Read(~/AppData/Local/Temp/aword_pdf_cache/**)"
     ],
-    "additionalDirectories": []
+    "additionalDirectories": [
+      "~/.claude/aword_pdf_cache",
+      "~/AppData/Local/Temp/aword_pdf_cache"
+    ]
   },
   "autoUpdatesChannel": "latest",
   "skipWorkflowUsageWarning": true,

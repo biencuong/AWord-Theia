@@ -98,12 +98,18 @@ Dùng script đóng kèm skill — render trang thành **JPEG thang xám 150dpi 
 python "%USERPROFILE%\.claude\skills\doc-van-ban-local\scripts\pdf_sang_anh.py" "ĐƯỜNG_DẪN.pdf"
 ```
 
-- Script in ra danh sách đường dẫn ảnh (mỗi dòng một trang). Dùng công cụ `Read` đọc TỪNG ảnh —
-  Claude đọc nội dung bằng thị giác, không cần OCR.
+- Script in ra danh sách đường dẫn ảnh (mỗi dòng một trang). Ảnh nằm trong
+  `%USERPROFILE%\.claude\aword_pdf_cache\` — thư mục AWord đã CẤP QUYỀN ĐỌC SẴN
+  (additionalDirectories trong settings.json), nên `Read` ảnh KHÔNG bị hỏi quyền.
+- **ĐỌC THEO CỤM — bắt buộc để nhanh:** gọi `Read` cho NHIỀU ảnh (3–5 trang liên tiếp)
+  trong CÙNG MỘT lượt trả lời, ghi tóm tắt ngắn, rồi đọc cụm kế tiếp. TUYỆT ĐỐI không
+  đọc kiểu mỗi lượt trả lời chỉ 1 trang — chậm gấp nhiều lần, người dùng phải chờ lâu.
 - Chỉ cần vài trang: thêm `--trang 1-3,7`. Văn bản có dấu đỏ/con dấu cần phân biệt màu: thêm `--mau`.
 - Chữ quá nhỏ, đọc không rõ: chạy lại với `--dpi 200`.
 - PDF dài (> 20 trang): render trước 5 trang đầu để nắm loại văn bản, hỏi người dùng cần
   tập trung phần nào rồi mới render tiếp.
+- Nếu vẫn bị hỏi quyền khi Read ảnh (máy chưa cập nhật settings): render lại kèm
+  `--thu-muc-ra ".pdf_anh"` để ảnh nằm ngay TRONG thư mục làm việc hiện tại.
 
 ### Ảnh rời (.png/.jpg/.tiff...)
 Dùng công cụ `Read` đọc TRỰC TIẾP — không cần chuyển đổi gì.

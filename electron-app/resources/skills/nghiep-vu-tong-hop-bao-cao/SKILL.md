@@ -77,6 +77,11 @@ Path(pdf_path.replace('.pdf','.pdf.txt')).write_text(text, encoding='utf-8')
 ```
 - Nếu file là `.doc` cũ (binary): chuyển bằng Word COM (pywin32, máy có Office) hoặc LibreOffice CLI
 - Nếu là `.docx`: dùng `python-docx`
+- **PDF SCAN** (pdfplumber trả rất ít/không có text dù trang có nội dung): render ảnh bằng
+  `python "%USERPROFILE%\.claude\skills\doc-van-ban-local\scripts\pdf_sang_anh.py" "file.pdf"`
+  — ảnh cache ở `%USERPROFILE%\.claude\aword_pdf_cache\` (quyền đọc đã cấp sẵn, Read không
+  bị hỏi từng trang). **ĐỌC THEO CỤM** nhiều ảnh trong một lượt trả lời, tóm tắt dần vào .txt;
+  máy chưa cập nhật settings → thêm `--thu-muc-ra ".pdf_anh"`.
 
 ### Bước 5 — Tổng hợp vào JSON
 Cấu trúc mỗi entry trong `_tong_hop.json`:

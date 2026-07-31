@@ -55,7 +55,12 @@ trong phiên → chỉ ghi xuống máy khi người dùng đồng ý. Các file
 
 **LLM (cần suy luận — Claude/Cowork làm, đọc `inbox.json` + text đã trích):**
 - Đọc–hiểu trích yếu và nội dung file. **Ưu tiên file chính** (file có số/ký hiệu trùng trích yếu) trước, rồi mới đọc file liên quan.
-- Với PDF scan (`needs_ocr: true`): dùng năng lực đọc ảnh để đọc nội dung.
+- Với PDF scan (`needs_ocr: true`): render bằng script của skill `doc-van-ban-local`:
+  `python "%USERPROFILE%\.claude\skills\doc-van-ban-local\scripts\pdf_sang_anh.py" "file.pdf"`
+  — ảnh cache ở `%USERPROFILE%\.claude\aword_pdf_cache\` (AWord cấp quyền đọc sẵn, Read
+  KHÔNG bị hỏi quyền). **ĐỌC THEO CỤM**: Read nhiều ảnh (3–5 trang) trong CÙNG MỘT lượt
+  trả lời rồi tóm tắt dần — không đọc mỗi lượt 1 trang. Máy chưa cập nhật settings mà vẫn
+  bị hỏi quyền → render lại kèm `--thu-muc-ra ".pdf_anh"` (ảnh nằm trong thư mục làm việc).
 - Xác định **nhiệm vụ Sở GDĐT phải làm** từ văn bản đó.
 - Đối chiếu các bản tổng hợp cũ trong `references/briefings/` để bảo đảm **logic, nhất quán với việc đã làm trước**.
 - Viết bản tổng hợp theo đúng mẫu bên dưới.

@@ -7,11 +7,14 @@ Cách dùng:
 Mặc định: JPEG thang xám 150dpi chất lượng 72 — nhỏ gấp 3-5 lần PNG 200dpi,
 Claude đọc nhanh hơn hẳn mà chữ in văn bản hành chính vẫn rõ.
 
-Cache: ảnh lưu vào %TEMP%/aword_pdf_cache/<khóa>/trang_NNN.jpg, khóa tính từ
-đường dẫn + kích thước + mtime + tham số render — chạy lại cùng file với cùng
-tham số thì KHÔNG render lại, chỉ in danh sách ảnh đã có.
+Cache: ảnh lưu vào %USERPROFILE%/.claude/aword_pdf_cache/<khóa>/trang_NNN.jpg —
+thư mục này được AWord cấp quyền đọc sẵn (additionalDirectories trong settings.json)
+nên Read ảnh KHÔNG bị hỏi quyền từng trang. Khóa tính từ đường dẫn + kích thước +
+mtime + tham số render — chạy lại cùng file với cùng tham số thì KHÔNG render lại.
 
-Đầu ra: mỗi dòng một đường dẫn ảnh (theo thứ tự trang) để Read từng ảnh.
+Đầu ra: mỗi dòng một đường dẫn ảnh (theo thứ tự trang). Đọc bằng công cụ Read theo
+CỤM NHIỀU TRANG trong một lượt (nhiều lệnh Read trong cùng một message) — không đọc
+từng trang một lượt trả lời.
 """
 
 import argparse
@@ -66,7 +69,9 @@ def main() -> int:
     if a.thu_muc_ra:
         thu_muc = Path(a.thu_muc_ra)
     else:
-        thu_muc = Path(os.environ.get("TEMP") or os.environ.get("TMP") or ".") / "aword_pdf_cache" / khoa
+        # ~/.claude/aword_pdf_cache: AWord cấp quyền đọc sẵn (additionalDirectories) —
+        # Read ảnh không bị hỏi quyền; bền hơn %TEMP% (không bị Windows dọn giữa chừng).
+        thu_muc = Path.home() / ".claude" / "aword_pdf_cache" / khoa
     thu_muc.mkdir(parents=True, exist_ok=True)
 
     doc = fitz.open(pdf)
@@ -98,6 +103,8 @@ def main() -> int:
 
     print(f"# {pdf.name}: {len(cac_trang)} trang yêu cầu, "
           f"{so_render} trang render mới, {len(cac_trang) - so_render} trang lấy từ cache", file=sys.stderr)
+    print("# Đọc bằng Read theo CỤM nhiều trang trong MỘT lượt (không đọc từng trang một lượt).",
+          file=sys.stderr)
     for duong_dan in duong_dan_anh:
         print(duong_dan)
     return 0
