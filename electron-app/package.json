@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "20260731.14.52",
+  "version": "20260806.15.27",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
@@ -118,8 +118,8 @@
       "!**/*.css.map"
     ],
     "extraResources": [
-      { "from": "plugins", "to": "app/plugins" },
-      { "from": "resources/skills", "to": "app/resources/skills" }
+      { "from": "plugins", "to": "app/plugins", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] },
+      { "from": "resources/skills", "to": "app/resources/skills", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] }
     ],
     "afterPack": "scripts/afterpack-adhoc-sign.cjs",
     "win": {
