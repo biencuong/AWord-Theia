@@ -16,10 +16,12 @@ const steps = [
     path.join(rootDir, 'scripts', 'localize-claude-code-vi.cjs'),
     path.join(__dirname, 'lazy-office-plugin.cjs'),
     path.join(__dirname, 'patch-plugins-env.cjs'),
-    // Thứ tự 2 script inject cố định (cả hai đều cắt từ marker tới cuối file):
-    // first-run-tools TRƯỚC, auto-update SAU — đổi chỗ sẽ xóa khối của nhau.
+    // Thứ tự 3 script inject cố định (đều cắt từ marker CỦA MÌNH tới cuối file):
+    // first-run-tools -> auto-update -> hang-watchdog. Đổi chỗ sẽ xóa khối của nhau;
+    // chạy đúng thứ tự này thì cuối file luôn đủ 3 khối.
     path.join(__dirname, 'inject-first-run-tools.cjs'),
     path.join(__dirname, 'inject-auto-update.cjs'),
+    path.join(__dirname, 'inject-hang-watchdog.cjs'),
     path.join(__dirname, 'gen-installer-nsh.cjs'),
 ];
 
