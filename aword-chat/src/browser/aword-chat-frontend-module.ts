@@ -1,6 +1,9 @@
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { CommandContribution, MenuContribution } from '@theia/core';
-import { bindViewContribution, FrontendApplicationContribution, WidgetFactory, WebSocketConnectionProvider } from '@theia/core/lib/browser';
+import {
+    bindViewContribution, FrontendApplicationContribution, WidgetFactory, WebSocketConnectionProvider,
+    ApplicationShellOptions
+} from '@theia/core/lib/browser';
 import { AwordMenuContribution } from './aword-menu-contribution';
 import { AwordLayoutContribution } from './aword-layout-contribution';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
@@ -13,7 +16,16 @@ import '../../src/browser/style/index.css';
 // trang Chào mừng, khởi động chat-first (tự tạo workspace + mở khung chat Claude giữa màn hình).
 // LƯU Ý an toàn DI: không bind ReactDialog tuỳ biến làm service (từng gây lỗi Inversify LAZY_IN_SYNC
 // làm gãy plugin Claude Code) — dialog luôn dựng trực tiếp bằng `new`; widget/factory chuẩn thì an toàn.
-export default new ContainerModule(bind => {
+export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
+    // Panel Claude (thanh bên phải) mặc định của Theia chỉ rộng ~19% cửa sổ (initialSizeRatio
+    // 0.191 trong @theia/core) — hẹp cho một khung chat. Nới lên ~33% (gấp ~1,75 lần), vẫn là TỶ
+    // LỆ nên tự co giãn theo kích thước màn hình ("tùy giao diện"), không phải số pixel cố định.
+    // Chỉ áp dụng cho workspace CHƯA có layout lưu sẵn — máy đã dùng AWord trước đó (đã lưu bề
+    // rộng cũ) được nong bù một lần trong AwordWelcomeContribution#onDidInitializeLayout.
+    rebind(ApplicationShellOptions).toConstantValue({
+        rightPanel: { initialSizeRatio: 0.33 }
+    });
+
     bind(CapNhatClaudeCodeServer).toDynamicValue(ctx => {
         const provider = ctx.container.get(WebSocketConnectionProvider);
         return provider.createProxy<CapNhatClaudeCodeServer>(CAP_NHAT_CLAUDE_CODE_PATH);

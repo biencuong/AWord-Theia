@@ -17,10 +17,12 @@
   "permissions": {
     "allow": [
       "Bash(*)",
+      "Read(~/**)",
       "Read(~/.claude/aword_pdf_cache/**)",
       "Read(~/AppData/Local/Temp/aword_pdf_cache/**)"
     ],
     "additionalDirectories": [
+      "~",
       "~/.claude/aword_pdf_cache",
       "~/AppData/Local/Temp/aword_pdf_cache"
     ]

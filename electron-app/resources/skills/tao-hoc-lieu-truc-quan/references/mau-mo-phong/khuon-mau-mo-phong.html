@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<!-- KHUÔN MẪU MÔ PHỎNG THÍ NGHIỆM ẢO — AGiaoAn
+     Cách dùng: giữ nguyên bố cục 3 vùng (tiêu đề / canvas / bảng điều khiển).
+     Thay: (1) THAM_SO — các tham số học sinh chỉnh được; (2) hàm capNhat() — mô hình
+     khoa học (công thức đúng SGK); (3) hàm ve() — vẽ hiện tượng lên canvas.
+     Một file tự chứa, không tải gì từ mạng. -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mô phỏng: [TÊN THÍ NGHIỆM] — [Môn] [Lớp]</title>
+<style>
+  :root { --xanh: #2f7bd9; --ngoc: #1ba784; --nen: #f4f7fb; --chu: #1c2733; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--nen); color: var(--chu); padding: 16px; }
+  .khung { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; color: var(--xanh); margin-bottom: 4px; }
+  .phu-de { font-size: 14px; color: #5a6b7d; margin-bottom: 12px; }
+  canvas { width: 100%; background: #fff; border: 1px solid #d7e0ea; border-radius: 10px; display: block; }
+  .bang-dieu-khien { display: flex; flex-wrap: wrap; gap: 16px; background: #fff; border: 1px solid #d7e0ea;
+                     border-radius: 10px; padding: 14px 16px; margin-top: 12px; align-items: center; }
+  .o-tham-so { min-width: 220px; flex: 1; }
+  .o-tham-so label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .o-tham-so input[type=range] { width: 100%; accent-color: var(--xanh); }
+  .gia-tri { color: var(--ngoc); font-weight: 700; }
+  button { font-size: 15px; padding: 8px 18px; border: 0; border-radius: 8px; cursor: pointer;
+           background: var(--xanh); color: #fff; }
+  button.phu { background: #e7edf4; color: var(--chu); }
+  .quan-sat { margin-top: 12px; background: #fffbe8; border: 1px solid #ecd98b; border-radius: 10px;
+              padding: 12px 16px; font-size: 15px; }
+  .nguon { margin-top: 10px; font-size: 12.5px; color: #7a8a99; }
+</style>
+</head>
+<body>
+<div class="khung">
+  <h1>[TÊN THÍ NGHIỆM]</h1>
+  <div class="phu-de">Bài [số]: [tên bài] — [Môn] lớp [X], SGK Kết nối tri thức với cuộc sống</div>
+
+  <canvas id="man-hinh" width="880" height="420"></canvas>
+
+  <div class="bang-dieu-khien">
+    <!-- Nhân bản .o-tham-so cho mỗi tham số -->
+    <div class="o-tham-so">
+      <label>[Tên tham số 1] — <span class="gia-tri" id="gt-thamso1">50</span> [đơn vị]</label>
+      <input type="range" id="thamso1" min="0" max="100" value="50">
+    </div>
+    <button id="nut-chay">▶ Bắt đầu</button>
+    <button id="nut-lam-lai" class="phu">↺ Làm lại</button>
+  </div>
+
+  <div class="quan-sat"><b>Em quan sát được gì?</b> [Câu hỏi định hướng quan sát — lấy từ chính
+    câu hỏi trong SGK của bài]. </div>
+  <div class="nguon">Mô phỏng theo thí nghiệm trang [__] SGK; công thức/mô hình: [ghi rõ].
+    Học liệu tạo bởi AGiaoAn — dùng trong lớp học, chạy offline.</div>
+</div>
+
+<script>
+'use strict';
+// ===== (1) THAM SỐ =====
+const THAM_SO = { thamso1: 50 };
+// ===== Trạng thái mô phỏng =====
+let dangChay = false, tGiay = 0;
+const canvas = document.getElementById('man-hinh');
+const ctx = canvas.getContext('2d');
+
+// ===== (2) MÔ HÌNH KHOA HỌC — thay bằng công thức đúng của thí nghiệm =====
+function capNhat(dt) {
+  tGiay += dt;
+  // ví dụ: vị trí, nhiệt độ, nồng độ... = f(THAM_SO, tGiay)
+}
+
+// ===== (3) VẼ HIỆN TƯỢNG =====
+function ve() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // vẽ dụng cụ + hiện tượng đúng như hình SGK (đèn cồn, bình cầu, ống nghiệm...)
+  ctx.font = '16px "Segoe UI"';
+  ctx.fillStyle = '#5a6b7d';
+  ctx.fillText('[Vẽ dụng cụ và hiện tượng thí nghiệm tại đây]', 24, 40);
+}
+
+// ===== Vòng lặp + điều khiển (thường giữ nguyên) =====
+let truoc = performance.now();
+function vong(now) {
+  const dt = Math.min((now - truoc) / 1000, 0.05); truoc = now;
+  if (dangChay) { capNhat(dt); }
+  ve();
+  requestAnimationFrame(vong);
+}
+requestAnimationFrame(vong);
+
+document.getElementById('thamso1').addEventListener('input', e => {
+  THAM_SO.thamso1 = Number(e.target.value);
+  document.getElementById('gt-thamso1').textContent = e.target.value;
+});
+document.getElementById('nut-chay').addEventListener('click', () => { dangChay = !dangChay;
+  document.getElementById('nut-chay').textContent = dangChay ? '⏸ Tạm dừng' : '▶ Bắt đầu'; });
+document.getElementById('nut-lam-lai').addEventListener('click', () => {
+  dangChay = false; tGiay = 0; document.getElementById('nut-chay').textContent = '▶ Bắt đầu'; ve(); });
+</script>
+</body>
+</html>

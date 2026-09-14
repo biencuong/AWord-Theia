@@ -16,7 +16,8 @@ fs.mkdirSync(wheels, { recursive: true });
 
 const PYTHON_URL = 'https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe';
 const PKGS = ['python-docx', 'openpyxl', 'xlrd', 'pypdf', 'pymupdf', 'pdfplumber',
-    'pillow', 'lxml', 'defusedxml', 'pywin32'];
+    'pillow', 'lxml', 'defusedxml', 'pywin32',
+    'google-genai']; // skill "design" (logo/icon/CIP sinh ảnh AI) — xem GEMINI_API_KEY trong SKILL.md
 
 function taiFile(url, dich, chuyenTiep = 0) {
     return new Promise((resolve, reject) => {

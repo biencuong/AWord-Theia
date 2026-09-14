@@ -461,7 +461,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
         const giuLai = new Set<string>([
             AwordAboutCommand.id, AwordUpdateCommand.id, AwordUpdateClaudeCodeCommand.id,
-            'aword:welcome', 'aword.layout.claude-restart'
+            'aword:welcome', 'aword.layout.claude-restart', 'aword.layout.claude-reopen-session'
         ]);
         for (const child of [...help.children]) {
             if (!giuLai.has(child.id)) {

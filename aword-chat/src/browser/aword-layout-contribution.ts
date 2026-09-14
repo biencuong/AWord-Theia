@@ -12,6 +12,11 @@ export const LayoutClaudeCenter: Command = { id: 'aword.layout.claude-center', l
 export const LayoutClaudeSide: Command = { id: 'aword.layout.claude-side', label: 'Khung Claude ra thanh bên phải' };
 export const LayoutClaudeRestart: Command = { id: 'aword.layout.claude-restart', label: 'Khởi động lại Claude (khi bị treo)' };
 export const LayoutFocus: Command = { id: 'aword.layout.focus', label: 'Chế độ tập trung (ẩn thanh bên & bảng dưới)' };
+// Lệnh có sẵn của Claude Code (claude-vscode.reopenClosedSession) đọc lại đúng lịch sử phiên trò
+// chuyện đã lưu cho thư mục dự án đang mở — CÙNG một kho lưu (~/.claude) dù mở bằng AWord, VS Code
+// hay CLI trên máy này, nên phiên làm ở nơi khác vẫn mở lại được ở đây. Bọc thành lệnh riêng của
+// AWord chỉ để lệnh này dễ tìm hơn (có mặt trong menu Trợ giúp, không chỉ Command Palette).
+export const LayoutClaudeReopenSession: Command = { id: 'aword.layout.claude-reopen-session', label: 'Mở lại phiên trò chuyện Claude gần đây' };
 
 const EXPLORER_CONTAINER_ID = 'explorer-view-container';
 
@@ -35,6 +40,7 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
         commands.registerCommand(LayoutClaudeCenter, { execute: () => this.moClaude('claude-vscode.editor.open') });
         commands.registerCommand(LayoutClaudeSide, { execute: () => this.moClaude('claude-vscode.sidebar.open') });
         commands.registerCommand(LayoutClaudeRestart, { execute: () => this.restartClaude() });
+        commands.registerCommand(LayoutClaudeReopenSession, { execute: () => this.moPhienGanDay() });
         commands.registerCommand(LayoutFocus, { execute: () => this.toggleTapTrung() });
     }
 
@@ -47,6 +53,11 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
             commandId: LayoutClaudeRestart.id,
             label: LayoutClaudeRestart.label,
             order: '3'
+        });
+        menus.registerMenuAction(CommonMenus.HELP, {
+            commandId: LayoutClaudeReopenSession.id,
+            label: LayoutClaudeReopenSession.label,
+            order: '4'
         });
     }
 
@@ -91,6 +102,16 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
             : 'Đang mở lại Claude…', { timeout: 4000 });
         await new Promise(r => setTimeout(r, 700));
         try { await this.commandService.executeCommand('claude-vscode.editor.open'); } catch { /* plugin chưa sẵn sàng */ }
+    }
+
+    // Mở lại phiên trò chuyện gần đây nhất của dự án đang mở (kể cả phiên đã bắt đầu ở VS Code/CLI
+    // trên cùng máy — Claude Code đọc lịch sử theo thư mục dự án từ ~/.claude, không riêng theo IDE).
+    protected async moPhienGanDay(): Promise<void> {
+        try {
+            await this.commandService.executeCommand('claude-vscode.reopenClosedSession');
+        } catch {
+            this.messageService.warn('Không có phiên trò chuyện nào để mở lại, hoặc Claude Code chưa sẵn sàng.');
+        }
     }
 
     protected toggleTapTrung(): void {

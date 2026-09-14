@@ -16,6 +16,12 @@ export const AwordWelcomeCommand: Command = {
 // Đánh dấu "đã chào mừng" trong localStorage: trang chào mừng chỉ tự mở LẦN ĐẦU;
 // các lần sau khởi động thẳng vào khung chat Claude (trải nghiệm kiểu Claude for Windows).
 const KHOA_DA_CHAO_MUNG = 'aword.daChaoMung';
+// Panel Claude (thanh bên phải) mặc định mới rộng hơn (xem ApplicationShellOptions ở
+// aword-chat-frontend-module.ts) chỉ áp dụng cho layout CHƯA từng lưu. Cờ này đảm bảo máy đã
+// dùng AWord từ trước (đã lưu bề rộng hẹp cũ) cũng được nong lên MỘT LẦN duy nhất — sau đó tôn
+// trọng nếu người dùng tự kéo lại theo ý mình.
+const KHOA_DA_NOI_RONG_CLAUDE = 'aword.daNoiRongClaudeSidebar';
+const TY_LE_CHIEU_RONG_CLAUDE = 0.33;
 // Thư mục làm việc mặc định tạo trong Documents của người dùng ở lần chạy đầu.
 const TEN_WORKSPACE_MAC_DINH = 'AWord';
 const THU_MUC_CON_MAC_DINH = ['ABOUT ME', 'TEMPLATES', 'PROJECTS', 'CLAUDE OUTPUTS'];
@@ -76,6 +82,8 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         }
         // Mặc định mở trình Khám phá (Explorer) với thư mục làm việc ở panel trái.
         await this.moExplorer(app);
+        // Nong panel Claude một lần cho máy đã có layout lưu sẵn từ trước (xem ghi chú KHOA_DA_NOI_RONG_CLAUDE).
+        this.noiRongClaudeMacDinh(app);
         // KHÔNG ép mở thêm Claude ở GIỮA màn hình: extension Claude Code đã tự mở sẵn MỘT khung
         // Claude mặc định (thanh bên, theo preferredLocation=sidebar) + Theia khôi phục panel Claude
         // của phiên trước. Ép mở thêm ở giữa gây HAI cửa sổ Claude (thừa + nặng thêm 1 webview +
@@ -102,15 +110,31 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         } catch { /* layout chưa sẵn sàng — lần quét sau sẽ xử lý */ }
     }
 
-    // Hiện trình Khám phá + bung thư mục làm việc để thấy danh sách tệp ngay.
+    // Hiện trình Khám phá + CHỌN NÓ làm tab đang hoạt động ở panel trái (không chỉ "hiện panel" mà
+    // còn có thể đang dừng ở tab khác) + bung thư mục làm việc để thấy danh sách tệp ngay.
     protected async moExplorer(app: FrontendApplication): Promise<void> {
         try {
+            app.shell.expandPanel('left');
             await app.shell.revealWidget(EXPLORER_CONTAINER_ID);
+            await app.shell.activateWidget(EXPLORER_CONTAINER_ID);
             const nav = app.shell.getWidgets('left').find(w => w.id === 'files') as
                 { model?: { root?: unknown; expandNode?: (n: unknown) => unknown } } | undefined;
             const root = nav?.model?.root;
             if (nav?.model?.expandNode && root) { nav.model.expandNode(root); }
         } catch { /* không hiện được — không sao, người dùng tự mở */ }
+    }
+
+    // Nong panel Claude (thanh bên phải) lên ~33% bề rộng cửa sổ hiện tại — CHỈ MỘT LẦN, cho các
+    // máy đã dùng AWord từ trước nên đã có layout lưu sẵn với bề rộng hẹp cũ (ApplicationShellOptions
+    // mới chỉ tự áp dụng cho panel CHƯA từng bung). SidePanelHandler#resize tự xử lý đúng cả khi
+    // panel đang thu gọn/plugin Claude chưa nạp xong (lưu lại `lastPanelSize`, áp dụng khi bung sau).
+    protected noiRongClaudeMacDinh(app: FrontendApplication): void {
+        if (window.localStorage.getItem(KHOA_DA_NOI_RONG_CLAUDE)) { return; }
+        window.localStorage.setItem(KHOA_DA_NOI_RONG_CLAUDE, '1');
+        try {
+            const rong = app.shell.node.clientWidth;
+            if (rong > 0) { app.shell.resize(Math.round(rong * TY_LE_CHIEU_RONG_CLAUDE), 'right'); }
+        } catch { /* shell chưa sẵn sàng — không sao, ApplicationShellOptions vẫn lo lần bung đầu tiên */ }
     }
 
     override registerCommands(commands: CommandRegistry): void {

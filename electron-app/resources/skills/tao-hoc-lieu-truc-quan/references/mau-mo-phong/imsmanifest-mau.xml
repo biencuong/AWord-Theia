@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MẪU imsmanifest.xml — SCORM 1.2, gói bài giảng e-learning AGiaoAn.
+     Thay: MA_GOI (không dấu, không cách), TIEU_DE, và href trang khởi đầu.
+     File này phải nằm ở GỐC của file .zip. -->
+<manifest identifier="MA_GOI" version="1.2"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="TO_CHUC_1">
+    <organization identifier="TO_CHUC_1">
+      <title>TIEU_DE</title>
+      <item identifier="MUC_1" identifierref="TAI_NGUYEN_1">
+        <title>TIEU_DE</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="TAI_NGUYEN_1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <!-- Liệt kê THÊM mọi file trong gói (mỗi file một dòng <file href="..."/>) -->
+    </resource>
+  </resources>
+</manifest>
