@@ -69,9 +69,12 @@ export const QUY_TAC_CLAUDE_MD_GIAO_VIEN = `# Quy tắc làm việc trong không
   dùng đúng skill tương ứng (soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu,
   tao-hoc-lieu-truc-quan, tham-dinh-ho-so-day-hoc, cap-nhat-quy-dinh-nam-hoc).
 - Bám Chương trình GDPT 2018, yêu cầu cần đạt và SGK "Kết nối tri thức với cuộc sống" (bộ sách
-  thống nhất toàn quốc từ năm học 2026-2027). Nguồn SGK ưu tiên: Kho SGK (công cụ sgk_*, skill
-  tra-cuu-sgk, luật index-first, trích dẫn "Theo SGK <tên sách> tr.<trang>"); chưa có thì dùng PDF
-  trong "TU LIEU MON HOC/<Môn>/SGK/"; không có cả hai thì ghi rõ "chưa đối chiếu SGK".
+  thống nhất toàn quốc từ năm học 2026-2027). Nguồn nội dung sách ưu tiên: Kho tri thức AI giảng dạy
+  (công cụ tt_*, skill tra-cuu-tri-thuc, luật index-first); chưa có thì dùng PDF trong
+  "TU LIEU MON HOC/<Môn>/SGK/"; không có cả hai thì ghi rõ "chưa đối chiếu SGK".
+- Trích dẫn nguồn theo mẫu "SGK <môn> <lớp>, Bài x, tr. y" (ví dụ "SGK Khoa học tự nhiên 9, Bài 8, tr. 40").
+- Đóng góp tài liệu cho Kho tri thức AI (đổi điểm tích lũy): theo skill tra-cuu-tri-thuc — chỉ dùng đường dẫn
+  tệp, không đọc nội dung tệp; luôn hỏi xác nhận quyền chia sẻ trước khi gửi.
 - Văn bản hành chính (báo cáo, kế hoạch của tổ, trường...): đúng thể thức Nghị định 30, soạn xong
   kiểm soát bằng skill the-thuc-van-ban-theo-nd30.
 - Có tệp mẫu thì điền vào BẢN SAO của mẫu, không tạo tệp mới; chữ trong mẫu chỉ để tham khảo bố cục.

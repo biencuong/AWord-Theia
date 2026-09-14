@@ -20,7 +20,7 @@ const HUONG_DAN: { icon: string; text: string }[] = [
     { icon: '⚡', text: 'AWord có sẵn hơn 40 kỹ năng (văn bản Nghị định 30, xử lý văn bản đến, giáo án, đề kiểm tra, trình chiếu, bảng tính...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
     { icon: '🧠', text: 'Claude tự ghi nhớ việc đang làm vào thư mục ẩn .aword/bo-nho trong thư mục làm việc — phiên sau nối tiếp liền mạch; công cụ AI khác cũng dùng chung được qua tệp AGENTS.md.' },
     { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
-    { icon: '🎓', text: 'Giáo viên: chạy "Kết nối Kho SGK (AWord)" trong Start Menu một lần (không cần mã khóa) rồi nói với Claude "kiểm tra trạng thái Kho SGK" — thanh toán quét QR ngay trong chat; sau đó giáo án, đề, slide bám đúng bài trong SGK và có hình từ sách.' },
+    { icon: '🎓', text: 'Giáo viên: chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu một lần (không cần mã khóa) rồi nói với Claude "kiểm tra trạng thái Kho tri thức AI" — dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa và tài liệu chuyên môn; thanh toán quét QR ngay trong chat. Giáo án, đề, slide bám đúng bài và có hình từ sách; đóng góp tài liệu chuyên môn để nhận điểm tích lũy đổi dữ liệu tri thức mới.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
 ];
 
@@ -191,13 +191,21 @@ export class AwordWelcomeWidget extends ReactWidget {
         if (tt.vai.giaoVien) {
             dong.push(tt.khoiGiaoVienTrongClaudeMd ? 'Quy tắc giáo viên: đã nạp vào CLAUDE.md' : 'Quy tắc giáo viên: CHƯA có trong CLAUDE.md — bấm lại vai để áp dụng');
             dong.push(tt.thuMucGiaoVienDaCo ? `Thư mục giáo viên: ${tt.thuMucGiaoVien}` : 'Thư mục giáo viên: chưa tạo — bấm lại vai để tạo');
-            dong.push(tt.hookKhoSgkDaBat ? 'Thông báo Kho SGK đầu phiên: đã bật' : 'Thông báo Kho SGK đầu phiên: chưa bật');
-            dong.push(tt.khoSgk
-                ? `Kho SGK: đã đăng ký máy ${tt.khoSgk.maMay} (${tt.khoSgk.url})`
-                : 'Kho SGK: chưa kết nối — chạy "Kết nối Kho SGK (AWord)" trong Start Menu');
+            dong.push(tt.hookTriThucDaBat
+                ? 'Thông báo Kho tri thức AI đầu phiên: đã bật'
+                : tt.hookCuConLai
+                    ? 'Thông báo Kho tri thức AI đầu phiên: còn cấu hình tên cũ — bấm lại vai để chuyển'
+                    : 'Thông báo Kho tri thức AI đầu phiên: chưa bật');
+            if (tt.khoTriThuc) {
+                dong.push(`Kho tri thức AI: đã đăng ký máy ${tt.khoTriThuc.maMay} (${tt.khoTriThuc.url})`);
+            } else if (tt.cauHinhCuChuaDiTru) {
+                dong.push('Kho tri thức AI: còn cấu hình của bản thử nghiệm — chạy lại "Kết nối Kho tri thức AI (AWord)" trong Start Menu để chuyển sang tên mới (giữ nguyên bản quyền)');
+            } else {
+                dong.push('Kho tri thức AI: chưa kết nối — chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu');
+            }
         } else {
             dong.push(tt.khoiGiaoVienTrongClaudeMd ? 'Quy tắc giáo viên: vẫn còn trong CLAUDE.md — bấm lại vai để gỡ' : 'Quy tắc giáo viên: không nạp');
-            if (tt.hookKhoSgkDaBat) { dong.push('Thông báo Kho SGK đầu phiên: vẫn bật — bấm lại vai để tắt'); }
+            if (tt.hookTriThucDaBat || tt.hookCuConLai) { dong.push('Thông báo Kho tri thức AI đầu phiên: vẫn bật — bấm lại vai để tắt'); }
         }
         return <ul className='aword-welcome-vai-tt'>
             {dong.map((d, i) => <li key={i}>{d}</li>)}
@@ -216,9 +224,11 @@ export class AwordWelcomeWidget extends ReactWidget {
             for (const cb of kq.canhBao) {
                 this.messageService.warn(cb, { timeout: 30000 });
             }
-            if (vai.giaoVien && !kq.trangThai.khoSgk) {
+            if (vai.giaoVien && !kq.trangThai.khoTriThuc) {
                 this.messageService.info(
-                    'Muốn Claude tự tra sách giáo khoa: chạy "Kết nối Kho SGK (AWord)" trong Start Menu một lần rồi mở lại AWord.',
+                    kq.trangThai.cauHinhCuChuaDiTru
+                        ? 'Máy này còn cấu hình Kho tri thức AI của bản thử nghiệm: chạy lại "Kết nối Kho tri thức AI (AWord)" trong Start Menu để chuyển sang tên mới (giữ nguyên bản quyền), rồi mở lại AWord.'
+                        : 'Muốn Claude tự tra nội dung sách: chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu một lần rồi mở lại AWord.',
                     { timeout: 20000 });
             }
         } catch (e) {

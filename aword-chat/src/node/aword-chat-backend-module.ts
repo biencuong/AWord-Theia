@@ -13,7 +13,7 @@ export default new ContainerModule(bind => {
         )
     ).inSingletonScope();
 
-    // "Vai của bạn" (trang Chào mừng): lưu vai, hợp nhất khối quy tắc giáo viên, cây thư mục, hook Kho SGK.
+    // "Vai của bạn" (trang Chào mừng): lưu vai, hợp nhất khối quy tắc giáo viên, cây thư mục, hook Kho tri thức AI.
     bind(VaiNguoiDungServer).to(VaiNguoiDungServerImpl).inSingletonScope();
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler(VAI_NGUOI_DUNG_PATH, () =>

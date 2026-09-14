@@ -13,7 +13,7 @@ export { QUY_TAC_CLAUDE_MD, QUY_TAC_CLAUDE_MD_GIAO_VIEN };
 const NHOM_KY_NANG = `Các nhóm kỹ năng của AWord:
 - Nền tảng (LUÔN BẬT, không tắt): bo-nho-lam-viec, doc-van-ban-local, docx, xlsx, pptx, pdf.
 - Nghiệp vụ hành chính: the-thuc-van-ban-theo-nd30, so-gd-cds-tao-van-ban, ioffice-vanban-den, xu-ly-van-ban-den-xlc, nghiep-vu-tong-hop-bao-cao, internal-comms, doc-coauthoring.
-- Giáo dục, dạy học: soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan, tham-dinh-ho-so-day-hoc, cap-nhat-quy-dinh-nam-hoc, tra-cuu-sgk, academic-pptx.
+- Giáo dục, dạy học: soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan, tham-dinh-ho-so-day-hoc, cap-nhat-quy-dinh-nam-hoc, tra-cuu-tri-thuc, academic-pptx.
 - Thiết kế và trình bày: design, design-system, brand, brand-guidelines, banner-design, canvas-design, theme-factory, slides, ui-styling, ui-ux-pro-max, frontend-design.
 - Lập trình và kỹ thuật (ít dùng cho văn phòng): claude-api, mcp-builder, webapp-testing, web-artifacts-builder, skill-creator, slack-gif-creator, algorithmic-art.
 Phụ thuộc: nếu GIỮ nhóm Giáo dục thì KHÔNG tắt canvas-design, frontend-design, web-artifacts-builder, slack-gif-creator, webapp-testing (skill dạy học dùng kèm).`;
@@ -47,7 +47,7 @@ Thư mục giáo viên là Documents\\AWord\\GIAO VIEN (AWord đã tạo sẵn k
 
 2. Tạo cấu trúc thư mục (thiếu cái nào tạo cái đó): "HO SO CUA TOI/" (ghi ho-so-giao-vien.md — toàn bộ thông tin phỏng vấn, mon-lop.md — bảng môn × khối lớp, van-phong.md), "TU LIEU MON HOC/<Môn>/SGK/" cho từng môn tôi dạy (kèm README nhắc bỏ phân phối chương trình, sách giáo viên vào đúng thư mục môn), "KE HOACH BAI DAY/", "DE KIEM TRA/", "BAI TRINH CHIEU/", "HOC LIEU TRUC QUAN/", "BO NHO/". Ghi "HO SO CUA TOI/tri-thuc-cua-toi.md": chỉ mục cho biết với cấp học và các môn của tôi thì mỗi skill dạy học cần đọc đúng file/mục references nào (khung KHBD theo cấp, mục môn trong ppdh-bo-mon.md và ppdh-cap-*.md).
 
-3. Kho SGK: nếu trong phiên có các công cụ sgk_* thì gọi sgk_trang_thai và cho tôi biết trạng thái bản quyền (chưa kích hoạt thì nói tôi có thể bảo "kiểm tra trạng thái Kho SGK" bất cứ lúc nào để thanh toán QR ngay trong chat, giá 50.000 đ/máy/năm). Nếu KHÔNG có công cụ sgk_*: nói ngắn gọn rằng muốn Claude tự tra SGK thì chạy "Kết nối Kho SGK (AWord)" trong Start Menu rồi mở lại AWord — không bắt buộc; không có kho thì tôi tự bỏ PDF SGK vào "TU LIEU MON HOC/<Môn>/SGK/".
+3. Kho tri thức AI giảng dạy (dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa và tài liệu chuyên môn): nếu trong phiên có các công cụ tt_* thì gọi tt_trang_thai và cho tôi biết trạng thái dịch vụ (chưa kích hoạt thì nói tôi có thể bảo "kiểm tra trạng thái Kho tri thức AI" bất cứ lúc nào để thanh toán QR ngay trong chat; giá theo máy chủ). Giới thiệu một câu: tôi có thể đóng góp tài liệu chuyên môn để nhận điểm tích lũy đổi dữ liệu tri thức cập nhật mới. Nếu KHÔNG có công cụ tt_*: nói ngắn gọn rằng muốn Claude tự tra nội dung sách thì chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu rồi mở lại AWord — không bắt buộc; không có kho thì tôi tự bỏ PDF sách vào "TU LIEU MON HOC/<Môn>/SGK/".
 
 4. Hỏi tôi (AskUserQuestion) có muốn NẠP NGAY yêu cầu cần đạt không: với từng môn × khối lớp đã khai, tra web chương trình môn học GDPT 2018 (Thông tư 32/2018/TT-BGDĐT) và lưu "TU LIEU MON HOC/<Môn>/yeu-cau-can-dat-lop-<X>.md" (ghi rõ nguồn) để soạn bài dùng offline. Mất vài phút; tôi có thể để sau (khi soạn bài đầu tiên Claude sẽ tự tra).
 
@@ -99,11 +99,23 @@ export const PROMPT_CHON_NHOM_KY_NANG = `Hãy giúp tôi bật/tắt các nhóm 
 
 ${NHOM_KY_NANG}`;
 
-// Kiểm tra trạng thái Kho SGK (bản quyền theo mã máy, thanh toán QR ngay trong chat).
-export const PROMPT_KIEM_TRA_KHO_SGK = `Kiểm tra trạng thái Kho SGK cho tôi theo skill tra-cuu-sgk:
-- Nếu có công cụ sgk_trang_thai: gọi nó và báo rõ mã máy, trạng thái bản quyền, hạn dùng, phiên bản kho đang dùng/mới nhất, giá, và chuyển NGUYÊN VĂN mọi thông báo (thong_bao) nếu có.
-- Chưa kích hoạt hoặc hết hạn: gọi sgk_thanh_toan, hiện đầy đủ số tiền, ngân hàng, số tài khoản, chủ tài khoản, NỘI DUNG CHUYỂN KHOẢN chính xác, ảnh QR hoặc đường dẫn QR và trang thanh toán, hạn của đơn; sau khi tôi báo đã chuyển khoản thì gọi sgk_kiem_tra_thanh_toan(ma_don) và cho tôi biết kết quả.
-- Nếu KHÔNG có công cụ sgk_* nào: hướng dẫn tôi chạy "Kết nối Kho SGK (AWord)" trong Start Menu (hoặc tệp Ket_Noi_KhoSGK.cmd trong thư mục cài AWord), nhấn Enter nhận địa chỉ mặc định, rồi mở lại AWord.`;
+// Kiểm tra trạng thái Kho tri thức AI giảng dạy (dịch vụ theo mã máy, thanh toán QR ngay trong chat).
+export const PROMPT_KIEM_TRA_KHO_TRI_THUC = `Kiểm tra trạng thái Kho tri thức AI giảng dạy cho tôi theo skill tra-cuu-tri-thuc:
+- Nếu có công cụ tt_trang_thai: gọi nó và báo rõ mã máy, trạng thái dịch vụ, hạn dùng, phiên bản dữ liệu tri thức đang dùng/mới nhất, giá, và chuyển NGUYÊN VĂN mọi thông báo (thong_bao) nếu có.
+- Chưa kích hoạt hoặc hết hạn: gọi tt_thanh_toan, hiện đầy đủ tên dòng thanh toán, số tiền, ngân hàng, số tài khoản, chủ tài khoản, NỘI DUNG CHUYỂN KHOẢN chính xác, ảnh QR hoặc đường dẫn QR và trang thanh toán, hạn của đơn; sau khi tôi báo đã chuyển khoản thì gọi tt_kiem_tra_thanh_toan(ma_don) và cho tôi biết kết quả.
+- Nếu KHÔNG có công cụ tt_* nào: hướng dẫn tôi chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu (hoặc tệp Ket_Noi_KhoTriThuc.cmd trong thư mục cài AWord), nhấn Enter nhận địa chỉ mặc định, rồi mở lại AWord.`;
+
+// Đóng góp tài liệu cho Kho tri thức AI để nhận điểm tích lũy. KHÔNG đính kèm tệp bằng @ (sẽ nạp nội dung vào
+// ngữ cảnh) — chỉ dán đường dẫn; tệp được tải thẳng lên máy chủ bằng PowerShell.
+export const PROMPT_DONG_GOP_TAI_LIEU = `Tôi muốn đóng góp tài liệu chuyên môn cho Kho tri thức AI giảng dạy để nhận điểm tích lũy. Đường dẫn tệp: [dán đường dẫn đầy đủ, ví dụ D:\\Giao an\\KHBD_bai8.docx — KHÔNG đính kèm bằng @].
+Làm đúng mục "Đóng góp tài liệu đổi điểm" của skill tra-cuu-tri-thuc:
+- Chỉ lấy tên tệp và kích thước bằng PowerShell, TUYỆT ĐỐI không đọc nội dung tệp.
+- Hỏi tôi từng câu: tiêu đề, loại tài liệu, môn, lớp, mô tả ngắn; rồi hỏi tôi XÁC NHẬN quyền chia sẻ tài liệu — chỉ gửi khi tôi chọn xác nhận.
+- Gọi tt_dong_gop_tao, tải tệp lên bằng PowerShell Invoke-WebRequest -Method Put theo url_tai_len, rồi báo mã đóng góp, trạng thái chờ duyệt và điểm dự kiến.
+- Nhắc lại quy tắc điểm: chỉ dùng đổi dữ liệu tri thức cập nhật mới; không cho tặng, không chuyển nhượng, không quy đổi thành tiền, không dùng trả phí gia hạn dịch vụ năm.`;
+
+// Xem điểm tích lũy và tài liệu đã đóng góp.
+export const PROMPT_XEM_DIEM = `Cho tôi xem điểm tích lũy trên Kho tri thức AI giảng dạy theo skill tra-cuu-tri-thuc: gọi tt_diem (số dư, những gì đổi được bằng điểm, lịch sử gần đây) và tt_dong_gop_ds (tài liệu tôi đã đóng góp, trạng thái duyệt, điểm, lý do nếu bị từ chối). Trình bày gọn thành bảng; nhắc rõ điểm chỉ dùng đổi dữ liệu tri thức cập nhật mới (bản nâng cấp, gói dữ liệu), không cho tặng, không chuyển nhượng, không quy đổi thành tiền, không dùng trả phí gia hạn. Chỉ đổi điểm khi tôi yêu cầu và xác nhận.`;
 
 // "Bắt đầu nhanh" cho vai Giáo viên — bấm nút, dán vào chat là dùng được; chỗ [trong ngoặc] tự thay.
 export interface PromptNhanh {
@@ -116,27 +128,37 @@ export const PROMPT_NHANH_GIAO_VIEN: PromptNhanh[] = [
     {
         icon: '📝',
         ten: 'Soạn kế hoạch bài dạy',
-        prompt: 'Soạn kế hoạch bài dạy: môn [Toán], lớp [7], bài "[Số hữu tỉ]", thời lượng [1] tiết, SGK Kết nối tri thức với cuộc sống. Có Kho SGK (công cụ sgk_*) thì tra theo skill tra-cuu-sgk (sgk_muc_luc → sgk_bai) để bám đúng bài và trích dẫn "Theo SGK ... tr. ...". Soạn đúng khung quy định cho cấp học của tôi, bám yêu cầu cần đạt của chương trình GDPT 2018, tự kiểm theo tiêu chí Công văn 5555 rồi báo kết quả.'
+        prompt: 'Soạn kế hoạch bài dạy: môn [Toán], lớp [7], bài "[Số hữu tỉ]", thời lượng [1] tiết, SGK Kết nối tri thức với cuộc sống. Có Kho tri thức AI (công cụ tt_*) thì tra theo skill tra-cuu-tri-thuc (tt_muc_luc → tt_bai) để bám đúng bài và trích dẫn nguồn theo mẫu "SGK <môn> <lớp>, Bài x, tr. y". Soạn đúng khung quy định cho cấp học của tôi, bám yêu cầu cần đạt của chương trình GDPT 2018, tự kiểm theo tiêu chí Công văn 5555 rồi báo kết quả.'
     },
     {
         icon: '📋',
         ten: 'Ra đề kiểm tra',
-        prompt: 'Ra đề kiểm tra [giữa kỳ I] môn [Toán] lớp [7], thời gian [90] phút: lập ma trận và bản đặc tả theo Công văn 7991/BGDĐT-GDTrH, rồi biên soạn đề + đáp án + hướng dẫn chấm, bám yêu cầu cần đạt các bài đã học. Có Kho SGK thì lấy phần bài tập, ghi nhớ của các bài trong phạm vi (sgk_bai với phan="bai-tap"/"ghi-nho") và sách bài tập làm ngân hàng câu hỏi.'
+        prompt: 'Ra đề kiểm tra [giữa kỳ I] môn [Toán] lớp [7], thời gian [90] phút: lập ma trận và bản đặc tả theo Công văn 7991/BGDĐT-GDTrH, rồi biên soạn đề + đáp án + hướng dẫn chấm, bám yêu cầu cần đạt các bài đã học. Có Kho tri thức AI thì lấy phần bài tập, ghi nhớ của các bài trong phạm vi (tt_bai với phan="bai-tap"/"ghi-nho") và sách bài tập làm ngân hàng câu hỏi.'
     },
     {
         icon: '📽️',
         ten: 'Soạn bài trình chiếu từ KHBD',
-        prompt: 'Soạn bài trình chiếu (.pptx) cho kế hoạch bài dạy "[tên bài]" đã có trong thư mục KE HOACH BAI DAY — slide bám đúng tiến trình các hoạt động của bài, chữ to rõ phù hợp học sinh, câu hỏi tương tác đặt trước đáp án; hình minh họa lấy từ Kho SGK (sgk_hinh_theo_bai, tải bằng url_tai) nếu có.'
+        prompt: 'Soạn bài trình chiếu (.pptx) cho kế hoạch bài dạy "[tên bài]" đã có trong thư mục KE HOACH BAI DAY — slide bám đúng tiến trình các hoạt động của bài, chữ to rõ phù hợp học sinh, câu hỏi tương tác đặt trước đáp án; hình minh họa lấy từ Kho tri thức AI (tt_hinh_theo_bai, tải bằng url_tai) nếu có.'
     },
     {
         icon: '🧪',
         ten: 'Tạo mô phỏng thí nghiệm ảo',
-        prompt: 'Tạo mô phỏng thí nghiệm ảo (tệp HTML mở bằng trình duyệt, chạy offline) cho bài "[Sự nở vì nhiệt]" môn [KHTN] lớp [6] theo SGK Kết nối tri thức: đúng dụng cụ và hiện tượng như SGK mô tả (tra Kho SGK nếu có), có bảng điều khiển cho học sinh thay đổi tham số.'
+        prompt: 'Tạo mô phỏng thí nghiệm ảo (tệp HTML mở bằng trình duyệt, chạy offline) cho bài "[Sự nở vì nhiệt]" môn [KHTN] lớp [6] theo SGK Kết nối tri thức: đúng dụng cụ và hiện tượng như sách mô tả (tra Kho tri thức AI nếu có), có bảng điều khiển cho học sinh thay đổi tham số.'
     },
     {
         icon: '📚',
-        ten: 'Kiểm tra trạng thái Kho SGK',
-        prompt: PROMPT_KIEM_TRA_KHO_SGK
+        ten: 'Kiểm tra trạng thái Kho tri thức AI',
+        prompt: PROMPT_KIEM_TRA_KHO_TRI_THUC
+    },
+    {
+        icon: '🤝',
+        ten: 'Đóng góp tài liệu',
+        prompt: PROMPT_DONG_GOP_TAI_LIEU
+    },
+    {
+        icon: '⭐',
+        ten: 'Xem điểm tích lũy',
+        prompt: PROMPT_XEM_DIEM
     },
     {
         icon: '📖',

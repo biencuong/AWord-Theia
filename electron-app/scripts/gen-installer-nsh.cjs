@@ -23,15 +23,15 @@ if (skills.length === 0) {
 // Các file nguồn ở gốc AWord-Theia được nhúng vào bộ cài — thiếu là fail sớm,
 // tránh NSIS báo "no files found" khó hiểu lúc biên dịch.
 const rootDir = path.join(appDir, '..');
-for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Ket_Noi_KhoSGK.cmd', 'Chuyen_Du_Lieu_AGiaoAn.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd', 'Cap_Nhat_Claude.ps1', 'Cap_Nhat_QuyTac.ps1']) {
+for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Ket_Noi_KhoTriThuc.cmd', 'Chuyen_Du_Lieu_AGiaoAn.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd', 'Cap_Nhat_Claude.ps1', 'Cap_Nhat_QuyTac.ps1']) {
     if (!fs.existsSync(path.join(rootDir, f))) {
         console.error(`[gen-installer-nsh] Thiếu file nguồn ${f} ở gốc AWord-Theia!`);
         process.exit(1);
     }
 }
 
-// Tài nguyên vai Giáo viên (khối quy tắc AWORD-GIAOVIEN + hook Kho SGK) — đóng gói trong resources/giao-vien.
-for (const f of ['CLAUDE.giaovien.md', 'hook_khosgk.ps1']) {
+// Tài nguyên vai Giáo viên (khối quy tắc AWORD-GIAOVIEN + hook Kho tri thức AI) — đóng gói trong resources/giao-vien.
+for (const f of ['CLAUDE.giaovien.md', 'hook_trithuc.ps1']) {
     if (!fs.existsSync(path.join(appDir, 'resources', 'giao-vien', f))) {
         console.error(`[gen-installer-nsh] Thiếu tài nguyên resources/giao-vien/${f}!`);
         process.exit(1);
@@ -45,6 +45,10 @@ const lines = [
     '; 2) Đăng ký menu chuột phải Windows "Mở bằng AWord" cho tệp/thư mục (HKCU,',
     ';    không cần quyền Admin — giống cách VS Code làm). Gỡ sạch khi uninstall.',
     '!macro customInstall',
+    '  ; Skill TÊN CŨ tra-cuu-sgk do chính AWord cài ở bản thử nghiệm — đã thay bằng tra-cuu-tri-thuc',
+    '  ; (giữ lại sẽ hướng dẫn AI gọi công cụ không còn tồn tại). Chỉ gỡ đúng thư mục này.',
+    '  RMDir /r "$PROFILE\\.claude\\skills\\tra-cuu-sgk"',
+    '  RMDir /r "$PROFILE\\.claude\\skills-tat\\tra-cuu-sgk"',
 ];
 skills.forEach((skill, i) => {
     lines.push(
@@ -101,13 +105,13 @@ lines.push(
     '',
     '  ; VAI GIÁO VIÊN: khối quy tắc AWORD-GIAOVIEN (người dùng bật/tắt trong app, trang Chào mừng → Vai của',
     '  ; bạn). CLAUDE.giaovien-moi.md LUÔN ghi mới: Cap_Nhat_QuyTac.ps1 chỉ CẬP NHẬT khối này nếu CLAUDE.md',
-    '  ; đang có nó (đã bật vai) — không tự chèn. hook_khosgk.ps1 chép vào %USERPROFILE%\\.aword để hook',
+    '  ; đang có nó (đã bật vai) — không tự chèn. hook_trithuc.ps1 chép vào %USERPROFILE%\\.aword để hook',
     '  ; SessionStart (chỉ đăng ký khi bật vai Giáo viên) luôn dùng bản mới nhất.',
     '  SetOutPath "$PROFILE\\.claude"',
     '  File "/oname=CLAUDE.giaovien-moi.md" "${PROJECT_DIR}\\resources\\giao-vien\\CLAUDE.giaovien.md"',
     '  CreateDirectory "$PROFILE\\.aword"',
     '  SetOutPath "$PROFILE\\.aword"',
-    '  File "${PROJECT_DIR}\\resources\\giao-vien\\hook_khosgk.ps1"',
+    '  File "${PROJECT_DIR}\\resources\\giao-vien\\hook_trithuc.ps1"',
     '',
     '  ; Script kết nối Kho dữ liệu cơ quan (MCP HTTP): đặt vào thư mục cài + Start Menu.',
     '  ; LUÔN ghi mới (script không chứa dữ liệu người dùng, cần bản mới nhất).',
@@ -115,10 +119,13 @@ lines.push(
     '  File "${PROJECT_DIR}\\..\\Ket_Noi_KhoDuLieu.cmd"',
     '  CreateShortCut "$SMPROGRAMS\\Kết nối Kho dữ liệu (AWord).lnk" "$INSTDIR\\Ket_Noi_KhoDuLieu.cmd" "" "$INSTDIR\\AWord.exe" 0',
     '',
-    '  ; Kho SGK (vai Giáo viên): đăng ký MCP khosgk theo mã máy + token thiết bị (khosgk.url cạnh script',
-    '  ; giữ địa chỉ tùy chỉnh qua các lần cập nhật). Chuyển dữ liệu AGiaoAn -> Documents\\AWord\\GIAO VIEN.',
-    '  File "${PROJECT_DIR}\\..\\Ket_Noi_KhoSGK.cmd"',
-    '  CreateShortCut "$SMPROGRAMS\\Kết nối Kho SGK (AWord).lnk" "$INSTDIR\\Ket_Noi_KhoSGK.cmd" "" "$INSTDIR\\AWord.exe" 0',
+    '  ; Kho tri thức AI giảng dạy (vai Giáo viên): đăng ký MCP trithuc theo mã máy + token thiết bị',
+    '  ; (trithuc.url cạnh script giữ địa chỉ tùy chỉnh qua các lần cập nhật). Chuyển dữ liệu AGiaoAn -> Documents\\AWord\\GIAO VIEN.',
+    '  ; Gỡ lối tắt/tệp TÊN CŨ của bản thử nghiệm (script mới tự di trú trithuc.json từ cấu hình cũ).',
+    '  Delete "$SMPROGRAMS\\Kết nối Kho SGK (AWord).lnk"',
+    '  Delete "$INSTDIR\\Ket_Noi_KhoSGK.cmd"',
+    '  File "${PROJECT_DIR}\\..\\Ket_Noi_KhoTriThuc.cmd"',
+    '  CreateShortCut "$SMPROGRAMS\\Kết nối Kho tri thức AI (AWord).lnk" "$INSTDIR\\Ket_Noi_KhoTriThuc.cmd" "" "$INSTDIR\\AWord.exe" 0',
     '  File "${PROJECT_DIR}\\..\\Chuyen_Du_Lieu_AGiaoAn.cmd"',
     '  CreateShortCut "$SMPROGRAMS\\Chuyển dữ liệu AGiaoAn sang AWord.lnk" "$INSTDIR\\Chuyen_Du_Lieu_AGiaoAn.cmd" "" "$INSTDIR\\AWord.exe" 0',
     '',
@@ -159,6 +166,7 @@ lines.push(
     '',
     '!macro customUnInstall',
     '  Delete "$SMPROGRAMS\\Kết nối Kho dữ liệu (AWord).lnk"',
+    '  Delete "$SMPROGRAMS\\Kết nối Kho tri thức AI (AWord).lnk"',
     '  Delete "$SMPROGRAMS\\Kết nối Kho SGK (AWord).lnk"',
     '  Delete "$SMPROGRAMS\\Chuyển dữ liệu AGiaoAn sang AWord.lnk"',
     '  Delete "$SMPROGRAMS\\Cài công cụ tài liệu (AWord).lnk"',

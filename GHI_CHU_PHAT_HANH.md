@@ -1,16 +1,22 @@
-AWord — vai Giáo viên và Kho SGK. Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật):
-cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI, Kho dữ liệu, quy tắc riêng và lựa chọn vai.
+AWord — vai Giáo viên và Kho tri thức AI giảng dạy. Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn
+"Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI, Kho dữ liệu, quy tắc riêng và lựa chọn vai.
 
 Nội dung chính:
 - **Chọn vai ở trang Chào mừng**: khối "Vai của bạn" — *Cán bộ hành chính* / *Giáo viên* / *Cả hai*.
   Chọn Giáo viên: AWord nạp khối quy tắc soạn giảng (kế thừa AGiaoAn) vào CLAUDE.md cấp người dùng
   theo kiểu hợp nhất có sao lưu, tạo thư mục `Documents\AWord\GIAO VIEN` (HO SO CUA TOI, TU LIEU MON
   HOC, KE HOACH BAI DAY, BAI TRINH CHIEU, DE KIEM TRA, HOC LIEU TRUC QUAN, BO NHO) kèm CLAUDE.md riêng,
-  và bật thông báo Kho SGK đầu phiên. Đổi vai bất cứ lúc nào; tắt vai chỉ gỡ quy tắc, không xóa dữ liệu.
-- **Kho SGK (aword.vn)**: lối tắt Start Menu "Kết nối Kho SGK (AWord)" — không cần mã khóa, tự tính mã
-  máy và token thiết bị; trong chat gõ "kiểm tra trạng thái Kho SGK" để xem bản quyền và thanh toán bằng
-  quét QR ngay trong cửa sổ chat. Skill mới `tra-cuu-sgk` (tra SGK/SGV/SBT theo bài, tiết kiệm token,
-  trích dẫn "Theo SGK ... tr. ...", tải hình từ sách vào giáo án/slide).
+  và bật thông báo Kho tri thức AI đầu phiên. Đổi vai bất cứ lúc nào; tắt vai chỉ gỡ quy tắc, không xóa dữ liệu.
+- **Kho tri thức AI giảng dạy (aword.vn)**: dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ
+  mục cho AI từ nguồn sách giáo khoa và tài liệu chuyên môn. Lối tắt Start Menu "Kết nối Kho tri thức AI
+  (AWord)" — không cần mã khóa, tự tính mã máy và token thiết bị; trong chat gõ "kiểm tra trạng thái Kho tri
+  thức AI" để xem trạng thái dịch vụ và thanh toán bằng quét QR ngay trong cửa sổ chat. Skill mới
+  `tra-cuu-tri-thuc` (tra theo bài, tiết kiệm token, trích dẫn "SGK <môn> <lớp>, Bài x, tr. y", tải hình
+  vào giáo án/slide, mở gói dữ liệu).
+- **Đóng góp tài liệu đổi điểm tích lũy**: giáo viên đóng góp giáo án, đề, chuyên đề... ngay trong chat
+  (xác nhận quyền chia sẻ, tệp tải thẳng lên máy chủ, không đi qua AI); tài liệu được duyệt được cộng điểm
+  để đổi dữ liệu tri thức cập nhật mới. Điểm không cho tặng, không chuyển nhượng, không quy đổi thành tiền.
+  Trang Chào mừng (vai Giáo viên) có thêm "Đóng góp tài liệu" và "Xem điểm tích lũy".
 - **Kỹ năng sư phạm cập nhật từ AGiaoAn**: soạn kế hoạch bài dạy theo 2 pha (chốt nền → vòng lặp từng
   hoạt động, bảng phân tích bài dạy, tích hợp nội dung giáo dục, gói PPDH theo cấp × môn), ra đề, trình
   chiếu, thẩm định có góc nhìn theo vai trò; thêm skill `cap-nhat-quy-dinh-nam-hoc` (sổ hiệu lực, hồ sơ

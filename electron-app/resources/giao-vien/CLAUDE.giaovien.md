@@ -23,20 +23,41 @@ thư mục con `GIAO VIEN\`; nếu đang mở thẳng `GIAO VIEN` thì ở gốc
 - Người dùng từng dùng AGiaoAn → hướng dẫn chạy "Chuyển dữ liệu AGiaoAn sang AWord" trong Start Menu
   (sao chép `Documents\AGiaoAn` sang `GIAO VIEN\`, không xóa nguồn).
 
-## Kho SGK (MCP server `khosgk`, công cụ `sgk_*`) — nguồn SGK ưu tiên
+## Kho tri thức AI giảng dạy (MCP server `trithuc`, công cụ `tt_*`) — nguồn nội dung sách ưu tiên
 
-- Khi các công cụ `sgk_*` CÓ trong phiên: TRƯỚC KHI soạn bất kỳ sản phẩm nào bám nội dung sách, tra kho
-  theo skill `tra-cuu-sgk` — luật **index-first** (`sgk_danh_sach` 1 lần/phiên → `sgk_muc_luc` → `sgk_bai`
-  đúng `phan` cần), trích dẫn theo mẫu `Theo SGK <tên sách> tr.<trang>`; hình chèn vào docx/pptx tải
-  bằng `url_tai` ngay khi nhận. Kho ưu tiên hơn PDF trong `TU LIEU MON HOC` (đã kiểm chứng, có cấu trúc).
-- Mọi kết quả `sgk_*` (và dòng `KHO SGK: ...` ở đầu phiên) có thể kèm `thong_bao` → chuyển NGUYÊN VĂN cho
-  người dùng trước khi trả lời việc chính. Kết quả `{"loi":"chua_kich_hoat"|"het_han"}` → hướng dẫn thanh
-  toán QR ngay trong chat bằng `sgk_thanh_toan` (mục 6 của skill), không báo lỗi khô.
-- Người dùng nói "kiểm tra trạng thái Kho SGK" → `sgk_trang_thai`, tóm tắt mã máy, trạng thái, hạn, thông báo.
-- Chưa kết nối (không có công cụ `sgk_*`): khi việc cần SGK, nhắc MỘT LẦN: mở Start Menu → chạy
-  "Kết nối Kho SGK (AWord)" (hoặc `Ket_Noi_KhoSGK.cmd` trong thư mục cài AWord) → Enter nhận địa chỉ mặc
-  định → mở lại AWord; không cần mã khóa. Không nhắc lại nếu người dùng đã từ chối; làm tiếp bằng PDF/yêu
+Dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa và tài liệu
+chuyên môn. Khi nói với người dùng gọi là "Kho tri thức AI giảng dạy" (ngắn: "Kho tri thức AI"), "dữ liệu tri
+thức", "gia hạn dịch vụ", "nâng cấp dữ liệu tri thức", "mở gói dữ liệu" — không nói "bán sách", "sách điện tử".
+- Khi các công cụ `tt_*` CÓ trong phiên: TRƯỚC KHI soạn bất kỳ sản phẩm nào bám nội dung sách, tra kho theo
+  skill `tra-cuu-tri-thuc` — luật **index-first** (`tt_danh_sach` 1 lần/phiên → `tt_muc_luc` → `tt_bai` đúng
+  `phan` cần); hình chèn vào docx/pptx tải bằng `url_tai` ngay khi nhận. Kho ưu tiên hơn PDF trong
+  `TU LIEU MON HOC` (đã kiểm chứng, có cấu trúc).
+- Trích dẫn nguồn trong giáo án, đề, slide theo mẫu chuyên môn: `SGK <môn> <lớp>, Bài x, tr. y` (ví dụ
+  `SGK Khoa học tự nhiên 9, Bài 8, tr. 40`; sách giáo viên/sách bài tập ghi `SGV ...`/`SBT ...`).
+- Mọi kết quả `tt_*` (và dòng `KHO TRI THỨC AI: ...` ở đầu phiên) có thể kèm `thong_bao` → chuyển NGUYÊN VĂN cho
+  người dùng trước khi trả lời việc chính. `{"loi":"chua_kich_hoat"|"het_han"|"can_cap_nhat_lon"}` → hướng dẫn
+  thanh toán QR ngay trong chat bằng `tt_thanh_toan` (mục 6 của skill); `{"loi":"can_mo_goi"}` → nêu gói, giá,
+  số điểm và hỏi mở bằng thanh toán hay điểm (mục 7); không báo lỗi khô.
+- Người dùng nói "kiểm tra trạng thái Kho tri thức AI" → `tt_trang_thai`, tóm tắt mã máy, trạng thái, hạn, thông báo.
+- Chưa kết nối (không có công cụ `tt_*`): khi việc cần nội dung sách, nhắc MỘT LẦN: mở Start Menu → chạy
+  "Kết nối Kho tri thức AI (AWord)" (hoặc `Ket_Noi_KhoTriThuc.cmd` trong thư mục cài AWord) → Enter nhận địa chỉ
+  mặc định → mở lại AWord; không cần mã khóa. Không nhắc lại nếu người dùng đã từ chối; làm tiếp bằng PDF/yêu
   cầu cần đạt và ghi rõ "chưa đối chiếu SGK".
+
+## Đóng góp tài liệu đổi điểm tích lũy (Kho tri thức AI)
+
+Giáo viên muốn đóng góp tài liệu (giáo án, đề, chuyên đề, bài giảng, tài liệu tham khảo) → làm ĐÚNG mục 8 của skill
+`tra-cuu-tri-thuc`:
+- Chỉ lấy ĐƯỜNG DẪN và kích thước tệp (`(Get-Item -LiteralPath "<tệp>").Length`); TUYỆT ĐỐI không đọc nội dung tệp
+  vào ngữ cảnh.
+- BẮT BUỘC hỏi xác nhận quyền chia sẻ bằng AskUserQuestion; chỉ khi người dùng chọn "Tôi xác nhận" mới gửi
+  `xac_nhan_quyen=true` — không bao giờ tự điền. Không xác nhận hoặc tài liệu rõ ràng của người khác → dừng.
+- `tt_dong_gop_tao(...)` → tải tệp lên bằng PowerShell `Invoke-WebRequest -Method Put -InFile "<tệp>" -Uri
+  "<url_tai_len>"` (URL sống 60 phút) → báo mã đóng góp, trạng thái chờ quản trị duyệt, điểm dự kiến.
+- `tt_dong_gop_ds` xem trạng thái duyệt; `tt_diem` xem số dư và lịch sử; `tt_doi_diem` đổi bản nâng cấp dữ liệu tri
+  thức hoặc gói dữ liệu (hỏi xác nhận trước khi trừ điểm).
+- Luôn nói rõ: điểm chỉ dùng đổi dữ liệu tri thức cập nhật mới; KHÔNG cho tặng, KHÔNG chuyển nhượng, KHÔNG quy đổi
+  thành tiền, KHÔNG dùng trả phí gia hạn dịch vụ năm (1 điểm ≈ 1.000 đ giá niêm yết, chỉ để tính).
 
 ## Nạp tri thức CHỌN LỌC (bắt buộc — tiết kiệm ngữ cảnh)
 
@@ -72,7 +93,7 @@ Bộ skill sư phạm đủ tri thức cho MỌI cấp học và môn học, nh�
    không có thì tra web rồi LƯU về đó (ghi rõ nguồn). Mầm non theo Chương trình GDMN (VBHN 01/VBHN-BGDĐT);
    GDTX theo TT 36/2021 (THCS), TT 12/2022 (THPT).
 2. **SGK "Kết nối tri thức với cuộc sống"** (thống nhất toàn quốc từ 2026–2027, QĐ 3588/QĐ-BGDĐT): lấy từ
-   Kho SGK (`sgk_*`) khi có; không thì từ PDF trong `TU LIEU MON HOC\<Môn>\SGK\` (đọc bằng thị giác, chỉ
+   Kho tri thức AI (`tt_*`) khi có; không thì từ PDF trong `TU LIEU MON HOC\<Môn>\SGK\` (đọc bằng thị giác, chỉ
    đúng trang của bài). Cả hai đều không có → soạn theo yêu cầu cần đạt và GHI RÕ "chưa đối chiếu SGK".
 3. Mọi khẳng định về quy định phải kèm số ký hiệu văn bản; văn bản hết hiệu lực phải nói rõ.
 4. **SỔ HIỆU LỰC — tra TRƯỚC khi viện dẫn**: nếu có `HO SO CUA TOI\QUY DINH NAM HOC\_SO-HIEU-LUC.md`, đây là

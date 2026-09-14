@@ -2,21 +2,27 @@ import { injectable } from '@theia/core/shared/inversify';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from '@theia/core/shared/fs-extra';
-import { KetQuaDatVai, KhoSgkDaDangKy, TrangThaiVai, VaiNguoiDung, VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
+import { KetQuaDatVai, KhoTriThucDaDangKy, TrangThaiVai, VaiNguoiDung, VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
 import { QUY_TAC_CLAUDE_MD, QUY_TAC_CLAUDE_MD_GIAO_VIEN } from '../common/quy-tac-workspace';
 
 // Dịch vụ "Vai của bạn" — phía Node, là nơi DUY NHẤT sửa tệp cấu hình cá nhân của Claude Code.
 // Nguyên tắc (nhất quán với Cap_Nhat_QuyTac.ps1 / Cap_Nhat_Cau_Hinh.ps1 của bộ cài):
 //   - HỢP NHẤT, không ghi đè: CLAUDE.md chỉ thay/chèn/gỡ ĐÚNG khối AWORD-GIAOVIEN, giữ nguyên mọi thứ
-//     khác; settings.json chỉ thêm/bớt đúng mục hook của Kho SGK, giữ hook và khóa khác.
+//     khác; settings.json chỉ thêm/bớt đúng mục hook của Kho tri thức AI, giữ hook và khóa khác.
 //   - SAO LƯU theo thời gian trước khi ghi (CLAUDE.backup-*.md, settings.backup-*.json) — không đè bản cũ.
 //   - Không bao giờ xóa thư mục/tệp dữ liệu của người dùng (tắt vai chỉ gỡ quy tắc + hook).
 //   - Idempotent: gọi lại với cùng vai không đổi gì, không sao lưu thừa.
+// Di trú tên gọi (bản thử nghiệm dùng tên cũ): mục hook tên cũ trong settings.json luôn được gỡ khi áp vai;
+// tệp hook tên cũ do chính AWord chép vào ~/.aword được xóa sau khi settings không còn trỏ tới nó.
 
 export const RE_KHOI_GIAO_VIEN = /<!-- AWORD-GIAOVIEN:BEGIN[\s\S]*?AWORD-GIAOVIEN:END[^>]*-->/;
 const RE_KHOI_AWORD = /<!-- AWORD:BEGIN[\s\S]*?AWORD:END[^>]*-->/;
 export const TEN_TEP_KHOI_GIAO_VIEN = 'CLAUDE.giaovien.md';
-export const TEN_TEP_HOOK = 'hook_khosgk.ps1';
+export const TEN_TEP_HOOK = 'hook_trithuc.ps1';
+// Tên cũ của bản thử nghiệm — CHỈ dùng để di trú/gỡ.
+export const TEN_TEP_HOOK_CU = 'hook_khosgk.ps1';
+const TEN_TEP_CAU_HINH_KHO = 'trithuc.json';
+const TEN_TEP_CAU_HINH_KHO_CU = 'khosgk.json';
 const TEN_WORKSPACE = 'AWord';
 const TEN_THU_MUC_GIAO_VIEN = 'GIAO VIEN';
 const THU_MUC_CON_GIAO_VIEN = ['HO SO CUA TOI', 'TU LIEU MON HOC', 'KE HOACH BAI DAY', 'BAI TRINH CHIEU', 'DE KIEM TRA', 'HOC LIEU TRUC QUAN', 'BO NHO'];
@@ -59,33 +65,40 @@ export function hopNhatKhoiGiaoVien(hienTai: string | undefined, khoiNguon: stri
     return truocGon + sau;
 }
 
-// Có hook Kho SGK trong settings chưa (mọi nhóm SessionStart, mọi lệnh chứa tên tệp hook).
-export function coHookKhoSgk(settings: Record<string, unknown>): boolean {
+function laLenhHook(h: HookLenh, tenTep: string): boolean {
+    return typeof h.command === 'string' && h.command.includes(tenTep);
+}
+
+// Có mục hook dùng tệp `tenTep` trong settings chưa (mọi nhóm SessionStart, mọi lệnh chứa tên tệp).
+export function coHook(settings: Record<string, unknown>, tenTep: string = TEN_TEP_HOOK): boolean {
     const hooks = settings.hooks as Record<string, unknown> | undefined;
     const nhom = hooks?.SessionStart;
     if (!Array.isArray(nhom)) { return false; }
-    return (nhom as NhomHook[]).some(n => Array.isArray(n.hooks) && n.hooks.some(h => typeof h.command === 'string' && h.command.includes(TEN_TEP_HOOK)));
+    return (nhom as NhomHook[]).some(n => Array.isArray(n.hooks) && n.hooks.some(h => laLenhHook(h, tenTep)));
 }
 
-// Thêm/gỡ đúng mục hook của Kho SGK trong settings (sửa tại chỗ). Trả về true nếu có thay đổi.
-// Giữ nguyên mọi hook khác (kể cả hook SessionStart của người dùng); nhóm rỗng sau khi gỡ thì bỏ.
-export function hopNhatHookKhoSgk(settings: Record<string, unknown>, lenh: string, bat: boolean): boolean {
+// Thêm/gỡ đúng mục hook của Kho tri thức AI trong settings (sửa tại chỗ). Trả về true nếu có thay đổi.
+// Luôn gỡ mục hook TÊN CŨ (bản thử nghiệm). Giữ nguyên mọi hook khác (kể cả hook SessionStart của người
+// dùng); nhóm rỗng sau khi gỡ thì bỏ.
+export function hopNhatHookTriThuc(settings: Record<string, unknown>, lenh: string, bat: boolean): boolean {
     const hooksGoc = settings.hooks;
     const hooks: Record<string, unknown> = (hooksGoc && typeof hooksGoc === 'object') ? hooksGoc as Record<string, unknown> : {};
     const nhomCu: NhomHook[] = Array.isArray(hooks.SessionStart) ? hooks.SessionStart as NhomHook[] : [];
-    // Idempotent: đã có ĐÚNG MỘT mục của ta với cùng lệnh → không đổi gì (không sao lưu thừa).
+    // Idempotent: đã có ĐÚNG MỘT mục của ta với cùng lệnh và không còn mục tên cũ → không đổi gì.
     const cuaTa: HookLenh[] = [];
+    let soMucCu = 0;
     for (const n of nhomCu) {
         for (const h of (Array.isArray(n.hooks) ? n.hooks : [])) {
-            if (typeof h.command === 'string' && h.command.includes(TEN_TEP_HOOK)) { cuaTa.push(h); }
+            if (laLenhHook(h, TEN_TEP_HOOK)) { cuaTa.push(h); }
+            if (laLenhHook(h, TEN_TEP_HOOK_CU)) { soMucCu++; }
         }
     }
-    if (bat && cuaTa.length === 1 && cuaTa[0].command === lenh) { return false; }
+    if (bat && soMucCu === 0 && cuaTa.length === 1 && cuaTa[0].command === lenh) { return false; }
     let doi = false;
     const nhomMoi: NhomHook[] = [];
     for (const n of nhomCu) {
         if (!Array.isArray(n.hooks)) { nhomMoi.push(n); continue; }
-        const conLai = n.hooks.filter(h => !(typeof h.command === 'string' && h.command.includes(TEN_TEP_HOOK)));
+        const conLai = n.hooks.filter(h => !laLenhHook(h, TEN_TEP_HOOK) && !laLenhHook(h, TEN_TEP_HOOK_CU));
         if (conLai.length !== n.hooks.length) {
             doi = true;
             if (conLai.length > 0) { nhomMoi.push({ ...n, hooks: conLai }); }
@@ -134,10 +147,12 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
             vai,
             ngayChon,
             khoiGiaoVienTrongClaudeMd: !!claudeMd && RE_KHOI_GIAO_VIEN.test(claudeMd),
-            hookKhoSgkDaBat: !!settings && coHookKhoSgk(settings),
+            hookTriThucDaBat: !!settings && coHook(settings, TEN_TEP_HOOK),
+            hookCuConLai: !!settings && coHook(settings, TEN_TEP_HOOK_CU),
             thuMucGiaoVienDaCo: await fs.pathExists(this.thuMucGiaoVien()),
             thuMucGiaoVien: this.thuMucGiaoVien(),
-            khoSgk: await this.docKhoSgk()
+            khoTriThuc: await this.docKhoTriThuc(),
+            cauHinhCuChuaDiTru: !(await fs.pathExists(this.tepKhoTriThuc())) && await fs.pathExists(this.tepKhoTriThucCu())
         };
     }
 
@@ -181,25 +196,37 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
             canhBao.push(`Không tạo được thư mục làm việc: ${this.moTaLoi(e)}`);
         }
 
-        // 4. Hook SessionStart Kho SGK (chỉ vai Giáo viên) + chép hook_khosgk.ps1 vào ~/.aword
+        // 4. Hook SessionStart Kho tri thức AI (chỉ vai Giáo viên) + chép hook_trithuc.ps1 vào ~/.aword;
+        //    luôn gỡ mục hook tên cũ (bản thử nghiệm) nếu còn.
         try {
             if (vai.giaoVien) { await this.chepHook(); }
             const settingsCu = await this.docJson(this.tepSettings());
             if (!settingsCu && await fs.pathExists(this.tepSettings())) {
-                canhBao.push('settings.json của Claude đang hỏng (không đọc được JSON) — giữ nguyên, chưa bật hook Kho SGK.');
+                canhBao.push('settings.json của Claude đang hỏng (không đọc được JSON) — giữ nguyên, chưa bật hook thông báo Kho tri thức AI.');
             } else {
                 const settings: Record<string, unknown> = settingsCu ?? {};
-                if (hopNhatHookKhoSgk(settings, this.lenhHook(), vai.giaoVien)) {
+                const coMucCu = coHook(settings, TEN_TEP_HOOK_CU);
+                const daBatTruoc = coHook(settings, TEN_TEP_HOOK);
+                if (hopNhatHookTriThuc(settings, this.lenhHook(), vai.giaoVien)) {
                     await fs.mkdirp(this.thuMucClaude());
                     const saoLuu = await this.saoLuu(this.tepSettings(), `settings.backup-${nhanThoiGian()}.json`);
                     await this.ghiVanBan(this.tepSettings(), JSON.stringify(settings, undefined, 2) + '\n');
-                    daLam.push(vai.giaoVien
-                        ? `Đã bật hook thông báo Kho SGK đầu phiên${saoLuu ? ' (settings.json cũ: ' + saoLuu + ')' : ''}.`
-                        : 'Đã tắt hook thông báo Kho SGK.');
+                    const ghiChuSaoLuu = saoLuu ? ' (settings.json cũ: ' + saoLuu + ')' : '';
+                    if (vai.giaoVien) {
+                        daLam.push(coMucCu
+                            ? `Đã chuyển hook thông báo đầu phiên sang Kho tri thức AI (gỡ mục tên cũ)${ghiChuSaoLuu}.`
+                            : `Đã bật hook thông báo Kho tri thức AI đầu phiên${ghiChuSaoLuu}.`);
+                    } else if (daBatTruoc || coMucCu) {
+                        daLam.push('Đã tắt hook thông báo Kho tri thức AI.');
+                    }
+                }
+                // Tệp hook tên cũ do AWord tự chép vào ~/.aword: xóa khi settings không còn trỏ tới (không phải dữ liệu người dùng).
+                if (!coHook(settings, TEN_TEP_HOOK_CU) && await fs.pathExists(this.tepHookCu())) {
+                    await fs.remove(this.tepHookCu());
                 }
             }
         } catch (e) {
-            canhBao.push(`Không cập nhật được hook Kho SGK: ${this.moTaLoi(e)}`);
+            canhBao.push(`Không cập nhật được hook thông báo Kho tri thức AI: ${this.moTaLoi(e)}`);
         }
 
         if (daLam.length === 0 && canhBao.length === 0) {
@@ -213,8 +240,10 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
     protected thuMucAword(): string { return path.join(this.layThuMucHome(), '.aword'); }
     protected thuMucClaude(): string { return path.join(this.layThuMucHome(), '.claude'); }
     protected tepVai(): string { return path.join(this.thuMucAword(), 'vai.json'); }
-    protected tepKhoSgk(): string { return path.join(this.thuMucAword(), 'khosgk.json'); }
+    protected tepKhoTriThuc(): string { return path.join(this.thuMucAword(), TEN_TEP_CAU_HINH_KHO); }
+    protected tepKhoTriThucCu(): string { return path.join(this.thuMucAword(), TEN_TEP_CAU_HINH_KHO_CU); }
     protected tepHook(): string { return path.join(this.thuMucAword(), TEN_TEP_HOOK); }
+    protected tepHookCu(): string { return path.join(this.thuMucAword(), TEN_TEP_HOOK_CU); }
     protected tepClaudeMd(): string { return path.join(this.thuMucClaude(), 'CLAUDE.md'); }
     protected tepSettings(): string { return path.join(this.thuMucClaude(), 'settings.json'); }
     protected thuMucWorkspace(): string { return path.join(this.layThuMucHome(), 'Documents', TEN_WORKSPACE); }
@@ -284,8 +313,8 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
         }
     }
 
-    protected async docKhoSgk(): Promise<KhoSgkDaDangKy | undefined> {
-        const j = await this.docJson(this.tepKhoSgk());
+    protected async docKhoTriThuc(): Promise<KhoTriThucDaDangKy | undefined> {
+        const j = await this.docJson(this.tepKhoTriThuc());
         if (!j || typeof j.url !== 'string' || typeof j.ma_may !== 'string') { return undefined; }
         return { url: j.url, maMay: j.ma_may, ngay: typeof j.ngay === 'string' ? j.ngay : undefined };
     }

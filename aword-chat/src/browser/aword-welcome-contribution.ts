@@ -8,6 +8,7 @@ import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { QUY_TAC_CLAUDE_MD } from './aword-setup-prompts';
 import { laWidgetClaude } from './aword-claude-widget';
+import { VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
 
 export const AwordWelcomeCommand: Command = {
     id: 'aword:welcome',
@@ -44,6 +45,9 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
 
+    @inject(VaiNguoiDungServer)
+    protected readonly vaiServer: VaiNguoiDungServer;
+
     constructor() {
         super({
             widgetId: AwordWelcomeWidget.ID,
@@ -64,6 +68,8 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         this.anIconSidebar(app);
         const subAn = app.shell.onDidAddWidget(() => this.anIconSidebar(app));
         setTimeout(() => subAn.dispose(), 8000);
+        // Di trú tên gọi Kho tri thức AI (bản thử nghiệm) — chạy khi renderer rảnh, không chặn khởi động.
+        this.moKhiRanh(() => { void this.diTruHookTenCu(); });
 
         if (this.workspaceService.tryGetRoots().length === 0) {
             let ganDay: string[] = [];
@@ -91,6 +97,18 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         // NẾU đã có Claude mặc định ở thanh bên (chỉ đóng khi chắc chắn còn Claude khác → không rơi
         // về trạng thái không có Claude nào).
         this.moKhiRanh(() => this.donClaudeThua(app));
+    }
+
+    // Máy đã bật vai Giáo viên mà settings.json còn mục hook tên cũ của bản thử nghiệm → áp lại vai
+    // (datVai idempotent: gỡ mục hook cũ, bật hook hook_trithuc.ps1, xóa tệp hook cũ do AWord chép).
+    // Im lặng khi không cần hoặc backend chưa sẵn sàng (lần khởi động sau sẽ thử lại).
+    protected async diTruHookTenCu(): Promise<void> {
+        try {
+            const tt = await this.vaiServer.docTrangThai();
+            if (tt.vai?.giaoVien && tt.hookCuConLai) {
+                await this.vaiServer.datVai(tt.vai);
+            }
+        } catch { /* bỏ qua */ }
     }
 
     // Chạy cb khi renderer rảnh (requestIdleCallback); không có thì lùi 500ms.
