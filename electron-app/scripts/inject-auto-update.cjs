@@ -126,7 +126,7 @@ ${marker}
     const daCaiAwordPro = () => {
       const ungVien = process.platform === 'darwin'
         ? ['/Applications/AWord Pro.app', path.join(app.getPath('home'), 'Applications', 'AWord Pro.app')]
-        : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'AWord Pro', 'AWordPro.exe')];
+        : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'AWordPro', 'AWordPro.exe')]; // executableName AWordPro → thư mục cài AWordPro
       return ungVien.some(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
     };
     const gioiThieuAwordPro = async () => {
