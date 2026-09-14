@@ -55,7 +55,18 @@ ${marker}
       req.setTimeout(120000, () => req.destroy(new Error('Het thoi gian tai bo cai'))); // khong treo mai
     });
 
+    // Lịch sử phát hành có 3 THẾ HỆ số hiệu — so thế hệ trước rồi mới so từng phần số:
+    //   0 = đời đầu 1.0.x (major < 2)                        — cũ nhất
+    //   1 = kiểu theo giờ YYYYMMDD.H.M (major >= 10000)
+    //   2 = semver thông lệ từ 2.0.0 (2 <= major < 10000)     — mới nhất
+    // Không so thẳng giá trị số: 2.0.0 < 20260914.17.20 và release v1.0.4 đời đầu vẫn còn trên GitHub.
+    const theHe = v => {
+      const major = parseInt(String(v).replace(/^v/i, '').split('.')[0], 10) || 0;
+      return major >= 10000 ? 1 : (major >= 2 ? 2 : 0);
+    };
     const soSanhPhienBan = (a, b) => { // >0 nếu a mới hơn b
+      const dTheHe = theHe(a) - theHe(b);
+      if (dTheHe !== 0) { return dTheHe; }
       const pa = String(a).replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
       const pb = String(b).replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
       for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -66,15 +77,28 @@ ${marker}
     };
 
     const kiemTraCapNhat = async () => {
-      const rel = await layJson('https://api.github.com/repos/' + REPO + '/releases/latest');
+      // Dò DANH SÁCH release, KHÔNG dùng /releases/latest: cờ "Latest" trên GitHub được giữ cố
+      // định ở bản cầu nối (kiểu số theo giờ) để máy chạy bản cũ — chỉ biết /latest — vẫn lên
+      // được bản cầu nối; từ bản cầu nối trở đi app tự chọn bản số hiệu cao nhất có bộ cài hợp nền tảng.
+      const macOS = process.platform === 'darwin';
+      const khopGoi = a => macOS
+        ? /^AWord-.*\\.dmg$/i.test(a.name)
+        : /^AWord-Setup-.*\\.exe$/i.test(a.name);
+      const ds = await layJson('https://api.github.com/repos/' + REPO + '/releases?per_page=30');
+      let rel = null;
+      let asset = null;
+      for (const r of (Array.isArray(ds) ? ds : [])) {
+        if (r.draft || r.prerelease) { continue; }
+        const goi = (r.assets || []).find(khopGoi);
+        if (!goi) { continue; }
+        if (!rel || soSanhPhienBan(r.tag_name || r.name || '', rel.tag_name || rel.name || '') > 0) {
+          rel = r;
+          asset = goi;
+        }
+      }
+      if (!rel) { return; }
       const moi = rel.tag_name || rel.name || '';
       if (soSanhPhienBan(moi, app.getVersion()) <= 0) { return; }
-      // Chon bo cai dung nen tang: macOS tim .dmg, Windows tim AWord-Setup-*.exe.
-      const macOS = process.platform === 'darwin';
-      const asset = (rel.assets || []).find(a => macOS
-        ? /^AWord-.*\\.dmg$/i.test(a.name)
-        : /^AWord-Setup-.*\\.exe$/i.test(a.name));
-      if (!asset) { return; }
       const chon = await dialog.showMessageBox({
         type: 'info',
         title: 'Cập nhật AWord',

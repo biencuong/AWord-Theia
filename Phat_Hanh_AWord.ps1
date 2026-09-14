@@ -76,6 +76,14 @@ if (-not $Notes) { $Notes = "Ban phat hanh AWord $version" }
 $gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
 if (-not $gh -and (Test-Path "C:\Program Files\GitHub CLI\gh.exe")) { $gh = "C:\Program Files\GitHub CLI\gh.exe" }
 
+# Co "Latest" tren GitHub: GIU CO DINH o ban cau noi cuoi cung cua kieu so theo gio (YYYYMMDD.H.M).
+# May dang chay ban kieu cu chi biet hoi /releases/latest va so thang gia tri so (2.0.0 < 20260914...),
+# nen ban semver thong le (2.x.x tro di) phat hanh voi --latest=false: may cu len ban cau noi truoc,
+# ban cau noi (va moi ban sau) tu do DANH SACH release, chon so hieu cao nhat -> tu len tiep 2.x.x.
+# Khi chac chan khong con may nao chay ban truoc cau noi, co the danh dau lai "Latest" cho ban moi nhat.
+$laKieuTheoGio = ([int64](($version -split '\.')[0])) -ge 10000
+$coLatest = if ($laKieuTheoGio) { '--latest' } else { '--latest=false' }
+
 if ($gh) {
     # Dung dang nhap gh co san (khong can GITHUB_TOKEN). GH_TOKEN rong de gh dung keyring.
     $notesTmp = Join-Path $env:TEMP "aword-release-notes.md"
@@ -92,13 +100,13 @@ if ($gh) {
         Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
         & $gh release upload $tag $exe --clobber
     } else {
-        & $gh release create $tag $exe --title "AWord $version" --notes-file $notesTmp
+        & $gh release create $tag $exe --title "AWord $version" --notes-file $notesTmp $coLatest
     }
     if ($LASTEXITCODE -ne 0) { Write-Error "Tao release qua gh that bai."; exit 1 }
 } elseif ($env:GITHUB_TOKEN) {
     # Du phong: dung REST voi GITHUB_TOKEN neu khong co gh
     $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "User-Agent" = "AWord-Publisher" }
-    $body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false } | ConvertTo-Json
+    $body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false; make_latest = $(if ($laKieuTheoGio) { 'true' } else { 'false' }) } | ConvertTo-Json
     try {
         $rel = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$Repo/releases" -Headers $headers -Body $body -ContentType "application/json"
     } catch {

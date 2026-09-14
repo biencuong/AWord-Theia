@@ -92,10 +92,21 @@ interface ThongTinRelease {
     name?: string;
     body?: string;
     html_url?: string;
+    draft?: boolean;
+    prerelease?: boolean;
     assets?: { name: string; browser_download_url: string }[];
 }
 
+// Lịch sử phát hành có 3 THẾ HỆ số hiệu (khớp bộ tự cập nhật trong inject-auto-update.cjs):
+// 0 = đời đầu 1.0.x, 1 = kiểu theo giờ YYYYMMDD.H.M, 2 = semver thông lệ từ 2.0.0.
+function theHePhienBan(v: string): number {
+    const major = parseInt(v.replace(/^v/i, '').split('.')[0], 10) || 0;
+    return major >= 10000 ? 1 : (major >= 2 ? 2 : 0);
+}
+
 function soSanhPhienBan(a: string, b: string): number { // >0 nếu a mới hơn b
+    const dTheHe = theHePhienBan(a) - theHePhienBan(b);
+    if (dTheHe !== 0) { return dTheHe; }
     const pa = a.replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
     const pb = b.replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
     for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -105,8 +116,8 @@ function soSanhPhienBan(a: string, b: string): number { // >0 nếu a mới hơn
     return 0;
 }
 
-// Phiên bản đánh mã theo thời gian (semver YYYYMMDD.giờ.phút) — hiển thị lại dạng
-// "2026/07/16 18:30" cho dễ đọc. Bản cũ dạng 1.0.x giữ nguyên cách hiển thị.
+// Phiên bản kiểu cũ theo thời gian (YYYYMMDD.giờ.phút) hiển thị lại dạng "2026/07/16 18:30"
+// cho dễ đọc; semver thông lệ (2.0.0...) và đời đầu 1.0.x giữ nguyên.
 function dinhDangPhienBan(v: string): string {
     const m = /^(\d{4})(\d{2})(\d{2})\.(\d{1,2})\.(\d{1,2})$/.exec((v || '').replace(/^v/i, ''));
     if (!m) { return v; }
@@ -202,7 +213,9 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         this.pruneViewMenu(menus);
     }
 
-    // Kiểm tra release mới nhất trên GitHub, hiện hộp thoại bản cũ/bản mới + tóm tắt nâng cấp.
+    // Kiểm tra bản mới trên GitHub, hiện hộp thoại bản cũ/bản mới + tóm tắt nâng cấp.
+    // Dò DANH SÁCH release thay vì /releases/latest: cờ "Latest" được giữ cố định ở bản cầu
+    // nối kiểu số theo giờ (cho máy rất cũ), bản mới nhất thật là bản có số hiệu cao nhất.
     protected async kiemTraCapNhat(): Promise<void> {
         let banHienTai = '';
         try {
@@ -212,15 +225,20 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         let release: ThongTinRelease | undefined;
         let loi: string | undefined;
         try {
-            const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=30`, {
                 headers: { 'Accept': 'application/vnd.github+json' }
             });
-            if (res.status === 404) {
-                loi = 'Chưa có bản phát hành nào trên kênh cập nhật.';
-            } else if (!res.ok) {
+            if (!res.ok) {
                 loi = `Máy chủ cập nhật trả về lỗi HTTP ${res.status}.`;
             } else {
-                release = await res.json();
+                const ds: ThongTinRelease[] = await res.json();
+                for (const r of Array.isArray(ds) ? ds : []) {
+                    if (r.draft || r.prerelease || !(r.assets ?? []).some(a => /^AWord-/i.test(a.name))) { continue; }
+                    if (!release || soSanhPhienBan(r.tag_name ?? r.name ?? '', release.tag_name ?? release.name ?? '') > 0) {
+                        release = r;
+                    }
+                }
+                if (!release) { loi = 'Chưa có bản phát hành nào trên kênh cập nhật.'; }
             }
         } catch {
             loi = 'Không kết nối được máy chủ cập nhật. Kiểm tra kết nối mạng rồi thử lại.';
@@ -281,7 +299,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
 
         if (coBanMoi && dongY) {
             const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
-            this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases/latest`, { external: true });
+            this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
         }
     }
 

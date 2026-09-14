@@ -4,8 +4,12 @@
 # Cach chay:
 #   1) Thu cong: tab Actions > "Phat hanh AWord" > Run workflow
 #      - nen_tang: all / win / mac (mac dinh all)
-#      - phien_ban: bo trong = tu danh theo gio Viet Nam; dien (vd 20260727.10.51)
+#      - phien_ban: bo trong = danh so bang chinh electron-app/scripts/stamp-version.cjs
+#        (semver: tang patch tu package.json tren nhanh — NEN DIEN neu vua phat hanh local
+#        ma package.json tren nhanh chua co so moi, tranh trung so); dien (vd 2.0.3)
 #        de build them nen tang cho release DA CO (upload bo sung vao tag do)
+#   Co "Latest": ban semver thong le (2.x.x) tao voi --latest=false — co Latest giu o ban
+#   cau noi kieu so theo gio cho may cu (xem ghi chu trong Phat_Hanh_AWord.ps1).
 #      - chi_build: BUILD THU — khong tao Release, chi luu artifact
 #   2) Day tag: git tag v20260728.9.30 && git push origin v20260728.9.30
 #   3) TU DONG sau phat hanh local: Phat_Hanh_AWord.ps1 tao release + tag -> tag
@@ -52,6 +56,8 @@ jobs:
       co_exe: ${{ steps.guard.outputs.co_exe }}
       co_dmg: ${{ steps.guard.outputs.co_dmg }}
     steps:
+      - uses: actions/checkout@v4
+
       - id: ver
         run: |
           if [ "${{ github.ref_type }}" = "tag" ]; then
@@ -59,7 +65,7 @@ jobs:
           elif [ -n "${{ inputs.phien_ban }}" ]; then
             v="${{ inputs.phien_ban }}"
           else
-            v="$(TZ=Asia/Ho_Chi_Minh date +%Y%m%d).$(TZ=Asia/Ho_Chi_Minh date +%-H).$(TZ=Asia/Ho_Chi_Minh date +%-M)"
+            v="$(TZ=Asia/Ho_Chi_Minh node electron-app/scripts/stamp-version.cjs | tail -n1)"
           fi
           v="${v#v}"
           echo "version=$v" >> "$GITHUB_OUTPUT"
@@ -151,7 +157,8 @@ jobs:
             Write-Host "Release $tag da ton tai - tai bo cai len (ghi de)."
             gh release upload $tag $exe --clobber
           } else {
-            gh release create $tag $exe --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA
+            $coLatest = if ([int64]($version.Split('.')[0]) -ge 10000) { '--latest' } else { '--latest=false' }
+            gh release create $tag $exe --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA $coLatest
             if ($LASTEXITCODE -ne 0) {
               # Job mac co the vua tao release cung luc (race) - thu upload lai.
               Start-Sleep -Seconds 10
@@ -227,7 +234,8 @@ jobs:
             echo "Release $tag da ton tai - tai bo cai len (ghi de)."
             gh release upload "$tag" "$dmg" --clobber
           else
-            gh release create "$tag" "$dmg" --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target "$GITHUB_SHA" \
+            if [ "${version%%.*}" -ge 10000 ]; then co_latest="--latest"; else co_latest="--latest=false"; fi
+            gh release create "$tag" "$dmg" --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target "$GITHUB_SHA" "$co_latest" \
               || { echo "Create fail (co the race voi job win) - thu upload."; sleep 10; gh release upload "$tag" "$dmg" --clobber; }
           fi
           echo "XONG: https://github.com/${{ github.repository }}/releases/tag/$tag"

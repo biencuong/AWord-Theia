@@ -1,6 +1,5 @@
-Nội dung chính bản này:
-- **Thêm skill "academic-pptx"**: chuẩn thiết kế bài trình chiếu học thuật (hội thảo, bảo vệ
-  luận văn, báo cáo đề tài) — tiêu đề slide là câu kết luận thay vì chỉ nêu chủ đề, cấu trúc
-  lập luận rõ ràng, chuẩn trích dẫn — dùng cùng skill "pptx" đã có sẵn.
-- Dọn vài file rác (`__pycache__`, `.coverage`) lỡ cuốn theo khi đóng gói skill ở bản trước —
-  không ảnh hưởng chức năng, chỉ gọn repo.
+Bản chuyển tiếp — chuẩn bị đổi sang cách đánh số phiên bản thông lệ:
+- Từ bản sau, AWord đánh số phiên bản theo thông lệ chung (2.0.0, 2.0.1...) thay cho dạng
+  ngày giờ; thời điểm đóng gói vẫn được lưu kèm trong ứng dụng.
+- Bản này cập nhật bộ tự kiểm tra cập nhật để nhận biết đúng cả hai cách đánh số — hãy cài
+  bản này để tiếp tục nhận các bản mới. Không thay đổi tính năng.
