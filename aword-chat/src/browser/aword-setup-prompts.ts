@@ -1,14 +1,19 @@
 // Các prompt "Thiết lập ban đầu" dùng ở trang chào mừng: nút bấm sao chép prompt vào clipboard
-// rồi mở khung chat Claude để người dùng dán và gửi. Hai nhánh theo vai trò — GIÁO VIÊN (ít việc
-// hành chính) và CÔNG CHỨC, VIÊN CHỨC làm công tác hành chính — mỗi nhánh có bộ câu hỏi, cấu trúc
-// thư mục và CLAUDE.md riêng; cả hai cùng khởi tạo bộ nhớ làm việc (skill bo-nho-lam-viec).
+// rồi mở khung chat Claude để người dùng dán và gửi. Hai nhánh theo vai — GIÁO VIÊN (thư mục
+// Documents\AWord\GIAO VIEN, quy tắc vai Giáo viên do AWord nạp vào CLAUDE.md cấp người dùng khi chọn
+// vai ở trang Chào mừng) và CÔNG CHỨC, VIÊN CHỨC làm công tác hành chính — mỗi nhánh có bộ câu hỏi,
+// cấu trúc thư mục và CLAUDE.md riêng; cả hai cùng khởi tạo bộ nhớ làm việc (skill bo-nho-lam-viec).
 // LƯU Ý khi sửa: trong template literal phải viết "\\" cho mỗi dấu "\" của đường dẫn Windows.
+import { QUY_TAC_CLAUDE_MD, QUY_TAC_CLAUDE_MD_GIAO_VIEN } from '../common/quy-tac-workspace';
+
+// Hai hằng quy tắc workspace nay nằm ở common/ (backend cũng dùng) — tái xuất để mã cũ import từ đây vẫn chạy.
+export { QUY_TAC_CLAUDE_MD, QUY_TAC_CLAUDE_MD_GIAO_VIEN };
 
 // Nhóm kỹ năng — dùng chung cho bước chọn nhóm ở cả hai nhánh và nút "Bật/tắt nhóm kỹ năng".
 const NHOM_KY_NANG = `Các nhóm kỹ năng của AWord:
 - Nền tảng (LUÔN BẬT, không tắt): bo-nho-lam-viec, doc-van-ban-local, docx, xlsx, pptx, pdf.
 - Nghiệp vụ hành chính: the-thuc-van-ban-theo-nd30, so-gd-cds-tao-van-ban, ioffice-vanban-den, xu-ly-van-ban-den-xlc, nghiep-vu-tong-hop-bao-cao, internal-comms, doc-coauthoring.
-- Giáo dục, dạy học: soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan, tham-dinh-ho-so-day-hoc, academic-pptx.
+- Giáo dục, dạy học: soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan, tham-dinh-ho-so-day-hoc, cap-nhat-quy-dinh-nam-hoc, tra-cuu-sgk, academic-pptx.
 - Thiết kế và trình bày: design, design-system, brand, brand-guidelines, banner-design, canvas-design, theme-factory, slides, ui-styling, ui-ux-pro-max, frontend-design.
 - Lập trình và kỹ thuật (ít dùng cho văn phòng): claude-api, mcp-builder, webapp-testing, web-artifacts-builder, skill-creator, slack-gif-creator, algorithmic-art.
 Phụ thuộc: nếu GIỮ nhóm Giáo dục thì KHÔNG tắt canvas-design, frontend-design, web-artifacts-builder, slack-gif-creator, webapp-testing (skill dạy học dùng kèm).`;
@@ -21,125 +26,39 @@ ${NHOM_KY_NANG}
 Cách làm: ${CACH_BAT_TAT_KY_NANG}`;
 }
 
-// Quy tắc làm việc ghi vào CLAUDE.md ở gốc thư mục làm việc — nhánh CÔNG CHỨC HÀNH CHÍNH (cũng là
-// bản mặc định khi AWord tự tạo Documents\AWord ở lần chạy đầu).
-export const QUY_TAC_CLAUDE_MD = `# Quy tắc làm việc trong không gian này
-
-## Giao tiếp chung
-- Trả lời ngắn gọn, thực tế và có cấu trúc rõ ràng.
-- Tập trung vào các lời khuyên có thể áp dụng ngay thay vì giải thích chung chung.
-- Nếu có nhiều cách giải quyết, hãy so sánh ưu và nhược điểm của từng cách.
-- Chỉ ra những sai sót hoặc giả định chưa hợp lý thay vì chỉ đồng ý.
-- Chỉ đặt câu hỏi làm rõ khi thực sự cần thiết.
-
-## Viết nội dung
-- Viết tự nhiên, trang trọng chuẩn mực hành chính, tránh văn phong giống AI; giữ giọng văn chuyên
-  nghiệp, đúng mực của công chức, viên chức.
-- Văn bản hành chính: đúng thể thức Nghị định 30 (cơ quan Đảng theo thể thức văn bản của Đảng);
-  soạn xong kiểm soát bằng skill the-thuc-van-ban-theo-nd30, sửa hết lỗi rồi mới bàn giao.
-- Khi có file mẫu: điền nội dung vào BẢN SAO của mẫu, không tạo file mới; chữ nghĩa có sẵn
-  trong mẫu chỉ để tham khảo bố cục.
-- Ưu tiên sự rõ ràng; không sử dụng emoji, dấu * hoặc từ ngữ dư thừa.
-
-## Nghiên cứu
-- Phân biệt rõ đâu là sự thật, đâu là giả định và đâu là ý kiến.
-- Văn bản dùng làm căn cứ phải đủ số ký hiệu, ngày ban hành, đơn vị ban hành, trích yếu — sắp xếp
-  theo thứ bậc hành chính và trật tự thời gian.
-- Nếu không chắc chắn, nói rõ là không chắc thay vì suy đoán.
-
-## Quy tắc ngôn ngữ
-- Mọi tài liệu, tệp đầu ra tiếng Việt phải dùng tiếng Việt CÓ ĐẦY ĐỦ DẤU.
-- Giữ nguyên tiếng Anh khi cần; có thể xen kẽ tự nhiên với thuật ngữ kỹ thuật.
-
-## Quy tắc thực hiện
-- Nếu yêu cầu chưa rõ ràng hoặc thiếu thông tin, dùng công cụ AskUserQuestion.
-- Hoàn thành công việc theo yêu cầu. Không giải thích dài dòng.
-- Không bao giờ xóa bất kỳ tệp nào.
-
-## Trước mỗi nhiệm vụ — chỉ đọc cái LIÊN QUAN (tiết kiệm thời gian và token)
-1. Cần thông tin cá nhân, văn phong → đọc "ABOUT ME/".
-2. Nhiệm vụ thuộc một dự án → đọc README/brief của thư mục dự án đó trong "PROJECTS/" trước, sau đó
-   chỉ đọc sâu các tệp liên quan; KHÔNG đọc toàn bộ thư mục.
-3. Loại nội dung có mẫu trong "TEMPLATES/" → nghiên cứu cấu trúc mẫu trước; chỉ dùng cấu trúc,
-   không sao chép nội dung.
-
-## Quy tắc thư mục
-- "ABOUT ME/" → thông tin về tôi và các quy tắc viết (chỉ đọc).
-- "TEMPLATES/" → cấu trúc mẫu đã kiểm chứng để tái sử dụng (chỉ đọc).
-- "PROJECTS/" → brief, tài liệu tham khảo, sản phẩm hoàn thiện từng dự án (chỉ đọc).
-- "CLAUDE OUTPUTS/" → MỌI nội dung tạo ra phải lưu tại đây, tổ chức thư mục con theo từng
-  dự án, phản chiếu đúng cấu trúc "PROJECTS/". Chưa có thư mục con thì tạo mới.
-- ".aword/bo-nho/" (ẩn) → bộ nhớ làm việc, đọc/ghi theo skill bo-nho-lam-viec (quy ước chung trong AGENTS.md).`;
-
-// Quy tắc làm việc ghi vào CLAUDE.md — nhánh GIÁO VIÊN. Tên thư mục khớp quy ước các skill dạy học
-// (soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan...).
-export const QUY_TAC_CLAUDE_MD_GIAO_VIEN = `# Quy tắc làm việc trong không gian này (giáo viên)
-
-## Giao tiếp chung
-- Trả lời ngắn gọn, thực tế, có cấu trúc; ưu tiên gợi ý áp dụng được ngay vào tiết dạy.
-- Nếu có nhiều cách làm, so sánh ưu và nhược điểm. Chỉ ra sai sót thay vì chỉ đồng ý.
-- Chỉ hỏi lại khi thật sự cần; khi cần thì dùng AskUserQuestion, hỏi từng câu một.
-
-## Soạn tài liệu dạy học
-- Kế hoạch bài dạy, đề kiểm tra, bài trình chiếu, học liệu số, thẩm định hồ sơ: dùng đúng skill
-  tương ứng (soan-ke-hoach-bai-day, ra-de-kiem-tra, soan-bai-trinh-chieu, tao-hoc-lieu-truc-quan,
-  tham-dinh-ho-so-day-hoc).
-- Bám Chương trình GDPT 2018, yêu cầu cần đạt và bộ sách giáo khoa giáo viên đang dùng (ghi trong
-  "HO SO CUA TOI/").
-- Văn bản hành chính (báo cáo, kế hoạch của tổ, trường...): đúng thể thức Nghị định 30, soạn xong
-  kiểm soát bằng skill the-thuc-van-ban-theo-nd30.
-- Có tệp mẫu thì điền vào BẢN SAO của mẫu, không tạo tệp mới; chữ trong mẫu chỉ để tham khảo bố cục.
-- Văn phong sư phạm chuẩn mực, trong sáng, phù hợp lứa tuổi học sinh; không emoji, không dấu * thừa.
-
-## Nghiên cứu
-- Phân biệt sự thật, giả định và ý kiến; không chắc thì nói rõ là không chắc.
-- Kiến thức bộ môn, số liệu phải có nguồn: sách giáo khoa, chương trình, văn bản hướng dẫn chuyên
-  môn (đủ số ký hiệu, ngày ban hành).
-
-## Quy tắc ngôn ngữ
-- Mọi tài liệu, tệp đầu ra tiếng Việt phải dùng tiếng Việt CÓ ĐẦY ĐỦ DẤU.
-
-## Quy tắc thực hiện
-- Không bao giờ xóa bất kỳ tệp nào.
-- Chỉ đọc thư mục, tệp liên quan tới nhiệm vụ — không đọc tràn lan (tiết kiệm thời gian và token).
-
-## Quy tắc thư mục
-- "HO SO CUA TOI/" → thông tin giáo viên, lớp và môn phụ trách, bộ SGK, văn phong (chỉ đọc).
-- "TU LIEU MON HOC/<Môn>/" → sách giáo khoa (thư mục SGK/), phân phối chương trình, yêu cầu cần đạt (chỉ đọc).
-- "KE HOACH BAI DAY/<Môn>/Lop <X>/", "DE KIEM TRA/<Môn>/Lop <X>/", "BAI TRINH CHIEU/<Môn>/Lop <X>/",
-  "HOC LIEU TRUC QUAN/<Môn>/" → nơi lưu sản phẩm theo từng loại; chưa có thư mục con thì tạo mới.
-- "CLAUDE OUTPUTS/" → sản phẩm khác không thuộc các loại trên.
-- ".aword/bo-nho/" (ẩn) → bộ nhớ làm việc, đọc/ghi theo skill bo-nho-lam-viec (quy ước chung trong AGENTS.md).`;
-
 const MO_DAU_CHUNG = `Nếu tôi CHƯA mở thư mục làm việc nào, hãy nhắc tôi mở trước (menu Tệp → Mở thư mục) rồi mới tiếp tục.
 Hỏi TỪNG CÂU MỘT — tuyệt đối không hỏi nhiều câu cùng lúc. Câu có phương án chọn thì dùng AskUserQuestion; câu cần tự nhập (họ tên, tên đơn vị...) thì hỏi bằng tin nhắn thường, kèm ví dụ để tôi tham khảo. Không xóa hay ghi đè tệp đã có (trừ CLAUDE.md theo bước bên dưới); thư mục đã tồn tại thì giữ nguyên.`;
 
-// Nhánh 1: GIÁO VIÊN — ít việc hành chính, trọng tâm là tài liệu dạy học.
+// Nhánh 1: GIÁO VIÊN — không gian Documents\AWord\GIAO VIEN (AWord tạo sẵn khi chọn vai Giáo viên).
 export const PROMPT_THIET_LAP_GIAO_VIEN = `Hãy giúp tôi thiết lập không gian làm việc AWord dành cho GIÁO VIÊN.
 ${MO_DAU_CHUNG}
+Thư mục giáo viên là Documents\\AWord\\GIAO VIEN (AWord đã tạo sẵn khi tôi chọn vai Giáo viên ở trang Chào mừng). Nếu thư mục làm việc đang mở là Documents\\AWord thì MỌI thư mục, tệp dưới đây nằm trong thư mục con "GIAO VIEN/"; nếu tôi đang mở thẳng thư mục GIAO VIEN thì nằm ở gốc. Nếu chưa có thư mục GIAO VIEN thì tạo.
 
 1. Thu thập thông tin (lần lượt từng câu):
    a) Họ tên; trường, đơn vị công tác; tỉnh/thành phố.
-   b) Cấp học: mầm non, tiểu học, THCS, THPT hay GDTX.
-   c) Môn dạy và các lớp, khối phụ trách năm học này.
-   d) Bộ sách giáo khoa đang dùng (Kết nối tri thức với cuộc sống, Chân trời sáng tạo, Cánh diều...).
+   b) VAI TRÒ chính: giáo viên bộ môn / giáo viên chủ nhiệm / tổ trưởng-tổ phó chuyên môn / cán bộ quản lý (BGH) / giáo sinh-giáo viên mới vào nghề (vai trò quyết định cách bạn phục vụ tôi: giáo sinh cần giải thích lý do sư phạm như người hướng dẫn; tổ trưởng cần thêm góc thẩm định, hồ sơ tổ; quản lý cần góc duyệt và chuẩn hóa).
+   c) Cấp học: mầm non, tiểu học, THCS, THPT hay GDTX (mầm non thì hỏi nhóm lớp - độ tuổi thay cho môn).
+   d) Môn dạy và các khối lớp phụ trách năm học này.
    e) Nhiệm vụ kiêm nhiệm (chủ nhiệm lớp, tổ trưởng chuyên môn, phụ trách thiết bị, thư viện...).
    f) Việc muốn AWord hỗ trợ nhiều nhất (soạn kế hoạch bài dạy, ra đề kiểm tra, bài trình chiếu, học liệu và mô phỏng, thẩm định hồ sơ, văn bản của tổ/trường, nhận xét học sinh...).
-   g) Thói quen soạn bài: mức độ chi tiết, phương pháp và kĩ thuật dạy học hay dùng, điều muốn tránh.
+   g) Thói quen soạn bài: mức độ chi tiết, phương pháp và kĩ thuật dạy học hay dùng, thiết bị sẵn có ở trường, điều muốn tránh.
    h) Văn phong mong muốn; ví dụ một đoạn giáo án hoặc nhận xét tôi thấy ưng ý (nếu có).
+   Về SGK: KHÔNG cần hỏi — từ năm học 2026-2027 cả nước dùng thống nhất bộ "Kết nối tri thức với cuộc sống" (Quyết định 3588/QĐ-BGDĐT ngày 26/12/2025); chỉ hỏi lại nếu tôi nói đang soạn theo học liệu khác.
 
-2. Tạo cấu trúc thư mục: "HO SO CUA TOI/" (ghi profile.md và van-phong.md từ câu trả lời), "TU LIEU MON HOC/<Môn>/SGK/" cho từng môn tôi dạy, "KE HOACH BAI DAY/", "DE KIEM TRA/", "BAI TRINH CHIEU/", "HOC LIEU TRUC QUAN/", "CLAUDE OUTPUTS/".
+2. Tạo cấu trúc thư mục (thiếu cái nào tạo cái đó): "HO SO CUA TOI/" (ghi ho-so-giao-vien.md — toàn bộ thông tin phỏng vấn, mon-lop.md — bảng môn × khối lớp, van-phong.md), "TU LIEU MON HOC/<Môn>/SGK/" cho từng môn tôi dạy (kèm README nhắc bỏ phân phối chương trình, sách giáo viên vào đúng thư mục môn), "KE HOACH BAI DAY/", "DE KIEM TRA/", "BAI TRINH CHIEU/", "HOC LIEU TRUC QUAN/", "BO NHO/". Ghi "HO SO CUA TOI/tri-thuc-cua-toi.md": chỉ mục cho biết với cấp học và các môn của tôi thì mỗi skill dạy học cần đọc đúng file/mục references nào (khung KHBD theo cấp, mục môn trong ppdh-bo-mon.md và ppdh-cap-*.md).
 
-3. Hướng dẫn ngắn gọn để tôi bỏ vào "TU LIEU MON HOC/<Môn>/": bản PDF sách giáo khoa (thư mục SGK/), phân phối chương trình, văn bản yêu cầu cần đạt — tư liệu càng đủ thì giáo án, đề kiểm tra càng bám sát.
+3. Kho SGK: nếu trong phiên có các công cụ sgk_* thì gọi sgk_trang_thai và cho tôi biết trạng thái bản quyền (chưa kích hoạt thì nói tôi có thể bảo "kiểm tra trạng thái Kho SGK" bất cứ lúc nào để thanh toán QR ngay trong chat, giá 50.000 đ/máy/năm). Nếu KHÔNG có công cụ sgk_*: nói ngắn gọn rằng muốn Claude tự tra SGK thì chạy "Kết nối Kho SGK (AWord)" trong Start Menu rồi mở lại AWord — không bắt buộc; không có kho thì tôi tự bỏ PDF SGK vào "TU LIEU MON HOC/<Môn>/SGK/".
 
-4. Ghi CLAUDE.md ở gốc thư mục làm việc với NGUYÊN VĂN nội dung dưới đây (đã có CLAUDE.md thì thay toàn bộ nội dung bằng bản này):
+4. Hỏi tôi (AskUserQuestion) có muốn NẠP NGAY yêu cầu cần đạt không: với từng môn × khối lớp đã khai, tra web chương trình môn học GDPT 2018 (Thông tư 32/2018/TT-BGDĐT) và lưu "TU LIEU MON HOC/<Môn>/yeu-cau-can-dat-lop-<X>.md" (ghi rõ nguồn) để soạn bài dùng offline. Mất vài phút; tôi có thể để sau (khi soạn bài đầu tiên Claude sẽ tự tra).
+
+5. Ghi CLAUDE.md trong thư mục giáo viên (GIAO VIEN/CLAUDE.md, hoặc gốc nếu tôi đang mở thẳng GIAO VIEN) với NGUYÊN VĂN nội dung dưới đây (đã có thì thay toàn bộ nội dung bằng bản này):
 ---
 ${QUY_TAC_CLAUDE_MD_GIAO_VIEN}
 ---
 
-5. Khởi tạo bộ nhớ làm việc theo skill bo-nho-lam-viec (thư mục ẩn .aword/bo-nho/ và tệp AGENTS.md). Ghi vào dai-han.md các ý chính: tên, trường, cấp học, môn và lớp phụ trách, bộ sách giáo khoa, việc cần hỗ trợ nhiều nhất.
+6. Khởi tạo bộ nhớ làm việc theo skill bo-nho-lam-viec (thư mục ẩn .aword/bo-nho/ và tệp AGENTS.md ở gốc thư mục làm việc đang mở). Ghi vào dai-han.md các ý chính: tên, trường, vai trò, cấp học, môn và lớp phụ trách, việc cần hỗ trợ nhiều nhất, thiết bị sẵn có. Nếu "BO NHO/" đã có nội dung (chuyển từ AGiaoAn) thì đọc và gộp các ý bền vững vào dai-han.md.
 
-6. ${buocChonNhomKyNang('giữ Nền tảng + Giáo dục + Thiết kế và trình bày; nhóm Nghiệp vụ hành chính và Lập trình có thể tắt nếu tôi không dùng.')}
+7. ${buocChonNhomKyNang('giữ Nền tảng + Giáo dục + Thiết kế và trình bày; nhóm Nghiệp vụ hành chính và Lập trình có thể tắt nếu tôi không dùng.')}
 
 Bắt đầu bằng câu hỏi đầu tiên ngay bây giờ.`;
 
@@ -179,3 +98,49 @@ export const PROMPT_CHON_NHOM_KY_NANG = `Hãy giúp tôi bật/tắt các nhóm 
 4. Báo ngắn gọn đã bật, tắt những skill nào và nhắc tôi mở cuộc trò chuyện mới để áp dụng.
 
 ${NHOM_KY_NANG}`;
+
+// Kiểm tra trạng thái Kho SGK (bản quyền theo mã máy, thanh toán QR ngay trong chat).
+export const PROMPT_KIEM_TRA_KHO_SGK = `Kiểm tra trạng thái Kho SGK cho tôi theo skill tra-cuu-sgk:
+- Nếu có công cụ sgk_trang_thai: gọi nó và báo rõ mã máy, trạng thái bản quyền, hạn dùng, phiên bản kho đang dùng/mới nhất, giá, và chuyển NGUYÊN VĂN mọi thông báo (thong_bao) nếu có.
+- Chưa kích hoạt hoặc hết hạn: gọi sgk_thanh_toan, hiện đầy đủ số tiền, ngân hàng, số tài khoản, chủ tài khoản, NỘI DUNG CHUYỂN KHOẢN chính xác, ảnh QR hoặc đường dẫn QR và trang thanh toán, hạn của đơn; sau khi tôi báo đã chuyển khoản thì gọi sgk_kiem_tra_thanh_toan(ma_don) và cho tôi biết kết quả.
+- Nếu KHÔNG có công cụ sgk_* nào: hướng dẫn tôi chạy "Kết nối Kho SGK (AWord)" trong Start Menu (hoặc tệp Ket_Noi_KhoSGK.cmd trong thư mục cài AWord), nhấn Enter nhận địa chỉ mặc định, rồi mở lại AWord.`;
+
+// "Bắt đầu nhanh" cho vai Giáo viên — bấm nút, dán vào chat là dùng được; chỗ [trong ngoặc] tự thay.
+export interface PromptNhanh {
+    icon: string;
+    ten: string;
+    prompt: string;
+}
+
+export const PROMPT_NHANH_GIAO_VIEN: PromptNhanh[] = [
+    {
+        icon: '📝',
+        ten: 'Soạn kế hoạch bài dạy',
+        prompt: 'Soạn kế hoạch bài dạy: môn [Toán], lớp [7], bài "[Số hữu tỉ]", thời lượng [1] tiết, SGK Kết nối tri thức với cuộc sống. Có Kho SGK (công cụ sgk_*) thì tra theo skill tra-cuu-sgk (sgk_muc_luc → sgk_bai) để bám đúng bài và trích dẫn "Theo SGK ... tr. ...". Soạn đúng khung quy định cho cấp học của tôi, bám yêu cầu cần đạt của chương trình GDPT 2018, tự kiểm theo tiêu chí Công văn 5555 rồi báo kết quả.'
+    },
+    {
+        icon: '📋',
+        ten: 'Ra đề kiểm tra',
+        prompt: 'Ra đề kiểm tra [giữa kỳ I] môn [Toán] lớp [7], thời gian [90] phút: lập ma trận và bản đặc tả theo Công văn 7991/BGDĐT-GDTrH, rồi biên soạn đề + đáp án + hướng dẫn chấm, bám yêu cầu cần đạt các bài đã học. Có Kho SGK thì lấy phần bài tập, ghi nhớ của các bài trong phạm vi (sgk_bai với phan="bai-tap"/"ghi-nho") và sách bài tập làm ngân hàng câu hỏi.'
+    },
+    {
+        icon: '📽️',
+        ten: 'Soạn bài trình chiếu từ KHBD',
+        prompt: 'Soạn bài trình chiếu (.pptx) cho kế hoạch bài dạy "[tên bài]" đã có trong thư mục KE HOACH BAI DAY — slide bám đúng tiến trình các hoạt động của bài, chữ to rõ phù hợp học sinh, câu hỏi tương tác đặt trước đáp án; hình minh họa lấy từ Kho SGK (sgk_hinh_theo_bai, tải bằng url_tai) nếu có.'
+    },
+    {
+        icon: '🧪',
+        ten: 'Tạo mô phỏng thí nghiệm ảo',
+        prompt: 'Tạo mô phỏng thí nghiệm ảo (tệp HTML mở bằng trình duyệt, chạy offline) cho bài "[Sự nở vì nhiệt]" môn [KHTN] lớp [6] theo SGK Kết nối tri thức: đúng dụng cụ và hiện tượng như SGK mô tả (tra Kho SGK nếu có), có bảng điều khiển cho học sinh thay đổi tham số.'
+    },
+    {
+        icon: '📚',
+        ten: 'Kiểm tra trạng thái Kho SGK',
+        prompt: PROMPT_KIEM_TRA_KHO_SGK
+    },
+    {
+        icon: '📖',
+        ten: 'Đọc, tóm tắt tài liệu',
+        prompt: 'Đọc và tóm tắt giúp tôi tệp [kéo-thả hoặc gõ @ để chọn tệp] — nêu các ý chính, những việc giáo viên phải làm và mốc thời gian (nếu có).'
+    }
+];

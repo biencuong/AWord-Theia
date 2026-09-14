@@ -9,6 +9,7 @@ import { AwordLayoutContribution } from './aword-layout-contribution';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { AwordWelcomeContribution } from './aword-welcome-contribution';
 import { CapNhatClaudeCodeServer, CAP_NHAT_CLAUDE_CODE_PATH } from '../common/cap-nhat-claude-code-protocol';
+import { VaiNguoiDungServer, VAI_NGUOI_DUNG_PATH } from '../common/vai-nguoi-dung-protocol';
 
 import '../../src/browser/style/index.css';
 
@@ -29,6 +30,11 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bind(CapNhatClaudeCodeServer).toDynamicValue(ctx => {
         const provider = ctx.container.get(WebSocketConnectionProvider);
         return provider.createProxy<CapNhatClaudeCodeServer>(CAP_NHAT_CLAUDE_CODE_PATH);
+    }).inSingletonScope();
+    // Dịch vụ "Vai của bạn" (trang Chào mừng) — mọi thao tác tệp cấu hình cá nhân làm ở backend.
+    bind(VaiNguoiDungServer).toDynamicValue(ctx => {
+        const provider = ctx.container.get(WebSocketConnectionProvider);
+        return provider.createProxy<VaiNguoiDungServer>(VAI_NGUOI_DUNG_PATH);
     }).inSingletonScope();
 
     bind(AwordMenuContribution).toSelf().inSingletonScope();

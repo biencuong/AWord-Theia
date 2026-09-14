@@ -52,3 +52,22 @@ if ($mCu.Success) {
 }
 
 [System.IO.File]::WriteAllText($target, $ketQua, (New-Object System.Text.UTF8Encoding($false)))
+
+# ===== KHOI VAI GIAO VIEN (AWORD-GIAOVIEN) =====
+# Nguoi dung bat/tat vai Giao vien trong app (trang Chao mung -> Vai cua ban): app chen/go khoi
+# <!-- AWORD-GIAOVIEN:BEGIN --> ... <!-- AWORD-GIAOVIEN:END -->. Bo cai KHONG tu chen khoi nay;
+# chi CAP NHAT no bang ban moi (CLAUDE.giaovien-moi.md, installer ghi ra) khi CLAUDE.md DANG CO khoi
+# - tuc nguoi dung da bat vai. Giu nguyen moi thu ngoai khoi. (Backup da lam o buoc tren.)
+$nguonGV = Join-Path $thuMuc 'CLAUDE.giaovien-moi.md'
+if (Test-Path $nguonGV) {
+    $reGV = '(?s)<!-- AWORD-GIAOVIEN:BEGIN.*?AWORD-GIAOVIEN:END[^>]*-->'
+    $banGV = Get-Content $nguonGV -Raw -Encoding UTF8
+    $mGVMoi = [regex]::Match($banGV, $reGV)
+    $hienTaiGV = Get-Content $target -Raw -Encoding UTF8
+    $mGVCu = [regex]::Match($hienTaiGV, $reGV)
+    if ($mGVMoi.Success -and $mGVCu.Success -and ($mGVCu.Value -ne $mGVMoi.Value)) {
+        $ketQuaGV = $hienTaiGV.Substring(0, $mGVCu.Index) + $mGVMoi.Value + $hienTaiGV.Substring($mGVCu.Index + $mGVCu.Length)
+        [System.IO.File]::WriteAllText($target, $ketQuaGV, (New-Object System.Text.UTF8Encoding($false)))
+        Write-Output "Da cap nhat khoi VAI GIAO VIEN (AWORD-GIAOVIEN) trong CLAUDE.md, giu nguyen phan con lai."
+    }
+}

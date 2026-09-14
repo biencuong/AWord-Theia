@@ -276,6 +276,52 @@
     line-height: 1.55;
 }
 
+/* Khối "Vai của bạn": ba nút chọn vai xếp ngang (xuống dòng khi hẹp) + trạng thái áp dụng */
+.aword-welcome-vai {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+.aword-welcome-vai-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    text-align: left;
+}
+
+.aword-welcome-vai-btn:disabled {
+    opacity: 0.6;
+}
+
+.aword-welcome-vai-tt {
+    margin: 0 0 6px;
+    padding: 8px 10px 8px 24px;
+    border-radius: 6px;
+    background: var(--theia-editorWidget-background);
+    border: 1px solid var(--theia-editorWidget-border);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--theia-descriptionForeground);
+    word-break: break-word;
+}
+
+div.aword-welcome-vai-tt {
+    padding-left: 10px;
+}
+
+.aword-welcome-vai-tt li {
+    margin: 0;
+}
+
+/* Danh sách "Bắt đầu nhanh" (giáo viên): các nút xếp dọc như nút thường */
+.aword-welcome-quick {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 4px;
+}
+
 .aword-welcome-guide {
     list-style: none;
     margin: 0;
