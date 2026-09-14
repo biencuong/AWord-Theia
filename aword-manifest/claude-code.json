@@ -1,0 +1,9 @@
+{
+  "_ghi_chu_cho_nguoi_duy_tri": "Danh mục bản Claude Code đã DUYỆT cho nút 'Cập nhật Claude Code' trong AWord (Trợ giúp > Cập nhật Claude Code). Sửa 'phienBan' + 'vsix' rồi commit + push lên nhánh main khi đã tự kiểm tra ổn định một bản Claude Code mới hơn — KHÔNG cần đóng gói lại cả AWord, người dùng bấm nút là tải được ngay. Lấy URL .vsix đúng nền tảng tại https://open-vsx.org/extension/Anthropic/claude-code (mục Download từng phiên bản/nền tảng).",
+  "phienBan": "2.1.211",
+  "ghiChu": "Bản khởi tạo — khớp đúng bản đang ghim sẵn trong AWord (chưa có cập nhật nào được duyệt).",
+  "vsix": {
+    "win32-x64": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.211/file/Anthropic.claude-code-2.1.211@win32-x64.vsix",
+    "darwin-arm64": "https://open-vsx.org/api/Anthropic/claude-code/darwin-arm64/2.1.211/file/Anthropic.claude-code-2.1.211@darwin-arm64.vsix"
+  }
+}

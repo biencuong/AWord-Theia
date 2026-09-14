@@ -12,6 +12,7 @@ import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handl
 import { NavigatorContextMenu } from '@theia/navigator/lib/browser/navigator-contribution';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { AWORD_LOGO_SVG } from './aword-logo';
+import { CapNhatClaudeCodeServer, ThongTinBanDuocDuyet, soSanhPhienBanSo } from '../common/cap-nhat-claude-code-protocol';
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
@@ -26,6 +27,11 @@ export const AwordUpdateCommand: Command = {
 export const AwordAddToClaudeCommand: Command = {
     id: 'aword:add-to-claude',
     label: 'Thêm vào Claude Code (@)'
+};
+
+export const AwordUpdateClaudeCodeCommand: Command = {
+    id: 'aword:update-claude-code',
+    label: 'Cập nhật Claude Code'
 };
 
 // Các menu top-level GỠ khỏi thanh menu cho gọn (không cần cho việc văn phòng) — ID theo
@@ -129,6 +135,9 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
     @inject(WorkspaceService)
     protected readonly workspaceService: WorkspaceService;
 
+    @inject(CapNhatClaudeCodeServer)
+    protected readonly capNhatClaudeCodeServer: CapNhatClaudeCodeServer;
+
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(AwordAboutCommand, {
             // Dựng ConfirmDialog trực tiếp (không qua DI) để tránh lỗi Inversify "asynchronous dependencies"
@@ -142,6 +151,9 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         });
         commands.registerCommand(AwordUpdateCommand, {
             execute: () => this.kiemTraCapNhat()
+        });
+        commands.registerCommand(AwordUpdateClaudeCodeCommand, {
+            execute: () => this.capNhatClaudeCode()
         });
         commands.registerCommand(AwordAddToClaudeCommand, UriAwareCommandHandler.MultiSelect(this.selectionService, {
             execute: uris => this.themVaoClaude(uris),
@@ -160,6 +172,11 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             commandId: AwordAboutCommand.id,
             label: AwordAboutCommand.label,
             order: '1'
+        });
+        menus.registerMenuAction(CommonMenus.HELP, {
+            commandId: AwordUpdateClaudeCodeCommand.id,
+            label: AwordUpdateClaudeCodeCommand.label,
+            order: '2'
         });
         // Chuột phải trong cây thư mục (Explorer): gửi tham chiếu @tệp vào khung chat Claude.
         menus.registerMenuAction(NavigatorContextMenu.NAVIGATION, {
@@ -268,6 +285,102 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
     }
 
+    // Cập nhật RIÊNG plugin Claude Code bên trong AWord, không cần chờ đóng gói lại cả
+    // bản AWord mới: tải bản do người duy trì AWord đã DUYỆT (danh mục trên repo, không
+    // phải mọi bản trên open-vsx.org) về thư mục plugin cá nhân — Theia tự ưu tiên bản có
+    // số hiệu cao hơn giữa thư mục này và thư mục plugin đóng sẵn khi khởi động lại.
+    protected async capNhatClaudeCode(): Promise<void> {
+        let banDangDung: string | undefined;
+        try {
+            banDangDung = await this.capNhatClaudeCodeServer.layPhienBanDangDung();
+        } catch { /* vẫn hiện được thông tin bản đã duyệt dù không đọc được bản đang dùng */ }
+
+        let banDuocDuyet: ThongTinBanDuocDuyet | undefined;
+        let loi: string | undefined;
+        try {
+            banDuocDuyet = await this.capNhatClaudeCodeServer.layBanDuocDuyet();
+            if (!banDuocDuyet) {
+                loi = 'Không đọc được danh mục phiên bản Claude Code đã duyệt (hoặc chưa có bản cho máy này).';
+            }
+        } catch {
+            loi = 'Không kết nối được máy chủ cập nhật. Kiểm tra kết nối mạng rồi thử lại.';
+        }
+
+        const wrap = document.createElement('div');
+        wrap.className = 'aword-about-content aword-update-content';
+
+        if (loi || !banDuocDuyet) {
+            const p = document.createElement('p');
+            p.textContent = loi ?? 'Không đọc được thông tin phiên bản.';
+            wrap.appendChild(p);
+            await new ConfirmDialog({ title: AwordUpdateClaudeCodeCommand.label!, msg: wrap, ok: Dialog.OK, cancel: '' }).open();
+            return;
+        }
+
+        const coBanMoi = !banDangDung || soSanhPhienBanSo(banDuocDuyet.phienBan, banDangDung) > 0;
+
+        const bang = document.createElement('div');
+        bang.className = 'aword-update-versions';
+        bang.innerHTML =
+            `<div><span class="aword-update-label">Đang dùng:</span> <b>${banDangDung ?? 'không rõ'}</b></div>` +
+            `<div><span class="aword-update-label">Đã duyệt:</span> <b>${banDuocDuyet.phienBan}</b></div>`;
+        wrap.appendChild(bang);
+
+        const ketLuan = document.createElement('p');
+        ketLuan.className = 'aword-update-status';
+        ketLuan.textContent = coBanMoi
+            ? 'Đã có bản Claude Code mới được duyệt! Bấm "Cập nhật" để tải về (cần khởi động lại AWord sau khi xong).'
+            : 'Bạn đang dùng phiên bản Claude Code mới nhất được duyệt.';
+        wrap.appendChild(ketLuan);
+
+        if (banDuocDuyet.ghiChu) {
+            const ghiChu = document.createElement('pre');
+            ghiChu.className = 'aword-update-notes';
+            ghiChu.textContent = banDuocDuyet.ghiChu;
+            wrap.appendChild(ghiChu);
+        }
+
+        const dongY = await new ConfirmDialog({
+            title: AwordUpdateClaudeCodeCommand.label!,
+            msg: wrap,
+            ok: coBanMoi ? 'Cập nhật' : Dialog.OK,
+            cancel: coBanMoi ? 'Để sau' : ''
+        }).open();
+
+        if (!coBanMoi || !dongY) { return; }
+
+        this.messageService.info('Đang tải Claude Code…', { timeout: 8000 });
+        try {
+            await this.capNhatClaudeCodeServer.capNhat(banDuocDuyet);
+        } catch (e) {
+            const chiTiet = e instanceof Error ? e.message : String(e);
+            this.messageService.error(`Cập nhật Claude Code thất bại: ${chiTiet}`);
+            return;
+        }
+
+        const khoiDongLai = await new ConfirmDialog({
+            title: AwordUpdateClaudeCodeCommand.label!,
+            msg: 'Đã tải xong. Khởi động lại AWord ngay để dùng bản Claude Code mới?',
+            ok: 'Khởi động lại ngay',
+            cancel: 'Để sau'
+        }).open();
+        if (khoiDongLai) { this.khoiDongLaiAWord(); }
+    }
+
+    // Khởi động lại TOÀN BỘ AWord (không phải chỉ mở lại khung Claude — xem restartClaude ở
+    // AwordLayoutContribution) vì plugin chỉ được Theia quét lại lúc khởi động. Dùng đúng cơ
+    // chế restart có sẵn của Theia Electron (window.electronTheiaCore.restart, cùng lời gọi
+    // Theia tự dùng khi một cấu hình cần khởi động lại) — không tự chế IPC riêng.
+    protected khoiDongLaiAWord(): void {
+        const dienTheia = (window as unknown as { electronTheiaCore?: { restart: () => void } }).electronTheiaCore;
+        if (dienTheia?.restart) {
+            this.windowService.setSafeToShutDown();
+            dienTheia.restart();
+        } else {
+            this.messageService.info('Vui lòng đóng và mở lại AWord để dùng phiên bản Claude Code mới.');
+        }
+    }
+
     // Chuột phải trong Explorer -> đưa tham chiếu @tệp/@thư-mục vào khung chat Claude.
     // Khung chat của Claude là webview đóng: KHÔNG thể bơm chữ trực tiếp từ ngoài, và lệnh
     // insertAtMention của extension chỉ đọc editor đang mở (không nhận URI) nên không dùng
@@ -346,7 +459,10 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         if (!help || !MutableCompoundMenuNode.is(help)) {
             return;
         }
-        const giuLai = new Set<string>([AwordAboutCommand.id, AwordUpdateCommand.id, 'aword:welcome', 'aword.layout.claude-restart']);
+        const giuLai = new Set<string>([
+            AwordAboutCommand.id, AwordUpdateCommand.id, AwordUpdateClaudeCodeCommand.id,
+            'aword:welcome', 'aword.layout.claude-restart'
+        ]);
         for (const child of [...help.children]) {
             if (!giuLai.has(child.id)) {
                 help.removeNode(child);
