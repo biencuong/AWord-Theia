@@ -30,12 +30,12 @@ dữ liệu "được huấn luyện" (dữ liệu được số hóa và cấu 
 
 | Tình huống | Cách nhận biết | Việc phải làm |
 |---|---|---|
-| Chưa kết nối | Không có công cụ nào tên `tt_*` trong phiên | Hướng dẫn: mở Start Menu → chạy **"Kết nối Kho tri thức AI (AWord)"** (hoặc `Ket_Noi_KhoTriThuc.cmd` trong thư mục cài AWord, thường `%LOCALAPPDATA%\Programs\AWord`), nhấn Enter nhận địa chỉ mặc định, rồi **mở lại AWord**. Không cần mã khóa — mã máy và token được sinh tự động. |
+| Chưa kết nối | Không có công cụ nào tên `tt_*` trong phiên | AWord **tự kết nối** khi vai Giáo viên đang bật (mỗi lần mở AWord, cần Internet; mã máy và token sinh tự động, không cần mã khóa). Hướng dẫn: kiểm tra mạng → menu **Trợ giúp → "Kết nối lại Kho tri thức AI giảng dạy"** (hoặc trang Chào mừng → bấm lại vai **Giáo viên**) — AWord tự khởi động lại khung chat khi kết nối xong. Dự phòng cho kỹ thuật viên (đổi địa chỉ máy chủ): Start Menu → "Kết nối Kho tri thức AI (AWord)". |
 | Mất mạng/máy chủ tạm ngừng | Công cụ có nhưng gọi lỗi mạng | Báo tạm thời, KHÔNG bảo chạy lại tệp kết nối; làm tiếp bằng PDF trong `TU LIEU MON HOC` nếu có. |
 | Chưa kích hoạt / hết hạn | JSON `{"loi":"chua_kich_hoat"}` / `"het_han"` kèm `huong_dan` | Mục 6 (thanh toán QR trong chat). |
 | Sách cần bản nâng cấp | `{"loi":"can_cap_nhat_lon"}` | Mục 6 với `loai="cap_nhat_lon"`, hoặc đổi điểm (mục 8) nếu đủ. |
 | Sách thuộc gói dữ liệu chưa mở | `{"loi":"can_mo_goi", "ma_goi", "gia", "diem"}` | Mục 7: nêu tên gói, giá, số điểm; hỏi mở bằng thanh toán hay bằng điểm. |
-| Sai máy | HTTP 403 `may_khong_khop` | Token gắn với máy khác: chạy lại "Kết nối Kho tri thức AI (AWord)" trên máy này; nếu là máy mới thay máy cũ → `tt_chuyen_may(ly_do, ma_may_cu?)` (quản trị duyệt, ≤ 2 lần/năm; `ma_may_cu` bắt buộc khi máy mới dùng token mới). |
+| Sai máy | HTTP 403 `may_khong_khop` | Token gắn với máy khác (đổi phần cứng/cài lại Windows): AWord tự tính lại mã máy ở lần mở sau — bảo người dùng mở lại AWord hoặc Trợ giúp → "Kết nối lại Kho tri thức AI giảng dạy"; vẫn lệch hoặc là máy mới thay máy cũ → `tt_chuyen_may(ly_do, ma_may_cu?)` (quản trị duyệt, ≤ 2 lần/năm; `ma_may_cu` bắt buộc khi máy mới dùng token mới). |
 | Bị khóa | `{"loi":"khoa"}` hoặc HTTP 403 `khoa` | Báo người dùng liên hệ hỗ trợ AWord (Hotline/Zalo 0983 606 845). |
 | Vượt hạn mức | `{"loi":"vuot_han_muc","reset_luc"}` | Báo giờ được dùng lại, làm tiếp bằng nội dung đã lấy. |
 

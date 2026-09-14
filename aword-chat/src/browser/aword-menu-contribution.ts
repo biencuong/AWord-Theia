@@ -16,7 +16,7 @@ import { CapNhatClaudeCodeServer, ThongTinBanDuocDuyet, soSanhPhienBanSo } from 
 
 export const AwordAboutCommand: Command = {
     id: 'aword:about',
-    label: 'Giới thiệu AWord'
+    label: 'Giới thiệu AWord Pro'
 };
 
 export const AwordUpdateCommand: Command = {
@@ -58,7 +58,7 @@ function buildAboutMessageNode(): HTMLElement {
     const titleBox = document.createElement('div');
     const title = document.createElement('div');
     title.className = 'aword-about-title';
-    title.textContent = 'AWord';
+    title.textContent = 'AWord Pro';
     const subtitle = document.createElement('div');
     subtitle.className = 'aword-about-subtitle';
     subtitle.textContent = 'Giải pháp AI & Chuyển đổi số';
@@ -233,7 +233,8 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             } else {
                 const ds: ThongTinRelease[] = await res.json();
                 for (const r of Array.isArray(ds) ? ds : []) {
-                    if (r.draft || r.prerelease || !(r.assets ?? []).some(a => /^AWord-/i.test(a.name))) { continue; }
+                    // Chỉ dòng AWord Pro (bộ cài AWordPro-*); bộ cài AWord 2.x (AWord-*) không phải bản cập nhật của Pro.
+                    if (r.draft || r.prerelease || !(r.assets ?? []).some(a => /^AWordPro-/i.test(a.name))) { continue; }
                     if (!release || soSanhPhienBan(r.tag_name ?? r.name ?? '', release.tag_name ?? release.name ?? '') > 0) {
                         release = r;
                     }
@@ -254,7 +255,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             if (banHienTai) {
                 const cur = document.createElement('p');
                 cur.className = 'aword-about-subtitle';
-                cur.textContent = `Bạn đang dùng AWord ${dinhDangPhienBan(banHienTai)}.`;
+                cur.textContent = `Bạn đang dùng AWord Pro ${dinhDangPhienBan(banHienTai)}.`;
                 wrap.appendChild(cur);
             }
             await new ConfirmDialog({ title: AwordUpdateCommand.label!, msg: wrap, ok: Dialog.OK, cancel: '' }).open();
@@ -298,7 +299,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }).open();
 
         if (coBanMoi && dongY) {
-            const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
+            const goiCai = release.assets?.find(a => /^AWordPro-Setup-.*\.exe$/i.test(a.name));
             this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
         }
     }
@@ -479,7 +480,8 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
         const giuLai = new Set<string>([
             AwordAboutCommand.id, AwordUpdateCommand.id, AwordUpdateClaudeCodeCommand.id,
-            'aword:welcome', 'aword.layout.claude-restart', 'aword.layout.claude-reopen-session'
+            'aword:welcome', 'aword.layout.claude-restart', 'aword.layout.claude-reopen-session',
+            'aword.tri-thuc.ket-noi-lai'
         ]);
         for (const child of [...help.children]) {
             if (!giuLai.has(child.id)) {

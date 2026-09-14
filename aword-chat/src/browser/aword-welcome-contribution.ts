@@ -7,8 +7,6 @@ import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { QUY_TAC_CLAUDE_MD } from './aword-setup-prompts';
-import { laWidgetClaude } from './aword-claude-widget';
-import { VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
 
 export const AwordWelcomeCommand: Command = {
     id: 'aword:welcome',
@@ -28,9 +26,13 @@ const TY_LE_CHIEU_RONG_CLAUDE = 0.33;
 const TEN_WORKSPACE_MAC_DINH = 'AWord';
 const THU_MUC_CON_MAC_DINH = ['ABOUT ME', 'TEMPLATES', 'PROJECTS', 'CLAUDE OUTPUTS'];
 
-// Các view container ở thanh bên trái KHÔNG cần cho công việc văn phòng — ẩn khỏi activity bar.
-// (Quản lý mã nguồn, Kiểm thử, Gỡ lỗi — do plugin-ext/scm/test/debug kéo theo, không gỡ khỏi bundle được.)
-const ICON_SIDEBAR_AN = ['scm-view-container', 'test-view-container', 'debug'];
+// Các view container ở thanh bên trái KHÔNG hiện khi khởi động — ẩn khỏi activity bar:
+// - Quản lý mã nguồn, Kiểm thử, Gỡ lỗi (plugin-ext/scm/test/debug kéo theo, không gỡ khỏi bundle được);
+// - Claude Code "danh sách phiên" (claudeVSCodeSessionsList — cũng là một webview giao diện Claude đầy đủ): Claude chỉ
+//   để mặc định ở THANH BÊN PHỤ (phải) → khởi động chỉ nạp MỘT khung Claude. Lịch sử phiên vẫn mở được bằng nút đồng hồ
+//   trong khung chat hoặc Trợ giúp → "Mở lại phiên trò chuyện Claude gần đây". Theia thêm tiền tố workbench.view.extension.
+const CLAUDE_DANH_SACH_PHIEN = 'plugin-view-container:workbench.view.extension.claude-sessions-sidebar';
+const ICON_SIDEBAR_AN = ['scm-view-container', 'test-view-container', 'debug', CLAUDE_DANH_SACH_PHIEN];
 const EXPLORER_CONTAINER_ID = 'explorer-view-container';
 
 @injectable()
@@ -44,9 +46,6 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
 
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
-
-    @inject(VaiNguoiDungServer)
-    protected readonly vaiServer: VaiNguoiDungServer;
 
     constructor() {
         super({
@@ -62,14 +61,14 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     // - Đã có workspace → mở khung chat Claude ở vùng soạn thảo chính; trang chào mừng chỉ hiện lần đầu.
     // - Người dùng CHỦ ĐỘNG đóng workspace (đã có mục gần đây) → tôn trọng, chỉ hiện trang chào mừng.
     async onDidInitializeLayout(app: FrontendApplication): Promise<void> {
-        // Ẩn các icon sidebar không dùng: ẩn NGAY một lần, rồi NGHE SỰ KIỆN thêm widget để
-        // ẩn nốt view container nào xuất hiện trễ — thay cho việc quét mù nhiều lần theo mốc
-        // thời gian cứng (tốn và kéo dài "đuôi" khởi động). Tự ngừng nghe sau khi layout ổn định.
+        // Ẩn các icon sidebar không dùng: ẩn NGAY một lần, rồi NGHE SỰ KIỆN thêm widget SUỐT PHIÊN để ẩn nốt view
+        // container xuất hiện trễ — plugin có thể nạp rất muộn (máy chậm, hoặc chờ người dùng trả lời hộp thoại "tin
+        // tưởng thư mục"), nên không đặt mốc thời gian. Mỗi lần chỉ duyệt vài widget thanh trái — không đáng kể.
+        // Áp dụng mọi nhánh bên dưới, cả bản app lẫn bản web.
         this.anIconSidebar(app);
-        const subAn = app.shell.onDidAddWidget(() => this.anIconSidebar(app));
-        setTimeout(() => subAn.dispose(), 8000);
-        // Di trú tên gọi Kho tri thức AI (bản thử nghiệm) — chạy khi renderer rảnh, không chặn khởi động.
-        this.moKhiRanh(() => { void this.diTruHookTenCu(); });
+        app.shell.onDidAddWidget(() => this.anIconSidebar(app));
+        // Di trú tên gọi Kho tri thức AI (bản thử nghiệm) nay do AwordKhoTriThucContribution làm cùng lượt tự kết nối
+        // khi mở AWord (áp lại vai nếu còn hook tên cũ/thiếu quyền) — không gọi datVai hai lần song song.
 
         if (this.workspaceService.tryGetRoots().length === 0) {
             let ganDay: string[] = [];
@@ -93,35 +92,21 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         // của phiên trước. Ép mở thêm ở giữa gây HAI cửa sổ Claude (thừa + nặng thêm 1 webview +
         // 1 tiến trình). Người dùng cần khung to hơn thì dùng menu Bố cục → "Claude ra giữa"
         // (menu này gọi lệnh claude-vscode.editor.open trực tiếp, không qua đây).
-        // Dọn Claude thừa: layout phiên trước (bản cũ) có thể còn panel Claude ở GIỮA — đóng nó đi
-        // NẾU đã có Claude mặc định ở thanh bên (chỉ đóng khi chắc chắn còn Claude khác → không rơi
-        // về trạng thái không có Claude nào).
-        this.moKhiRanh(() => this.donClaudeThua(app));
+        // KHÔNG đóng khung Claude mà Theia khôi phục từ phiên trước (thẻ giữa màn hình, danh sách phiên đang mở):
+        // đó là việc người dùng đang làm dở — extension tự khởi động lại đúng cuộc trò chuyện để làm tiếp.
     }
 
-    // Máy đã bật vai Giáo viên mà settings.json còn mục hook tên cũ của bản thử nghiệm → áp lại vai
-    // (datVai idempotent: gỡ mục hook cũ, bật hook hook_trithuc.ps1, xóa tệp hook cũ do AWord chép).
-    // Im lặng khi không cần hoặc backend chưa sẵn sàng (lần khởi động sau sẽ thử lại).
-    protected async diTruHookTenCu(): Promise<void> {
-        try {
-            const tt = await this.vaiServer.docTrangThai();
-            if (tt.vai?.giaoVien && tt.hookCuConLai) {
-                await this.vaiServer.datVai(tt.vai);
-            }
-        } catch { /* bỏ qua */ }
-    }
-
-    // Chạy cb khi renderer rảnh (requestIdleCallback); không có thì lùi 500ms.
-    protected moKhiRanh(cb: () => void): void {
-        const ric = (window as unknown as { requestIdleCallback?: (fn: () => void, o?: { timeout: number }) => void }).requestIdleCallback;
-        if (ric) { ric(cb, { timeout: 3000 }); } else { setTimeout(cb, 500); }
-    }
-
-    // Ẩn view container Quản lý mã nguồn / Kiểm thử / Gỡ lỗi khỏi thanh bên trái.
+    // Ẩn các view container trong ICON_SIDEBAR_AN khỏi thanh bên trái. Nếu cái bị ẩn đang là tab được chọn (danh sách
+    // phiên Claude hay tự chiếm tab khi plugin nạp xong) thì trả thanh trái về Trình khám phá, không để trống.
     protected anIconSidebar(app: FrontendApplication): void {
         try {
             for (const w of app.shell.getWidgets('left')) {
-                if (ICON_SIDEBAR_AN.includes(w.id)) { w.close(); }
+                if (!ICON_SIDEBAR_AN.includes(w.id)) { continue; }
+                const dangChon = app.shell.leftPanelHandler.tabBar.currentTitle?.owner === w;
+                w.close();
+                if (dangChon && app.shell.getWidgets('left').some(x => x.id === EXPLORER_CONTAINER_ID)) {
+                    app.shell.activateWidget(EXPLORER_CONTAINER_ID).catch(() => { /* chưa sẵn sàng */ });
+                }
             }
         } catch { /* layout chưa sẵn sàng — lần quét sau sẽ xử lý */ }
     }
@@ -187,23 +172,5 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         } catch {
             return false; // không tạo được (đĩa/quyền) — rơi về trang chào mừng để người dùng tự mở thư mục
         }
-    }
-
-    // Dọn khung chat Claude thừa ở vùng GIỮA: đóng CHỈ KHI đang còn khung chat Claude khác (thanh
-    // bên do extension mở mặc định) — không bao giờ đóng hết. Thử ngay, rồi nghe sự kiện thêm widget
-    // (tối đa 8s) để bắt cả khi Claude thanh bên/khôi phục layout xuất hiện trễ.
-    protected donClaudeThua(app: FrontendApplication): void {
-        const thu = (): boolean => {
-            const giua = app.shell.getWidgets('main').filter(laWidgetClaude);
-            const conKhac = app.shell.widgets.some(w => laWidgetClaude(w) && !giua.includes(w));
-            if (giua.length > 0 && conKhac) {
-                for (const w of giua) { try { w.close(); } catch { /* đang tái tạo — bỏ qua */ } }
-                return true;
-            }
-            return false;
-        };
-        if (thu()) { return; }
-        const sub = app.shell.onDidAddWidget(() => { if (thu()) { sub.dispose(); } });
-        setTimeout(() => sub.dispose(), 8000);
     }
 }

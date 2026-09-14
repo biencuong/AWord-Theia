@@ -78,8 +78,8 @@ jobs:
           if [ "${{ github.ref_type }}" = "tag" ]; then
             assets=$(gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" \
                        --json assets --jq '.assets[].name' 2>/dev/null || true)
-            echo "$assets" | grep -q '^AWord-Setup-.*\.exe$' && co_exe=true
-            echo "$assets" | grep -q '^AWord-.*\.dmg$' && co_dmg=true
+            echo "$assets" | grep -q '^AWordPro-Setup-.*\.exe$' && co_exe=true
+            echo "$assets" | grep -q '^AWordPro-.*\.dmg$' && co_dmg=true
           fi
           echo "co_exe=$co_exe" >> "$GITHUB_OUTPUT"
           echo "co_dmg=$co_dmg" >> "$GITHUB_OUTPUT"
@@ -132,7 +132,7 @@ jobs:
 
       - name: Kiem tra bo cai
         run: |
-          $exe = "electron-app/dist/AWord-Setup-${{ needs.chuan-bi.outputs.version }}.exe"
+          $exe = "electron-app/dist/AWordPro-Setup-${{ needs.chuan-bi.outputs.version }}.exe"
           if (-not (Test-Path $exe)) { Write-Error "Khong tim thay $exe"; exit 1 }
           Write-Host ("Bo cai: {0} ({1} MB)" -f $exe, [math]::Round((Get-Item $exe).Length/1MB))
 
@@ -140,8 +140,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.chi_build
         uses: actions/upload-artifact@v4
         with:
-          name: AWord-Setup-${{ needs.chuan-bi.outputs.version }}
-          path: electron-app/dist/AWord-Setup-*.exe
+          name: AWordPro-Setup-${{ needs.chuan-bi.outputs.version }}
+          path: electron-app/dist/AWordPro-Setup-*.exe
           retention-days: 7
 
       - name: Tao GitHub Release + tai len bo cai
@@ -151,14 +151,14 @@ jobs:
         run: |
           $version = "${{ needs.chuan-bi.outputs.version }}"
           $tag = "v$version"
-          $exe = "electron-app/dist/AWord-Setup-$version.exe"
+          $exe = "electron-app/dist/AWordPro-Setup-$version.exe"
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
             Write-Host "Release $tag da ton tai - tai bo cai len (ghi de)."
             gh release upload $tag $exe --clobber
           } else {
             $coLatest = if ([int64]($version.Split('.')[0]) -ge 10000) { '--latest' } else { '--latest=false' }
-            gh release create $tag $exe --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA $coLatest
+            gh release create $tag $exe --title "AWord Pro $version" --notes-file GHI_CHU_PHAT_HANH.md --target $env:GITHUB_SHA $coLatest
             if ($LASTEXITCODE -ne 0) {
               # Job mac co the vua tao release cung luc (race) - thu upload lai.
               Start-Sleep -Seconds 10
@@ -210,7 +210,7 @@ jobs:
 
       - name: Kiem tra bo cai
         run: |
-          dmg="electron-app/dist/AWord-${{ needs.chuan-bi.outputs.version }}-arm64.dmg"
+          dmg="electron-app/dist/AWordPro-${{ needs.chuan-bi.outputs.version }}-arm64.dmg"
           if [ ! -f "$dmg" ]; then echo "Khong tim thay $dmg"; ls electron-app/dist; exit 1; fi
           echo "Bo cai: $dmg ($(du -m "$dmg" | cut -f1) MB)"
 
@@ -219,7 +219,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AWord-${{ needs.chuan-bi.outputs.version }}-mac
-          path: electron-app/dist/AWord-*.dmg
+          path: electron-app/dist/AWordPro-*.dmg
           retention-days: 7
 
       - name: Tao GitHub Release + tai len bo cai
@@ -229,13 +229,13 @@ jobs:
         run: |
           version="${{ needs.chuan-bi.outputs.version }}"
           tag="v$version"
-          dmg="electron-app/dist/AWord-$version-arm64.dmg"
+          dmg="electron-app/dist/AWordPro-$version-arm64.dmg"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag da ton tai - tai bo cai len (ghi de)."
             gh release upload "$tag" "$dmg" --clobber
           else
             if [ "${version%%.*}" -ge 10000 ]; then co_latest="--latest"; else co_latest="--latest=false"; fi
-            gh release create "$tag" "$dmg" --title "AWord $version" --notes-file GHI_CHU_PHAT_HANH.md --target "$GITHUB_SHA" "$co_latest" \
+            gh release create "$tag" "$dmg" --title "AWord Pro $version" --notes-file GHI_CHU_PHAT_HANH.md --target "$GITHUB_SHA" "$co_latest" \
               || { echo "Create fail (co the race voi job win) - thu upload."; sleep 10; gh release upload "$tag" "$dmg" --clobber; }
           fi
           echo "XONG: https://github.com/${{ github.repository }}/releases/tag/$tag"

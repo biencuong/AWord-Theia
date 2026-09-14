@@ -10,8 +10,13 @@ import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { AwordWelcomeContribution } from './aword-welcome-contribution';
 import { CapNhatClaudeCodeServer, CAP_NHAT_CLAUDE_CODE_PATH } from '../common/cap-nhat-claude-code-protocol';
 import { VaiNguoiDungServer, VAI_NGUOI_DUNG_PATH } from '../common/vai-nguoi-dung-protocol';
+import { CauHinhDeepSeekServer, CAU_HINH_DEEPSEEK_PATH } from '../common/cau-hinh-deepseek-protocol';
+import { AwordCauHinhDeepSeekContribution } from './aword-cau-hinh-deepseek-contribution';
+import { KhoTriThucServer, KHO_TRI_THUC_PATH } from '../common/kho-tri-thuc-protocol';
+import { AwordKhoTriThucContribution } from './aword-kho-tri-thuc-contribution';
 
 import '../../src/browser/style/index.css';
+import '../../src/browser/style/thong-bao-giua.css';
 
 // Package aword-chat: tùy biến AWord trên nền Theia — menu (ẩn Terminal, tinh gọn Xem/Trợ giúp),
 // trang Chào mừng, khởi động chat-first (tự tạo workspace + mở khung chat Claude giữa màn hình).
@@ -36,6 +41,26 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
         const provider = ctx.container.get(WebSocketConnectionProvider);
         return provider.createProxy<VaiNguoiDungServer>(VAI_NGUOI_DUNG_PATH);
     }).inSingletonScope();
+
+    // "Mô hình AI DeepSeek cho AWord" (Tệp → Tùy chọn) — hộp thoại dựng bằng `new`, chỉ contribution nằm trong DI.
+    bind(CauHinhDeepSeekServer).toDynamicValue(ctx => {
+        const provider = ctx.container.get(WebSocketConnectionProvider);
+        return provider.createProxy<CauHinhDeepSeekServer>(CAU_HINH_DEEPSEEK_PATH);
+    }).inSingletonScope();
+    bind(AwordCauHinhDeepSeekContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(AwordCauHinhDeepSeekContribution);
+    bind(MenuContribution).toService(AwordCauHinhDeepSeekContribution);
+    bind(FrontendApplicationContribution).toService(AwordCauHinhDeepSeekContribution);
+
+    // Kho tri thức AI giảng dạy — tự kết nối cho vai Giáo viên khi mở AWord + lệnh "Kết nối lại" ở menu Trợ giúp.
+    bind(KhoTriThucServer).toDynamicValue(ctx => {
+        const provider = ctx.container.get(WebSocketConnectionProvider);
+        return provider.createProxy<KhoTriThucServer>(KHO_TRI_THUC_PATH);
+    }).inSingletonScope();
+    bind(AwordKhoTriThucContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(AwordKhoTriThucContribution);
+    bind(MenuContribution).toService(AwordKhoTriThucContribution);
+    bind(FrontendApplicationContribution).toService(AwordKhoTriThucContribution);
 
     bind(AwordMenuContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(AwordMenuContribution);

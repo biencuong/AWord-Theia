@@ -43,7 +43,8 @@ hiệu lực phải nói rõ và nêu văn bản thay thế (nếu có).
    - Có trong `%USERPROFILE%\.claude\skills-tat\` (người dùng đã TẮT) → hỏi người dùng có bật lại
      không; đồng ý thì chuyển thư mục đó về `skills\`.
    - Không có ở đâu → TỰ CÀI: chép cả thư mục từ
-     `%LOCALAPPDATA%\Programs\AWord\resources\app\resources\skills\<tên-skill>` sang
+     `%LOCALAPPDATA%\Programs\AWordPro\resources\app\resources\skills\<tên-skill>` (AWord Pro; bản cũ ở
+     `%LOCALAPPDATA%\Programs\AWord\...`) sang
      `%USERPROFILE%\.claude\skills\<tên-skill>` (PowerShell `Copy-Item -Recurse -Force`), dùng luôn,
      KHÔNG báo "không có skill".
 

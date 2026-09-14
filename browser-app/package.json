@@ -32,14 +32,60 @@
     "target": "browser",
     "frontend": {
       "config": {
-        "applicationName": "AWord",
-        "defaultLocale": "vi"
+        "applicationName": "AWord Pro",
+        "defaultLocale": "vi",
+        "preferences": {
+          "workbench.colorTheme": "dark",
+          "window.menuBarVisibility": "classic",
+          "workbench.statusBar.visible": false,
+          "workbench.tree.renderIndentGuides": "onHover",
+          "claudeCode.preferredLocation": "sidebar",
+          "claudeCode.hideOnboarding": true,
+          "claudeCode.initialPermissionMode": "acceptEdits",
+          "files.autoSave": "off",
+          "workbench.editorAssociations": {
+            "*.md": "default"
+          },
+          "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/.aword": true,
+            "**/.pdf_anh": true
+          },
+          "files.watcherExclude": {
+            "**/.aword/**": true,
+            "**/.pdf_anh/**": true,
+            "**/~$*": true,
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/node_modules/**": true,
+            "**/.venv/**": true,
+            "**/__pycache__/**": true,
+            "**/dist/**": true,
+            "**/out/**": true,
+            "**/.cache/**": true,
+            "**/AppData/**": true
+          },
+          "search.exclude": {
+            "**/.aword": true,
+            "**/.pdf_anh": true,
+            "**/node_modules": true,
+            "**/.venv": true,
+            "**/__pycache__": true,
+            "**/dist": true,
+            "**/out": true,
+            "**/.git": true
+          }
+        }
       }
     }
   },
   "theiaPluginsDir": "plugins",
   "theiaPlugins": {
-    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.211/file/Anthropic.claude-code-2.1.211@win32-x64.vsix"
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.270/file/Anthropic.claude-code-2.1.270@win32-x64.vsix"
   },
   "optionalDependencies": {
     "@vscode/windows-ca-certs": "^0.3.4"

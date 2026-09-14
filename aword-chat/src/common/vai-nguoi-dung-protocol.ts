@@ -5,7 +5,10 @@
 //                                                cùng cơ chế Cap_Nhat_QuyTac.ps1 dùng cho khối AWORD)
 //   - %USERPROFILE%\.claude\settings.json      — hook SessionStart gọi hook_trithuc.ps1 (chỉ vai Giáo viên)
 //   - %USERPROFILE%\Documents\AWord\GIAO VIEN\ — cây thư mục giáo viên + CLAUDE.md workspace
-// Kho tri thức AI giảng dạy: cấu hình máy khách %USERPROFILE%\.aword\trithuc.json (Ket_Noi_KhoTriThuc.cmd tạo).
+// Kho tri thức AI giảng dạy: cấu hình máy khách %USERPROFILE%\.aword\trithuc.json — AWord TỰ tạo và đăng ký MCP
+// khi bật vai Giáo viên (kho-tri-thuc-server-impl.ts); Ket_Noi_KhoTriThuc.cmd chỉ còn là đường dự phòng.
+import type { KetQuaDongBoTriThuc } from './kho-tri-thuc-protocol';
+
 export const VAI_NGUOI_DUNG_PATH = '/services/aword-vai-nguoi-dung';
 
 export interface VaiNguoiDung {
@@ -29,13 +32,15 @@ export interface TrangThaiVai {
     hookTriThucDaBat: boolean;
     // settings.json còn mục hook tên cũ của bản thử nghiệm (cần gỡ — datVai tự gỡ)
     hookCuConLai: boolean;
+    // settings.json đã cho phép sẵn các công cụ mcp__trithuc__* (Claude không hỏi lại mỗi lần tra cứu)
+    quyenTriThucDaBat: boolean;
     // Documents\AWord\GIAO VIEN đã tồn tại
     thuMucGiaoVienDaCo: boolean;
     // Đường dẫn tuyệt đối thư mục giáo viên (để hiển thị)
     thuMucGiaoVien: string;
-    // Đã chạy Ket_Noi_KhoTriThuc.cmd (có %USERPROFILE%\.aword\trithuc.json) — undefined = chưa
+    // Đã có %USERPROFILE%\.aword\trithuc.json (AWord tự tạo khi bật vai Giáo viên) — undefined = chưa
     khoTriThuc?: KhoTriThucDaDangKy;
-    // Chỉ còn cấu hình tên cũ của bản thử nghiệm (chưa di trú) — cần chạy lại "Kết nối Kho tri thức AI (AWord)"
+    // Chỉ còn cấu hình tên cũ của bản thử nghiệm (chưa di trú) — AWord tự di trú ở lần đồng bộ kế tiếp
     cauHinhCuChuaDiTru: boolean;
 }
 
@@ -43,6 +48,8 @@ export interface KetQuaDatVai {
     trangThai: TrangThaiVai;
     daLam: string[];
     canhBao: string[];
+    // Kết quả tự kết nối (vai Giáo viên) / gỡ đăng ký (tắt vai) Kho tri thức AI — thayDoiDangKy → khởi động lại Claude
+    khoTriThuc?: KetQuaDongBoTriThuc;
 }
 
 export interface VaiNguoiDungServer {

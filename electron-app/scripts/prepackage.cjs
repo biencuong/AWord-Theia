@@ -23,6 +23,8 @@ const steps = [
     path.join(__dirname, 'inject-auto-update.cjs'),
     path.join(__dirname, 'inject-hang-watchdog.cjs'),
     path.join(__dirname, 'gen-installer-nsh.cjs'),
+    // Wrapper claude.exe cho "Mô hình AI DeepSeek cho AWord" (chỉ Windows; nơi khác tự bỏ qua).
+    path.join(__dirname, 'build-claude-wrapper.cjs'),
 ];
 
 for (const script of steps) {

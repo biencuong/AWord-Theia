@@ -39,10 +39,10 @@ thức", "gia hạn dịch vụ", "nâng cấp dữ liệu tri thức", "mở g�
   thanh toán QR ngay trong chat bằng `tt_thanh_toan` (mục 6 của skill); `{"loi":"can_mo_goi"}` → nêu gói, giá,
   số điểm và hỏi mở bằng thanh toán hay điểm (mục 7); không báo lỗi khô.
 - Người dùng nói "kiểm tra trạng thái Kho tri thức AI" → `tt_trang_thai`, tóm tắt mã máy, trạng thái, hạn, thông báo.
-- Chưa kết nối (không có công cụ `tt_*`): khi việc cần nội dung sách, nhắc MỘT LẦN: mở Start Menu → chạy
-  "Kết nối Kho tri thức AI (AWord)" (hoặc `Ket_Noi_KhoTriThuc.cmd` trong thư mục cài AWord) → Enter nhận địa chỉ
-  mặc định → mở lại AWord; không cần mã khóa. Không nhắc lại nếu người dùng đã từ chối; làm tiếp bằng PDF/yêu
-  cầu cần đạt và ghi rõ "chưa đối chiếu SGK".
+- Chưa kết nối (không có công cụ `tt_*`): AWord TỰ kết nối khi vai Giáo viên đang bật (mỗi lần mở AWord, cần
+  Internet). Khi việc cần nội dung sách, nhắc MỘT LẦN: kiểm tra mạng rồi mở menu Trợ giúp → "Kết nối lại Kho tri
+  thức AI giảng dạy" (hoặc trang Chào mừng → bấm lại vai Giáo viên); không cần mã khóa, không phải chạy tệp nào.
+  Không nhắc lại nếu người dùng đã từ chối; làm tiếp bằng PDF/yêu cầu cần đạt và ghi rõ "chưa đối chiếu SGK".
 
 ## Đóng góp tài liệu đổi điểm tích lũy (Kho tri thức AI)
 

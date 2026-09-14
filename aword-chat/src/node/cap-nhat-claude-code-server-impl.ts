@@ -12,7 +12,8 @@ const extractZip = require('extract-zip') as (zipPath: string, opts: { dir: stri
 
 // Repo phát hành AWord — PHẢI khớp GITHUB_REPO trong aword-menu-contribution.ts.
 const GITHUB_REPO = 'biencuong/AWord-Theia';
-const MANIFEST_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/aword-manifest/claude-code.json`;
+// AWord Pro có danh mục riêng; claude-code.json giữ nguyên cho dòng AWord 2.x (đã dừng cập nhật).
+const MANIFEST_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/aword-manifest/claude-code-pro.json`;
 const PLUGIN_ID = 'Anthropic.claude-code';
 
 interface ManifestClaudeCode {

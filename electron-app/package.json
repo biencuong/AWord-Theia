@@ -43,7 +43,7 @@
     "target": "electron",
     "frontend": {
       "config": {
-        "applicationName": "AWord",
+        "applicationName": "AWord Pro",
         "defaultLocale": "vi",
         "electron": {
           "splashScreenOptions": {
@@ -104,14 +104,15 @@
   },
   "theiaPluginsDir": "plugins",
   "theiaPlugins": {
-    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.211/file/Anthropic.claude-code-2.1.211@win32-x64.vsix",
+    "Anthropic.claude-code": "https://open-vsx.org/api/Anthropic/claude-code/win32-x64/2.1.270/file/Anthropic.claude-code-2.1.270@win32-x64.vsix",
     "tomoki1207.pdf": "https://open-vsx.org/api/tomoki1207/pdf/1.2.2/file/tomoki1207.pdf-1.2.2.vsix",
     "cweijan.vscode-office": "https://open-vsx.org/api/cweijan/vscode-office/4.1.5/file/cweijan.vscode-office-4.1.5.vsix",
     "yzhang.markdown-all-in-one": "https://open-vsx.org/api/yzhang/markdown-all-in-one/3.6.2/file/yzhang.markdown-all-in-one-3.6.2.vsix"
   },
   "build": {
-    "appId": "vn.aword.app",
-    "productName": "AWord",
+    "appId": "vn.aword.pro",
+    "productName": "AWord Pro",
+    "executableName": "AWordPro",
     "copyright": "AWord",
     "npmRebuild": false,
     "nodeGypRebuild": false,
@@ -142,25 +143,26 @@
       "target": ["nsis"],
       "icon": "build/icon.ico",
       "extraResources": [
-        { "from": "resources/pytools", "to": "pytools" }
+        { "from": "resources/pytools", "to": "pytools" },
+        { "from": "resources/aword-bin", "to": "aword-bin" }
       ]
     },
     "mac": {
       "target": [{ "target": "dmg", "arch": ["arm64"] }],
       "icon": "build/icon.png",
       "category": "public.app-category.productivity",
-      "artifactName": "AWord-${version}-${arch}.${ext}"
+      "artifactName": "AWordPro-${version}-${arch}.${ext}"
     },
     "dmg": {
-      "artifactName": "AWord-${version}-${arch}.dmg"
+      "artifactName": "AWordPro-${version}-${arch}.dmg"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "AWord-Setup-${version}.${ext}",
+      "artifactName": "AWordPro-Setup-${version}.${ext}",
       "include": "installer.nsh",
-      "shortcutName": "AWord",
+      "shortcutName": "AWord Pro",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico"
     }

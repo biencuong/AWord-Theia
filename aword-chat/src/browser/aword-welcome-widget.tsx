@@ -9,6 +9,9 @@ import {
 } from './aword-setup-prompts';
 import { AWORD_LOGO_SVG } from './aword-logo';
 import { TrangThaiVai, VaiNguoiDung, VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
+import { KhoTriThucServer, TrangThaiKhoTriThuc } from '../common/kho-tri-thuc-protocol';
+
+const LENH_KHOI_DONG_LAI_CLAUDE = 'aword.layout.claude-restart';
 
 // Hướng dẫn sử dụng nhanh — giữ ngắn gọn, mỗi mục một hành động cụ thể.
 const HUONG_DAN: { icon: string; text: string }[] = [
@@ -20,7 +23,7 @@ const HUONG_DAN: { icon: string; text: string }[] = [
     { icon: '⚡', text: 'AWord có sẵn hơn 40 kỹ năng (văn bản Nghị định 30, xử lý văn bản đến, giáo án, đề kiểm tra, trình chiếu, bảng tính...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
     { icon: '🧠', text: 'Claude tự ghi nhớ việc đang làm vào thư mục ẩn .aword/bo-nho trong thư mục làm việc — phiên sau nối tiếp liền mạch; công cụ AI khác cũng dùng chung được qua tệp AGENTS.md.' },
     { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
-    { icon: '🎓', text: 'Giáo viên: chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu một lần (không cần mã khóa) rồi nói với Claude "kiểm tra trạng thái Kho tri thức AI" — dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa và tài liệu chuyên môn; thanh toán quét QR ngay trong chat. Giáo án, đề, slide bám đúng bài và có hình từ sách; đóng góp tài liệu chuyên môn để nhận điểm tích lũy đổi dữ liệu tri thức mới.' },
+    { icon: '🎓', text: 'Giáo viên: chọn vai "Giáo viên" ở mục Vai của bạn — AWord tự kết nối Kho tri thức AI giảng dạy (không cần mã khóa, không phải cài gì thêm) — dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa và tài liệu chuyên môn; thanh toán quét QR ngay trong chat. Giáo án, đề, slide bám đúng bài và có hình từ sách; đóng góp tài liệu chuyên môn để nhận điểm tích lũy đổi dữ liệu tri thức mới.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
 ];
 
@@ -52,8 +55,12 @@ export class AwordWelcomeWidget extends ReactWidget {
     @inject(VaiNguoiDungServer)
     protected readonly vaiServer!: VaiNguoiDungServer;
 
+    @inject(KhoTriThucServer)
+    protected readonly khoTriThuc!: KhoTriThucServer;
+
     protected ganDay: string[] = [];
     protected trangThaiVai: TrangThaiVai | undefined;
+    protected trangThaiKho: TrangThaiKhoTriThuc | undefined;
     protected dangDatVai = false;
 
     @postConstruct()
@@ -81,6 +88,11 @@ export class AwordWelcomeWidget extends ReactWidget {
             this.trangThaiVai = await this.vaiServer.docTrangThai();
         } catch { this.trangThaiVai = undefined; /* backend chưa sẵn sàng — hiện mặc định */ }
         this.update();
+        if (this.trangThaiVai?.vai?.giaoVien) {
+            // Hỏi máy chủ (REST, vài giây) sau khi đã vẽ trang — không làm chậm trang Chào mừng.
+            try { this.trangThaiKho = await this.khoTriThuc.docTrangThai(true); } catch { this.trangThaiKho = undefined; }
+            this.update();
+        }
     }
 
     render(): React.ReactElement {
@@ -92,7 +104,7 @@ export class AwordWelcomeWidget extends ReactWidget {
                 <div className='aword-about-header aword-welcome-header'>
                     <div className='aword-about-logo' dangerouslySetInnerHTML={{ __html: AWORD_LOGO_SVG }} />
                     <div>
-                        <div className='aword-about-title'>AWord</div>
+                        <div className='aword-about-title'>AWord Pro</div>
                         <div className='aword-about-subtitle'>Giải pháp AI &amp; Chuyển đổi số cho cơ quan, doanh nghiệp, trường học</div>
                     </div>
                 </div>
@@ -182,7 +194,7 @@ export class AwordWelcomeWidget extends ReactWidget {
         const tt = this.trangThaiVai;
         if (!tt) { return undefined; }
         if (this.dangDatVai) {
-            return <div className='aword-welcome-vai-tt'>Đang áp dụng vai… (nạp quy tắc, tạo thư mục, cập nhật hook)</div>;
+            return <div className='aword-welcome-vai-tt'>Đang áp dụng vai… (nạp quy tắc, tạo thư mục, cập nhật hook, kết nối Kho tri thức AI)</div>;
         }
         if (!tt.vai) {
             return <div className='aword-welcome-vai-tt'>Chưa chọn vai — AWord đang chạy theo vai Cán bộ hành chính (mặc định).</div>;
@@ -196,12 +208,12 @@ export class AwordWelcomeWidget extends ReactWidget {
                 : tt.hookCuConLai
                     ? 'Thông báo Kho tri thức AI đầu phiên: còn cấu hình tên cũ — bấm lại vai để chuyển'
                     : 'Thông báo Kho tri thức AI đầu phiên: chưa bật');
-            if (tt.khoTriThuc) {
-                dong.push(`Kho tri thức AI: đã đăng ký máy ${tt.khoTriThuc.maMay} (${tt.khoTriThuc.url})`);
-            } else if (tt.cauHinhCuChuaDiTru) {
-                dong.push('Kho tri thức AI: còn cấu hình của bản thử nghiệm — chạy lại "Kết nối Kho tri thức AI (AWord)" trong Start Menu để chuyển sang tên mới (giữ nguyên bản quyền)');
+            if (this.trangThaiKho) {
+                dong.push(`Kho tri thức AI: ${this.trangThaiKho.thongDiep}`);
+            } else if (tt.khoTriThuc) {
+                dong.push(`Kho tri thức AI: máy ${tt.khoTriThuc.maMay} — đang kiểm tra kết nối…`);
             } else {
-                dong.push('Kho tri thức AI: chưa kết nối — chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu');
+                dong.push('Kho tri thức AI: AWord đang tự kết nối…');
             }
         } else {
             dong.push(tt.khoiGiaoVienTrongClaudeMd ? 'Quy tắc giáo viên: vẫn còn trong CLAUDE.md — bấm lại vai để gỡ' : 'Quy tắc giáo viên: không nạp');
@@ -224,12 +236,15 @@ export class AwordWelcomeWidget extends ReactWidget {
             for (const cb of kq.canhBao) {
                 this.messageService.warn(cb, { timeout: 30000 });
             }
-            if (vai.giaoVien && !kq.trangThai.khoTriThuc) {
-                this.messageService.info(
-                    kq.trangThai.cauHinhCuChuaDiTru
-                        ? 'Máy này còn cấu hình Kho tri thức AI của bản thử nghiệm: chạy lại "Kết nối Kho tri thức AI (AWord)" trong Start Menu để chuyển sang tên mới (giữ nguyên bản quyền), rồi mở lại AWord.'
-                        : 'Muốn Claude tự tra nội dung sách: chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu một lần rồi mở lại AWord.',
-                    { timeout: 20000 });
+            if (kq.khoTriThuc) {
+                this.trangThaiKho = vai.giaoVien ? kq.khoTriThuc.trangThai : undefined;
+                if (vai.giaoVien) {
+                    this.messageService.info(`Kho tri thức AI: ${kq.khoTriThuc.trangThai.thongDiep}`, { timeout: 20000 });
+                }
+                // Vừa đăng ký/gỡ MCP `trithuc` → khởi động lại khung Claude để phiên chat nạp/bỏ công cụ tt_* ngay.
+                if (kq.khoTriThuc.thayDoiDangKy) {
+                    this.commandService.executeCommand(LENH_KHOI_DONG_LAI_CLAUDE).catch(() => { /* chưa có lệnh bố cục */ });
+                }
             }
         } catch (e) {
             this.messageService.error(`Không áp dụng được vai: ${e instanceof Error ? e.message : String(e)}`);

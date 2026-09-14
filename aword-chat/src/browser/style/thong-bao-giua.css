@@ -1,0 +1,25 @@
+/*
+ * Thông báo (toast) và Trung tâm thông báo hiện ở CHÍNH GIỮA cửa sổ AWord thay vì góc dưới
+ * bên phải như mặc định của Theia (@theia/messages: bottom 36px, right 16px, rộng 500px).
+ * Căn giữa bằng inset 0 + margin auto (không dùng transform để chữ không bị nhòe ở tọa độ lẻ);
+ * height: fit-content để khối co theo số toast, tối đa 3 toast vẫn nằm giữa.
+ * Bộ chọn 2 lớp nên luôn thắng quy tắc 1 lớp của Theia, không phụ thuộc thứ tự nạp CSS.
+ */
+.theia-notifications-container.theia-notification-toasts,
+.theia-notifications-container.theia-notification-center {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  width: 500px;
+  max-width: calc(100vw - 32px);
+  height: fit-content;
+  max-height: calc(100vh - 32px);
+}
+
+/* Toast đầu tiên không cần khoảng đệm phía trên — tránh lệch khối khỏi tâm. */
+.theia-notifications-container.theia-notification-toasts .theia-notification-list-item-container:first-child {
+  margin-top: 0;
+}

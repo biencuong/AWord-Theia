@@ -8,3 +8,4 @@ lib
 !electron-app/build/
 !electron-app/resources/
 electron-app/resources/pytools/
+electron-app/resources/aword-bin/

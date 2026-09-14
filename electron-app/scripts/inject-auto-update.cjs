@@ -81,9 +81,10 @@ ${marker}
       // định ở bản cầu nối (kiểu số theo giờ) để máy chạy bản cũ — chỉ biết /latest — vẫn lên
       // được bản cầu nối; từ bản cầu nối trở đi app tự chọn bản số hiệu cao nhất có bộ cài hợp nền tảng.
       const macOS = process.platform === 'darwin';
+      // AWord Pro chỉ nhận bộ cài của chính dòng Pro (AWordPro-*) — không bao giờ lấy bộ cài AWord 2.x (AWord-*).
       const khopGoi = a => macOS
-        ? /^AWord-.*\\.dmg$/i.test(a.name)
-        : /^AWord-Setup-.*\\.exe$/i.test(a.name);
+        ? /^AWordPro-.*\\.dmg$/i.test(a.name)
+        : /^AWordPro-Setup-.*\\.exe$/i.test(a.name);
       const ds = await layJson('https://api.github.com/repos/' + REPO + '/releases?per_page=30');
       let rel = null;
       let asset = null;
@@ -101,8 +102,8 @@ ${marker}
       if (soSanhPhienBan(moi, app.getVersion()) <= 0) { return; }
       const chon = await dialog.showMessageBox({
         type: 'info',
-        title: 'Cập nhật AWord',
-        message: 'Đã có phiên bản AWord mới: ' + moi.replace(/^v/i, '') + ' (bạn đang dùng ' + app.getVersion() + ').',
+        title: 'Cập nhật AWord Pro',
+        message: 'Đã có phiên bản AWord Pro mới: ' + moi.replace(/^v/i, '') + ' (bạn đang dùng ' + app.getVersion() + ').',
         detail: 'Tải về và cài đặt ngay? Ứng dụng sẽ đóng để chạy bộ cài.',
         buttons: ['Cập nhật ngay', 'Để sau'],
         defaultId: 0, cancelId: 1

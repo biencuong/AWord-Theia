@@ -103,7 +103,7 @@ ${NHOM_KY_NANG}`;
 export const PROMPT_KIEM_TRA_KHO_TRI_THUC = `Kiểm tra trạng thái Kho tri thức AI giảng dạy cho tôi theo skill tra-cuu-tri-thuc:
 - Nếu có công cụ tt_trang_thai: gọi nó và báo rõ mã máy, trạng thái dịch vụ, hạn dùng, phiên bản dữ liệu tri thức đang dùng/mới nhất, giá, và chuyển NGUYÊN VĂN mọi thông báo (thong_bao) nếu có.
 - Chưa kích hoạt hoặc hết hạn: gọi tt_thanh_toan, hiện đầy đủ tên dòng thanh toán, số tiền, ngân hàng, số tài khoản, chủ tài khoản, NỘI DUNG CHUYỂN KHOẢN chính xác, ảnh QR hoặc đường dẫn QR và trang thanh toán, hạn của đơn; sau khi tôi báo đã chuyển khoản thì gọi tt_kiem_tra_thanh_toan(ma_don) và cho tôi biết kết quả.
-- Nếu KHÔNG có công cụ tt_* nào: hướng dẫn tôi chạy "Kết nối Kho tri thức AI (AWord)" trong Start Menu (hoặc tệp Ket_Noi_KhoTriThuc.cmd trong thư mục cài AWord), nhấn Enter nhận địa chỉ mặc định, rồi mở lại AWord.`;
+- Nếu KHÔNG có công cụ tt_* nào: AWord tự kết nối khi bật vai Giáo viên — hướng dẫn tôi kiểm tra mạng Internet rồi mở menu Trợ giúp → "Kết nối lại Kho tri thức AI giảng dạy" (không cần chạy tệp nào, không cần mã khóa).`;
 
 // Đóng góp tài liệu cho Kho tri thức AI để nhận điểm tích lũy. KHÔNG đính kèm tệp bằng @ (sẽ nạp nội dung vào
 // ngữ cảnh) — chỉ dán đường dẫn; tệp được tải thẳng lên máy chủ bằng PowerShell.

@@ -29,6 +29,12 @@ const DICH_LENH = {
     'Claude Code: Insert At-Mentioned': 'Claude Code: Chèn tham chiếu @',
     'Claude Code: Show Logs': 'Claude Code: Hiện nhật ký',
     'Claude Code: Open Walkthrough': 'Claude Code: Mở hướng dẫn sử dụng',
+    // Thêm từ bản 2.1.270
+    'Claude Code: Focus last message': 'Claude Code: Chuyển tới tin nhắn cuối',
+    'Claude Code: Toggle Focus view': 'Claude Code: Bật/tắt chế độ xem tập trung',
+    'Claude Code: Mark Session as Unread': 'Claude Code: Đánh dấu phiên là chưa đọc',
+    'Claude Code: Rename Session Tab': 'Claude Code: Đổi tên thẻ phiên',
+    'Claude Code: Add Session Tab to Group': 'Claude Code: Thêm thẻ phiên vào nhóm',
 };
 
 const DICH_CAI_DAT = {
@@ -46,6 +52,8 @@ const DICH_CAI_DAT = {
     'claudeCode.enableReopenClosedSessionShortcut': 'Dùng Cmd/Ctrl+Shift+T để mở lại thẻ phiên Claude vừa đóng gần nhất. Chỉ chặn phím tắt khi thứ đóng gần nhất là thẻ Claude; nếu không sẽ chuyển về hành vi mở lại editor bình thường.',
     'claudeCode.hideOnboarding': 'Ẩn danh sách hướng dẫn làm quen trong Claude Code.',
     'claudeCode.usePythonEnvironment': 'Tự động kích hoạt môi trường Python của workspace khi chạy Claude. Cần cài extension [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python).',
+    'claudeCode.focusView': 'Chế độ xem tập trung: ẩn các lệnh gọi công cụ và hoạt động đang chạy trong khung chat, chỉ hiện yêu cầu của bạn và câu trả lời của Claude. Phần bị gấp vẫn mở lại được bằng một cú bấm, kèm dấu hiệu cho biết công cụ đang chạy. Thường bật/tắt từ menu lệnh ở ô nhập, lệnh "Claude Code: Bật/tắt chế độ xem tập trung" hoặc phím tắt Ctrl+Alt+F.',
+    'claudeCode.archiveInactiveSessions': 'Tự lưu trữ (archive) phiên sau khoảng thời gian không hoạt động này. Phiên đang mở, đang chạy, đang chờ nhập hoặc chưa đọc không bao giờ bị tự lưu trữ.',
 };
 
 const DICH_WALKTHROUGH = {

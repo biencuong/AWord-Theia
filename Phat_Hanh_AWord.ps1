@@ -41,7 +41,8 @@ if (-not $BoQuaBuild) {
     if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Error "Dong goi that bai."; exit 1 }
     Pop-Location
 }
-$exe = Join-Path $appDir "dist\AWord-Setup-$version.exe"
+# AWord Pro (tu 3.0.0): bo cai AWordPro-Setup-* - ten khac bo cai AWord 2.x de ban 2.x khong coi Pro la ban cap nhat.
+$exe = Join-Path $appDir "dist\AWordPro-Setup-$version.exe"
 if (-not (Test-Path $exe)) { Write-Error "Khong tim thay $exe"; exit 1 }
 Write-Host ("Bo cai: {0} ({1} MB)" -f $exe, [math]::Round((Get-Item $exe).Length/1MB))
 
@@ -54,8 +55,8 @@ Push-Location $root
 # Chi commit neu co thay doi
 & git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) {
-    & git commit -m "AWord $version"
-    Write-Host "Da commit: AWord $version"
+    & git commit -m "AWord Pro $version"
+    Write-Host "Da commit: AWord Pro $version"
 } else {
     Write-Host "Khong co thay doi de commit."
 }
@@ -70,7 +71,7 @@ if (-not $Notes) {
     $notesFile = Join-Path $root "GHI_CHU_PHAT_HANH.md"
     if (Test-Path $notesFile) { $Notes = (Get-Content $notesFile -Raw -Encoding UTF8).Trim() }
 }
-if (-not $Notes) { $Notes = "Ban phat hanh AWord $version" }
+if (-not $Notes) { $Notes = "Ban phat hanh AWord Pro $version" }
 
 # Tim gh CLI
 $gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
@@ -100,13 +101,13 @@ if ($gh) {
         Write-Host "Release $tag da ton tai - tai lai bo cai (ghi de)."
         & $gh release upload $tag $exe --clobber
     } else {
-        & $gh release create $tag $exe --title "AWord $version" --notes-file $notesTmp $coLatest
+        & $gh release create $tag $exe --title "AWord Pro $version" --notes-file $notesTmp $coLatest
     }
     if ($LASTEXITCODE -ne 0) { Write-Error "Tao release qua gh that bai."; exit 1 }
 } elseif ($env:GITHUB_TOKEN) {
     # Du phong: dung REST voi GITHUB_TOKEN neu khong co gh
     $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = "application/vnd.github+json"; "User-Agent" = "AWord-Publisher" }
-    $body = @{ tag_name = $tag; name = "AWord $version"; body = $Notes; draft = $false; prerelease = $false; make_latest = $(if ($laKieuTheoGio) { 'true' } else { 'false' }) } | ConvertTo-Json
+    $body = @{ tag_name = $tag; name = "AWord Pro $version"; body = $Notes; draft = $false; prerelease = $false; make_latest = $(if ($laKieuTheoGio) { 'true' } else { 'false' }) } | ConvertTo-Json
     try {
         $rel = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$Repo/releases" -Headers $headers -Body $body -ContentType "application/json"
     } catch {

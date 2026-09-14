@@ -1,8 +1,9 @@
-import { injectable } from '@theia/core/shared/inversify';
+import { injectable, inject, optional } from '@theia/core/shared/inversify';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from '@theia/core/shared/fs-extra';
 import { KetQuaDatVai, KhoTriThucDaDangKy, TrangThaiVai, VaiNguoiDung, VaiNguoiDungServer } from '../common/vai-nguoi-dung-protocol';
+import { KetQuaDongBoTriThuc, KhoTriThucServer } from '../common/kho-tri-thuc-protocol';
 import { QUY_TAC_CLAUDE_MD, QUY_TAC_CLAUDE_MD_GIAO_VIEN } from '../common/quy-tac-workspace';
 
 // Dịch vụ "Vai của bạn" — phía Node, là nơi DUY NHẤT sửa tệp cấu hình cá nhân của Claude Code.
@@ -124,6 +125,30 @@ export function hopNhatHookTriThuc(settings: Record<string, unknown>, lenh: stri
     return true;
 }
 
+// Công cụ Kho tri thức AI được Claude gọi KHÔNG hỏi lại (vai Giáo viên) — tra cứu, trạng thái, tạo đơn QR (chưa
+// chuyển tiền), đóng góp (skill đã hỏi xác nhận quyền chia sẻ). CỐ Ý KHÔNG có: tt_doi_diem (tiêu điểm tích lũy, không
+// hoàn lại) và tt_chuyen_may (chuyển bản quyền, giới hạn 2 lần/năm) — Claude Code vẫn hỏi người dùng trước khi gọi.
+export const QUYEN_TRI_THUC = [
+    'tt_trang_thai', 'tt_thanh_toan', 'tt_kiem_tra_thanh_toan', 'tt_thong_bao', 'tt_gop_y', 'tt_danh_sach', 'tt_muc_luc',
+    'tt_bai', 'tt_tim', 'tt_hinh', 'tt_hinh_theo_bai', 'tt_yeu_cau_can_dat', 'tt_cap_nhat', 'tt_dong_gop_tao', 'tt_dong_gop_ds', 'tt_diem'
+].map(t => `mcp__trithuc__${t}`);
+
+// Thêm (bat) / gỡ đúng các quy tắc QUYEN_TRI_THUC trong permissions.allow, giữ nguyên quy tắc khác và thứ tự.
+// Trả về true nếu có thay đổi.
+export function hopNhatQuyenTriThuc(settings: Record<string, unknown>, bat: boolean): boolean {
+    const quyenGoc = settings.permissions;
+    const quyen: Record<string, unknown> = (quyenGoc && typeof quyenGoc === 'object') ? quyenGoc as Record<string, unknown> : {};
+    const allow: string[] = Array.isArray(quyen.allow) ? (quyen.allow as unknown[]).filter((x): x is string => typeof x === 'string') : [];
+    const conLai = allow.filter(r => !QUYEN_TRI_THUC.includes(r));
+    const moi = bat ? [...conLai, ...QUYEN_TRI_THUC] : conLai;
+    const coCuaTa = allow.filter(r => QUYEN_TRI_THUC.includes(r));
+    const daDung = bat ? coCuaTa.length === QUYEN_TRI_THUC.length && new Set(coCuaTa).size === QUYEN_TRI_THUC.length : coCuaTa.length === 0;
+    if (daDung) { return false; }
+    quyen.allow = moi;
+    settings.permissions = quyen;
+    return true;
+}
+
 function nhanThoiGian(): string {
     const d = new Date();
     const hai = (n: number) => (n < 10 ? '0' : '') + n;
@@ -132,6 +157,10 @@ function nhanThoiGian(): string {
 
 @injectable()
 export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
+
+    // Tùy chọn để kiểm thử dựng thẳng bằng `new` (không có DI) vẫn chạy phần vai như cũ.
+    @inject(KhoTriThucServer) @optional()
+    protected readonly khoTriThuc?: KhoTriThucServer;
 
     async docTrangThai(): Promise<TrangThaiVai> {
         const vaiJson = await this.docJson(this.tepVai());
@@ -149,6 +178,7 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
             khoiGiaoVienTrongClaudeMd: !!claudeMd && RE_KHOI_GIAO_VIEN.test(claudeMd),
             hookTriThucDaBat: !!settings && coHook(settings, TEN_TEP_HOOK),
             hookCuConLai: !!settings && coHook(settings, TEN_TEP_HOOK_CU),
+            quyenTriThucDaBat: !!settings && !hopNhatQuyenTriThuc(JSON.parse(JSON.stringify(settings)), true),
             thuMucGiaoVienDaCo: await fs.pathExists(this.thuMucGiaoVien()),
             thuMucGiaoVien: this.thuMucGiaoVien(),
             khoTriThuc: await this.docKhoTriThuc(),
@@ -207,17 +237,25 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
                 const settings: Record<string, unknown> = settingsCu ?? {};
                 const coMucCu = coHook(settings, TEN_TEP_HOOK_CU);
                 const daBatTruoc = coHook(settings, TEN_TEP_HOOK);
-                if (hopNhatHookTriThuc(settings, this.lenhHook(), vai.giaoVien)) {
+                const doiHook = hopNhatHookTriThuc(settings, this.lenhHook(), vai.giaoVien);
+                const doiQuyen = hopNhatQuyenTriThuc(settings, vai.giaoVien);
+                if (doiHook || doiQuyen) {
+                    // Một lần sao lưu + một lần ghi cho cả hook và quyền.
                     await fs.mkdirp(this.thuMucClaude());
                     const saoLuu = await this.saoLuu(this.tepSettings(), `settings.backup-${nhanThoiGian()}.json`);
                     await this.ghiVanBan(this.tepSettings(), JSON.stringify(settings, undefined, 2) + '\n');
                     const ghiChuSaoLuu = saoLuu ? ' (settings.json cũ: ' + saoLuu + ')' : '';
-                    if (vai.giaoVien) {
+                    if (doiHook && vai.giaoVien) {
                         daLam.push(coMucCu
                             ? `Đã chuyển hook thông báo đầu phiên sang Kho tri thức AI (gỡ mục tên cũ)${ghiChuSaoLuu}.`
                             : `Đã bật hook thông báo Kho tri thức AI đầu phiên${ghiChuSaoLuu}.`);
-                    } else if (daBatTruoc || coMucCu) {
+                    } else if (doiHook && (daBatTruoc || coMucCu)) {
                         daLam.push('Đã tắt hook thông báo Kho tri thức AI.');
+                    }
+                    if (doiQuyen) {
+                        daLam.push(vai.giaoVien
+                            ? `Đã cho phép Claude dùng công cụ Kho tri thức AI không hỏi lại (đổi điểm, chuyển máy vẫn hỏi)${doiHook ? '' : ghiChuSaoLuu}.`
+                            : 'Đã gỡ quyền dùng công cụ Kho tri thức AI.');
                     }
                 }
                 // Tệp hook tên cũ do AWord tự chép vào ~/.aword: xóa khi settings không còn trỏ tới (không phải dữ liệu người dùng).
@@ -229,16 +267,31 @@ export class VaiNguoiDungServerImpl implements VaiNguoiDungServer {
             canhBao.push(`Không cập nhật được hook thông báo Kho tri thức AI: ${this.moTaLoi(e)}`);
         }
 
+        // 5. Kho tri thức AI: vai Giáo viên → tự kết nối (token, mã máy, đăng ký MCP `trithuc`); tắt vai → gỡ đăng ký
+        //    MCP (giữ trithuc.json để giữ bản quyền). Người dùng không phải chạy script nào.
+        let khoTriThuc: KetQuaDongBoTriThuc | undefined;
+        if (this.khoTriThuc) {
+            try {
+                khoTriThuc = vai.giaoVien ? await this.khoTriThuc.dongBo() : await this.khoTriThuc.goDangKy();
+                daLam.push(...khoTriThuc.daLam);
+                canhBao.push(...khoTriThuc.canhBao);
+            } catch (e) {
+                canhBao.push(`Chưa kết nối được Kho tri thức AI: ${this.moTaLoi(e)} — AWord sẽ tự thử lại ở lần mở sau.`);
+            }
+        }
+
         if (daLam.length === 0 && canhBao.length === 0) {
             daLam.push('Vai đã được lưu — cấu hình trên máy vốn đã đúng, không cần đổi gì.');
         }
-        return { trangThai: await this.docTrangThai(), daLam, canhBao };
+        return { trangThai: await this.docTrangThai(), daLam, canhBao, khoTriThuc };
     }
 
     // ---- đường dẫn (tách riêng để kiểm thử có thể trỏ HOME sang thư mục tạm) ----
-    protected layThuMucHome(): string { return os.homedir(); }
+    // AWORD_HOME chỉ dùng khi kiểm thử cách ly. Thư mục cấu hình Claude theo đúng quy ước của Claude Code:
+    // CLAUDE_CONFIG_DIR nếu có (settings.json, CLAUDE.md nằm thẳng trong đó), không thì ~/.claude.
+    protected layThuMucHome(): string { return process.env.AWORD_HOME || os.homedir(); }
     protected thuMucAword(): string { return path.join(this.layThuMucHome(), '.aword'); }
-    protected thuMucClaude(): string { return path.join(this.layThuMucHome(), '.claude'); }
+    protected thuMucClaude(): string { return process.env.CLAUDE_CONFIG_DIR || path.join(this.layThuMucHome(), '.claude'); }
     protected tepVai(): string { return path.join(this.thuMucAword(), 'vai.json'); }
     protected tepKhoTriThuc(): string { return path.join(this.thuMucAword(), TEN_TEP_CAU_HINH_KHO); }
     protected tepKhoTriThucCu(): string { return path.join(this.thuMucAword(), TEN_TEP_CAU_HINH_KHO_CU); }
