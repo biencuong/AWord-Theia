@@ -1,6 +1,7 @@
 // Sinh installer.nsh từ danh sách skill thực tế trong resources/skills/.
 // Mỗi skill chỉ được copy vào %USERPROFILE%\.claude\skills\<tên> nếu CHƯA có
-// SKILL.md ở đó (không ghi đè bản người dùng đã tuỳ chỉnh).
+// SKILL.md ở đó (không ghi đè bản người dùng đã tuỳ chỉnh) VÀ người dùng không TẮT nó —
+// skill đã tắt nằm ở %USERPROFILE%\.claude\skills-tat\<tên> (nút "Bật/tắt nhóm kỹ năng").
 // Chạy tự động trong bước prepackage — installer.nsh luôn khớp nội dung đóng gói.
 const fs = require('fs');
 const path = require('path');
@@ -40,6 +41,7 @@ const lines = [
 skills.forEach((skill, i) => {
     lines.push(
         `  IfFileExists "$PROFILE\\.claude\\skills\\${skill}\\SKILL.md" skip_skill_${i}`,
+        `  IfFileExists "$PROFILE\\.claude\\skills-tat\\${skill}\\SKILL.md" skip_skill_${i}`,
         `    SetOutPath "$PROFILE\\.claude\\skills\\${skill}"`,
         `    File /r "\${PROJECT_DIR}\\resources\\skills\\${skill}\\*"`,
         `  skip_skill_${i}:`

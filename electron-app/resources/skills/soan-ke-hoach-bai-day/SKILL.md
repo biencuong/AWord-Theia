@@ -26,7 +26,7 @@ References của skill phủ CẢ 5 nhóm (mầm non → GDTX) và mọi môn �
 
 ## Quy trình soạn (bắt buộc theo thứ tự)
 
-1. **Thu thập bối cảnh**: đọc `HO SO CUA TOI/` + `BO NHO/dai-han.md` (thói quen soạn của giáo viên).
+1. **Thu thập bối cảnh**: đọc `HO SO CUA TOI/` + `.aword/bo-nho/dai-han.md` + `.aword/bo-nho/thoi-quen.md` (thói quen soạn của giáo viên — skill `bo-nho-lam-viec`).
    Xác định: môn, lớp, tên bài, số tiết, vị trí bài trong chương (tra PPCT trong `TU LIEU MON HOC/`
    nếu có). Thiếu thông tin cốt lõi → AskUserQuestion TỪNG CÂU MỘT.
 2. **Lấy chuẩn**: yêu cầu cần đạt của bài — tìm `TU LIEU MON HOC/<Môn>/yeu-cau-can-dat-lop-<X>.md`;
@@ -44,7 +44,7 @@ References của skill phủ CẢ 5 nhóm (mầm non → GDTX) và mọi môn �
    ghi mục tiêu năng lực số của học sinh theo khung TT 02/2025/TT-BGDĐT (đọc `khung-nang-luc-so.md`,
    chỉ mục cách tích hợp).
 6. **Học từ mẫu tốt gần nhất**: nếu `KE HOACH BAI DAY/<Môn>/` đã có KHBD cùng môn (ưu tiên cùng
-   khối, mới nhất, không bị ghi lỗi trong `BO NHO/kinh-nghiem.md`) — đọc lướt MỘT file đó làm
+   khối, mới nhất, không bị ghi lỗi trong `.aword/bo-nho/kinh-nghiem.md`) — đọc lướt MỘT file đó làm
    mẫu văn phong/độ chi tiết (nhờ cache nên rẻ); KHÔNG sao chép nội dung, chỉ học giọng và mức
    chi tiết mà giáo viên này đã chấp nhận.
 7. **Soạn trên BẢN SAO template**: copy đúng template theo bảng trên về

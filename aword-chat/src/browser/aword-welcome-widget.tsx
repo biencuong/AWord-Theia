@@ -4,17 +4,18 @@ import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { CommandService, MessageService, URI } from '@theia/core';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { PROMPT_THIET_LAP_WORKSPACE } from './aword-setup-prompts';
+import { PROMPT_CHON_NHOM_KY_NANG, PROMPT_THIET_LAP_GIAO_VIEN, PROMPT_THIET_LAP_HANH_CHINH } from './aword-setup-prompts';
 import { AWORD_LOGO_SVG } from './aword-logo';
 
 // Hướng dẫn sử dụng nhanh — giữ ngắn gọn, mỗi mục một hành động cụ thể.
 const HUONG_DAN: { icon: string; text: string }[] = [
-    { icon: '🤖', text: 'Khung chat Claude mở sẵn giữa màn hình mỗi lần khởi động — gõ yêu cầu bằng tiếng Việt và Enter để gửi (Ctrl+Escape để quay lại khung chat bất cứ lúc nào).' },
+    { icon: '🤖', text: 'Khung chat Claude nằm ở thanh bên phải — gõ yêu cầu bằng tiếng Việt và Enter để gửi (Ctrl+Escape để quay lại khung chat bất cứ lúc nào).' },
     { icon: '📁', text: 'AWord tự tạo thư mục làm việc Documents\\AWord ở lần đầu; muốn làm việc trên thư mục khác thì Tệp → Mở thư mục.' },
     { icon: '@', text: 'Gõ @ trong khung chat để đính kèm tệp làm ngữ cảnh; hoặc chuột phải tệp trong Explorer → "Thêm vào Claude Code (@)"; kéo-thả tệp vào khung chat cũng được.' },
     { icon: '📄', text: 'Đọc mọi loại văn bản: docx, xlsx, pdf — kể cả PDF scan và ảnh chụp; cứ đưa tệp và yêu cầu "đọc/tóm tắt", Claude tự xử lý.' },
     { icon: '✏️', text: 'Claude đọc và sửa tệp trực tiếp — mỗi thay đổi đều hiện diff để bạn duyệt trước khi chấp nhận.' },
-    { icon: '⚡', text: 'AWord có sẵn 20 kỹ năng (soạn thảo docx theo Nghị định 30, bảng tính, trình chiếu, xử lý văn bản đến...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
+    { icon: '⚡', text: 'AWord có sẵn gần 40 kỹ năng (văn bản Nghị định 30, xử lý văn bản đến, giáo án, đề kiểm tra, trình chiếu, bảng tính...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
+    { icon: '🧠', text: 'Claude tự ghi nhớ việc đang làm vào thư mục ẩn .aword/bo-nho trong thư mục làm việc — phiên sau nối tiếp liền mạch; công cụ AI khác cũng dùng chung được qua tệp AGENTS.md.' },
     { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
 ];
@@ -76,11 +77,12 @@ export class AwordWelcomeWidget extends ReactWidget {
 
                         <h3>Thiết lập ban đầu</h3>
                         <p className='aword-welcome-setup-note'>
-                            Lần đầu dùng AWord? Bấm nút dưới — Claude sẽ hỏi bạn <b>từng câu một</b> (tên, cơ quan,
-                            công việc, văn phong…) rồi tự dựng cấu trúc thư mục làm việc chuẩn
-                            (ABOUT ME / TEMPLATES / PROJECTS / CLAUDE OUTPUTS) kèm quy tắc soạn thảo Nghị định 30.
+                            Lần đầu dùng AWord? Chọn đúng vai trò — Claude sẽ hỏi bạn <b>từng câu một</b> rồi tự dựng
+                            thư mục làm việc, quy tắc và bộ nhớ làm việc phù hợp với công việc của bạn.
                         </p>
-                        <button className='theia-button main aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_THIET_LAP_WORKSPACE, 'thiết lập không gian làm việc')}>🚀 Thiết lập không gian làm việc</button>
+                        <button className='theia-button main aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_THIET_LAP_GIAO_VIEN, 'thiết lập cho giáo viên')}>🎓 Tôi là giáo viên</button>
+                        <button className='theia-button main aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_THIET_LAP_HANH_CHINH, 'thiết lập cho công tác hành chính')}>🏛️ Tôi làm công tác hành chính</button>
+                        <button className='theia-button secondary aword-welcome-btn' onClick={() => this.guiPromptChoClaude(PROMPT_CHON_NHOM_KY_NANG, 'bật/tắt nhóm kỹ năng')}>🧩 Bật/tắt nhóm kỹ năng</button>
 
                         <h3>Mở gần đây</h3>
                         {this.ganDay.length === 0
@@ -129,9 +131,10 @@ export class AwordWelcomeWidget extends ReactWidget {
     }
 
     protected moClaude(): void {
-        // Ưu tiên mở giữa màn hình (đồng bộ với hành vi khởi động chat-first); thanh bên là dự phòng.
-        this.commandService.executeCommand('claude-vscode.editor.open').catch(() =>
-            this.commandService.executeCommand('claude-vscode.sidebar.open')).catch(() => { /* plugin chưa sẵn sàng */ });
+        // Ưu tiên thanh bên (khung chat mặc định, đã có sẵn) — mở thêm khung giữa màn hình là thêm một
+        // webview + một tiến trình claude.exe (~250 MB). Giữa màn hình chỉ là dự phòng.
+        this.commandService.executeCommand('claude-vscode.sidebar.open').catch(() =>
+            this.commandService.executeCommand('claude-vscode.editor.open')).catch(() => { /* plugin chưa sẵn sàng */ });
     }
 
     // Khung chat của Claude là webview đóng — không bơm chữ trực tiếp được;

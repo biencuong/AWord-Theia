@@ -27,10 +27,9 @@
       "~/AppData/Local/Temp/aword_pdf_cache"
     ]
   },
-  "autoUpdatesChannel": "latest",
+  "autoUpdatesChannel": "stable",
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "mcpServers": {},
   "effortLevel": "medium",
   "model": "sonnet",
   "autoCompactEnabled": true

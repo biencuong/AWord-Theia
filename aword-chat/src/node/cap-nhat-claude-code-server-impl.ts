@@ -105,7 +105,8 @@ export class CapNhatClaudeCodeServerImpl implements CapNhatClaudeCodeServer {
     private taiVanBan(url: string, chuyenTiep = 0): Promise<string> {
         return new Promise((resolve, reject) => {
             if (chuyenTiep > 5) { reject(new Error('Quá nhiều lượt chuyển tiếp.')); return; }
-            https.get(url, { headers: { 'User-Agent': 'AWord-CapNhat' } }, res => {
+            const req = https.get(url, { headers: { 'User-Agent': 'AWord-CapNhat' } }, res => {
+                res.on('error', reject);
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     res.resume();
                     resolve(this.taiVanBan(res.headers.location, chuyenTiep + 1));
@@ -120,15 +121,19 @@ export class CapNhatClaudeCodeServerImpl implements CapNhatClaudeCodeServer {
                 res.setEncoding('utf8');
                 res.on('data', doan => { noiDung += doan; });
                 res.on('end', () => resolve(noiDung));
-                res.on('error', reject);
-            }).on('error', reject);
+            });
+            req.on('error', reject);
+            req.setTimeout(30000, () => req.destroy(new Error('Hết thời gian chờ máy chủ cập nhật.')));
         });
     }
 
+    // Timeout tính theo khoảng IM LẶNG của socket (không phải tổng thời gian tải), nên gói lớn
+    // qua mạng chậm vẫn tải được; chỉ cắt khi mạng đứng hẳn — tránh giao diện treo mãi.
     private taiFile(url: string, dich: string, chuyenTiep = 0): Promise<void> {
         return new Promise((resolve, reject) => {
             if (chuyenTiep > 5) { reject(new Error('Quá nhiều lượt chuyển tiếp.')); return; }
-            https.get(url, { headers: { 'User-Agent': 'AWord-CapNhat' } }, res => {
+            const req = https.get(url, { headers: { 'User-Agent': 'AWord-CapNhat' } }, res => {
+                res.on('error', reject);
                 if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
                     res.resume();
                     resolve(this.taiFile(res.headers.location, dich, chuyenTiep + 1));
@@ -143,7 +148,9 @@ export class CapNhatClaudeCodeServerImpl implements CapNhatClaudeCodeServer {
                 res.pipe(ws);
                 ws.on('finish', () => ws.close(() => resolve()));
                 ws.on('error', reject);
-            }).on('error', reject);
+            });
+            req.on('error', reject);
+            req.setTimeout(60000, () => req.destroy(new Error('Mạng không phản hồi quá 60 giây — tải gói Claude Code bị dừng.')));
         });
     }
 }

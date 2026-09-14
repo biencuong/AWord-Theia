@@ -7,6 +7,7 @@ import { FileService } from '@theia/filesystem/lib/browser/file-service';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { AwordWelcomeWidget } from './aword-welcome-widget';
 import { QUY_TAC_CLAUDE_MD } from './aword-setup-prompts';
+import { laWidgetClaude } from './aword-claude-widget';
 
 export const AwordWelcomeCommand: Command = {
     id: 'aword:welcome',
@@ -42,9 +43,6 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
 
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
-
-    @inject(CommandRegistry)
-    protected readonly commandRegistry: CommandRegistry;
 
     constructor() {
         super({
@@ -173,16 +171,13 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         }
     }
 
-    // Dọn panel Claude thừa ở vùng GIỮA: đóng nó CHỈ KHI đang còn Claude khác (thanh bên do
-    // extension mở mặc định) — không bao giờ đóng hết. Thử ngay, rồi nghe sự kiện thêm widget
-    // (tối đa 8s) để bắt cả khi Claude thanh bên/khôi phục layout xuất hiện trễ. Nhận diện Claude
-    // theo id hoặc nhãn tiêu đề (webview của plugin không có id cố định).
+    // Dọn khung chat Claude thừa ở vùng GIỮA: đóng CHỈ KHI đang còn khung chat Claude khác (thanh
+    // bên do extension mở mặc định) — không bao giờ đóng hết. Thử ngay, rồi nghe sự kiện thêm widget
+    // (tối đa 8s) để bắt cả khi Claude thanh bên/khôi phục layout xuất hiện trễ.
     protected donClaudeThua(app: FrontendApplication): void {
-        const laClaude = (w: { id: string; title?: { label?: string } }) =>
-            /claude/i.test(w.id) || /claude/i.test(w.title?.label ?? '');
         const thu = (): boolean => {
-            const giua = app.shell.getWidgets('main').filter(laClaude);
-            const conKhac = app.shell.widgets.some(w => laClaude(w) && !giua.includes(w));
+            const giua = app.shell.getWidgets('main').filter(laWidgetClaude);
+            const conKhac = app.shell.widgets.some(w => laWidgetClaude(w) && !giua.includes(w));
             if (giua.length > 0 && conKhac) {
                 for (const w of giua) { try { w.close(); } catch { /* đang tái tạo — bỏ qua */ } }
                 return true;
@@ -192,68 +187,5 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
         if (thu()) { return; }
         const sub = app.shell.onDidAddWidget(() => { if (thu()) { sub.dispose(); } });
         setTimeout(() => sub.dispose(), 8000);
-    }
-
-    // Mở khung chat Claude làm tab chính giữa màn hình. Plugin nạp bất đồng bộ nên phải
-    // CHỜ LỆNH ĐƯỢC ĐĂNG KÝ rồi mới gọi, và chỉ gọi ĐÚNG MỘT LẦN.
-    // TUYỆT ĐỐI không gọi-thử-lặp-lại: nếu lệnh đã tồn tại nhưng chạy lỗi (vd claude.exe
-    // không khởi động được trên máy đó), mỗi lần gọi lại là một lần spawn CLI —
-    // từng gây lỗi thực tế bắn ra hàng chục cửa sổ claude khi khởi động.
-    // QUAN TRỌNG không kém: Theia KHÔI PHỤC layout phiên trước (gồm cả panel Claude cũ)
-    // song song với đoạn này — mở thêm panel mới khi panel cũ đang tái tạo sẽ ra 2 cửa sổ
-    // Claude (lỗi thực tế). Vì vậy phải quét widget Claude hiện có trước: có rồi thì chỉ
-    // focus vào nó, chưa có mới mở.
-    protected async moClaudeGiuaManHinh(app: FrontendApplication): Promise<void> {
-        const lenhGiuaManHinh = 'claude-vscode.editor.open';
-        const lenhThanhBen = 'claude-vscode.sidebar.open';
-        // Chờ plugin đăng ký lệnh bằng SỰ KIỆN (onCommandsChanged) thay vì polling 500ms.
-        if (!await this.doiLenh(lenhGiuaManHinh, 30000)) {
-            return; // plugin không nạp được trong 30s — không cố thêm
-        }
-        // Theia khôi phục layout phiên trước (có thể gồm panel Claude cũ). Chờ NGẮN bằng sự kiện
-        // thêm widget: thấy widget Claude thì chỉ focus (tránh mở thành 2 cửa sổ); không thấy mới mở.
-        const claudeDangCo = await this.doiWidgetClaude(app, 2000);
-        if (claudeDangCo) {
-            try { await app.shell.activateWidget(claudeDangCo.id); } catch { /* widget đang tái tạo — bỏ qua */ }
-            return;
-        }
-        try {
-            await this.commandRegistry.executeCommand(lenhGiuaManHinh);
-        } catch {
-            // Một lần dự phòng duy nhất; vẫn lỗi thì dừng — plugin sẽ tự hiện thông báo lỗi của nó.
-            try { await this.commandRegistry.executeCommand(lenhThanhBen); } catch { /* dừng, không lặp */ }
-        }
-    }
-
-    // Chờ một lệnh được đăng ký (theo sự kiện, có timeout). Trả về true nếu lệnh sẵn sàng.
-    protected doiLenh(id: string, timeoutMs: number): Promise<boolean> {
-        if (this.commandRegistry.getCommand(id)) { return Promise.resolve(true); }
-        return new Promise<boolean>(resolve => {
-            const to = setTimeout(() => { sub.dispose(); resolve(false); }, timeoutMs);
-            const sub = this.commandRegistry.onCommandsChanged(() => {
-                if (this.commandRegistry.getCommand(id)) { clearTimeout(to); sub.dispose(); resolve(true); }
-            });
-        });
-    }
-
-    // Chờ widget Claude xuất hiện (do khôi phục layout), theo sự kiện, có timeout.
-    protected doiWidgetClaude(app: FrontendApplication, timeoutMs: number): Promise<{ id: string } | undefined> {
-        const co = this.timWidgetClaude(app);
-        if (co) { return Promise.resolve(co); }
-        return new Promise(resolve => {
-            const to = setTimeout(() => { sub.dispose(); resolve(undefined); }, timeoutMs);
-            const sub = app.shell.onDidAddWidget(() => {
-                const w = this.timWidgetClaude(app);
-                if (w) { clearTimeout(to); sub.dispose(); resolve(w); }
-            });
-        });
-    }
-
-    // Tìm widget Claude đang tồn tại — ưu tiên vùng soạn thảo chính, sau đó mọi vùng khác
-    // (sidebar...). Nhận diện theo id hoặc nhãn tiêu đề vì webview của plugin không có id cố định.
-    protected timWidgetClaude(app: FrontendApplication): { id: string } | undefined {
-        const laClaude = (w: { id: string; title?: { label?: string } }) =>
-            /claude/i.test(w.id) || /claude/i.test(w.title?.label ?? '');
-        return app.shell.getWidgets('main').find(laClaude) ?? app.shell.widgets.find(laClaude);
     }
 }

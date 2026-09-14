@@ -4,6 +4,10 @@ import {
     MenuContribution, MenuModelRegistry, MessageService
 } from '@theia/core';
 import { ApplicationShell, CommonMenus } from '@theia/core/lib/browser';
+import { laWidgetClaude } from './aword-claude-widget';
+
+const LENH_CLAUDE_THANH_BEN = 'claude-vscode.sidebar.open';
+const LENH_CLAUDE_GIUA = 'claude-vscode.editor.open';
 
 // Menu "Bố cục" trên thanh menu — các công tắc sắp xếp giao diện cho công việc văn phòng.
 export const LayoutExplorer: Command = { id: 'aword.layout.toggle-explorer', label: 'Hiện/ẩn thanh Khám phá' };
@@ -37,8 +41,8 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
     registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(LayoutExplorer, { execute: () => this.toggleExplorer() });
         commands.registerCommand(LayoutClaude, { execute: () => this.toggleClaude() });
-        commands.registerCommand(LayoutClaudeCenter, { execute: () => this.moClaude('claude-vscode.editor.open') });
-        commands.registerCommand(LayoutClaudeSide, { execute: () => this.moClaude('claude-vscode.sidebar.open') });
+        commands.registerCommand(LayoutClaudeCenter, { execute: () => this.moClaude(LENH_CLAUDE_GIUA) });
+        commands.registerCommand(LayoutClaudeSide, { execute: () => this.moClaude(LENH_CLAUDE_THANH_BEN) });
         commands.registerCommand(LayoutClaudeRestart, { execute: () => this.restartClaude() });
         commands.registerCommand(LayoutClaudeReopenSession, { execute: () => this.moPhienGanDay() });
         commands.registerCommand(LayoutFocus, { execute: () => this.toggleTapTrung() });
@@ -72,36 +76,37 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
         } catch { /* bố cục chưa sẵn sàng */ }
     }
 
+    // Mặc định mở ở THANH BÊN (đúng claudeCode.preferredLocation): mỗi khung chat là một webview
+    // + một tiến trình claude.exe (~250 MB) — không tự sinh thêm khung giữa màn hình.
     protected toggleClaude(): void {
         const w = this.timClaude();
         if (w) {
             try { w.close(); return; } catch { /* thử mở lại bên dưới */ }
         }
-        this.moClaude('claude-vscode.editor.open');
+        this.moClaude(LENH_CLAUDE_THANH_BEN);
     }
 
     protected moClaude(lenh: string): void {
+        const duPhong = lenh === LENH_CLAUDE_THANH_BEN ? LENH_CLAUDE_GIUA : LENH_CLAUDE_THANH_BEN;
         this.commandService.executeCommand(lenh).catch(() =>
-            this.commandService.executeCommand('claude-vscode.editor.open')).catch(() => { /* plugin chưa sẵn sàng */ });
+            this.commandService.executeCommand(duPhong)).catch(() => { /* plugin chưa sẵn sàng */ });
     }
 
-    // Khôi phục khi Claude "chạy mãi"/treo: đóng MỌI khung Claude (giải phóng tiến trình
+    // Khôi phục khi Claude "chạy mãi"/treo: đóng MỌI khung chat Claude (giải phóng tiến trình
     // CLI đang treo cùng webview) rồi mở lại sạch. Đây là cách gỡ kẹt tin cậy vì đóng
     // webview làm extension kết thúc tiến trình con; mở lại sinh tiến trình mới.
     protected async restartClaude(): Promise<void> {
-        const laClaude = (w: { id: string; title?: { label?: string } }) =>
-            /claude/i.test(w.id) || /claude/i.test(w.title?.label ?? '');
         let daDong = 0;
         for (const w of [...this.shell.widgets]) {
-            if (laClaude(w)) {
-                try { (w as { close(): void }).close(); daDong++; } catch { /* bỏ qua */ }
+            if (laWidgetClaude(w)) {
+                try { w.close(); daDong++; } catch { /* bỏ qua */ }
             }
         }
         this.messageService.info(daDong > 0
             ? 'Đang khởi động lại Claude…'
             : 'Đang mở lại Claude…', { timeout: 4000 });
         await new Promise(r => setTimeout(r, 700));
-        try { await this.commandService.executeCommand('claude-vscode.editor.open'); } catch { /* plugin chưa sẵn sàng */ }
+        this.moClaude(LENH_CLAUDE_THANH_BEN);
     }
 
     // Mở lại phiên trò chuyện gần đây nhất của dự án đang mở (kể cả phiên đã bắt đầu ở VS Code/CLI
@@ -127,10 +132,7 @@ export class AwordLayoutContribution implements CommandContribution, MenuContrib
         } catch { /* bố cục chưa sẵn sàng */ }
     }
 
-    protected timClaude(): { id: string; isVisible?: boolean; close(): void } | undefined {
-        const laClaude = (w: { id: string; title?: { label?: string } }) =>
-            /claude/i.test(w.id) || /claude/i.test(w.title?.label ?? '');
-        const w = this.shell.getWidgets('main').find(laClaude) ?? this.shell.widgets.find(laClaude);
-        return w as { id: string; isVisible?: boolean; close(): void } | undefined;
+    protected timClaude(): { id: string; close(): void } | undefined {
+        return this.shell.getWidgets('main').find(laWidgetClaude) ?? this.shell.widgets.find(laWidgetClaude);
     }
 }

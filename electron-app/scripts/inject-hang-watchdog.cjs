@@ -78,19 +78,30 @@ ${marker}
     });
 
     // 4) Khong bao gio treo ngam trong quy trinh thoat: qua han la thoat cung.
-    app.on('before-quit', () => {
+    // Hen gio tinh tu 'will-quit' (MOI cua so da dong xong), KHONG tu 'before-quit': luc before-quit
+    // Theia con dang hoi "Luu thay doi?" — ep thoat luc do (vd tu cap nhat goi app.quit) mat bai chua luu.
+    app.on('will-quit', () => {
       const t = setTimeout(() => {
-        ghiLog('ep thoat: qua 7s sau before-quit process van song');
+        ghiLog('ep thoat: qua 7s sau will-quit process van song');
         try { app.exit(0); } catch (e) { process.exit(0); }
       }, 7000);
       if (t.unref) { t.unref(); }
     });
+    // Dong het cua so thuong la sap thoat — NHUNG "Khoi dong lai" cua Theia (sau cap nhat Claude Code,
+    // doi thiet lap...) cung dong cua so cu truoc roi moi mo cua so moi. Huy hen gio khi co cua so moi
+    // va kiem lai so cua so luc het han, de khong giet chinh cua so vua khoi dong lai.
+    let henGioDongHet = null;
+    const huyHenGioDongHet = () => { if (henGioDongHet) { clearTimeout(henGioDongHet); henGioDongHet = null; } };
+    app.on('browser-window-created', huyHenGioDongHet);
     app.on('window-all-closed', () => {
-      const t = setTimeout(() => {
+      huyHenGioDongHet();
+      henGioDongHet = setTimeout(() => {
+        henGioDongHet = null;
+        if (BrowserWindow.getAllWindows().length > 0) { return; }
         ghiLog('ep thoat: qua 10s sau khi dong het cua so process van song');
         try { app.exit(0); } catch (e) { process.exit(0); }
       }, 10000);
-      if (t.unref) { t.unref(); }
+      if (henGioDongHet.unref) { henGioDongHet.unref(); }
     });
   } catch (e) { console.error('[AWord] Khoi tao watchdog chong treo that bai:', e); }
 })();

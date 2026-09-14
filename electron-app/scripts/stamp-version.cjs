@@ -1,27 +1,47 @@
-// Đánh mã phiên bản theo THỜI GIAN đóng gói, tự động mỗi lần build/phát hành.
-// Ghi vào electron-app/package.json trước khi bundle+package để version bám nhất quán
-// từ giao diện (Giới thiệu/Cập nhật) tới tên file cài và tag GitHub.
+// Đánh số phiên bản THEO THÔNG LỆ CHUNG (semver MAJOR.MINOR.PATCH, vd 2.0.3) mỗi lần
+// build/phát hành — tự tăng PATCH so với số trong package.json. Thời điểm đóng gói được lưu
+// RIÊNG ở trường "buildTimestamp" (YYYYMMDD.HHmm, giờ Việt Nam) trong CÙNG package.json —
+// đi kèm vào bộ cài để luôn tra được bản nào dựng lúc nào.
 //
-// Định dạng SEMVER (bắt buộc cho electron-builder, và so sánh được để tự cập nhật):
-//   YYYYMMDD.H.M   ví dụ 20260716.18.30  (không số 0 thừa - đúng chuẩn semver)
-// Giao diện HIỂN THỊ lại thành: 2026/07/16 18:30 (hàm dinhDangPhienBan trong aword-menu).
-// So sánh phiên bản: major=YYYYMMDD > minor=giờ > patch=phút -> luôn tăng theo thời gian,
-// và luôn LỚN HƠN các bản cũ dạng 1.0.x (1 < 2026...) nên máy cũ vẫn nhận cập nhật.
+// Chuyển đổi từ số kiểu cũ theo giờ (YYYYMMDD.H.M, major >= 10000): RESET về 2.0.0 — KHÔNG
+// dùng 1.0.0 vì GitHub còn tag đời đầu v1.0.0/v1.0.3/v1.0.4. Bộ tự cập nhật so theo 3 thế hệ
+// (1.0.x đời đầu < kiểu theo giờ < semver từ 2.0.0) — xem inject-auto-update.cjs.
+// Muốn tăng MINOR/MAJOR (thay đổi lớn) thay vì PATCH: chỉ định số qua biến môi trường, vd
+//   $env:AWORD_PHIEN_BAN = "2.1.0"; .\Phat_Hanh_AWord.ps1
+// các lần sau bỏ biến đó đi là tự tăng tiếp 2.1.1, 2.1.2...
 const fs = require('fs');
 const path = require('path');
 
-const now = new Date();
+// Giờ Việt Nam cố định UTC+7 (không có giờ mùa hè) — giống set-version.cjs, chạy đâu cũng khớp.
+const vn = new Date(Date.now() + 7 * 3600 * 1000);
 const p2 = n => String(n).padStart(2, '0');
-const ngay = `${now.getFullYear()}${p2(now.getMonth() + 1)}${p2(now.getDate())}`;
-const version = `${ngay}.${now.getHours()}.${now.getMinutes()}`;
+const buildTimestamp = `${vn.getUTCFullYear()}${p2(vn.getUTCMonth() + 1)}${p2(vn.getUTCDate())}.${p2(vn.getUTCHours())}${p2(vn.getUTCMinutes())}`;
 
 const pkgPath = path.join(__dirname, '..', 'package.json');
 let raw = fs.readFileSync(pkgPath, 'utf8');
-if (!/"version":\s*"[^"]*"/.test(raw)) {
+const pkg = JSON.parse(raw);
+if (typeof pkg.version !== 'string') {
     console.error('[stamp-version] Khong tim thay truong "version" trong package.json!');
     process.exit(1);
 }
-// Chỉ thay giá trị version, KHÔNG format lại cả file (tránh diff nhiễu).
+
+const chiDinh = String(process.env.AWORD_PHIEN_BAN || '').replace(/^v/i, '').trim();
+if (chiDinh && !/^([2-9]|[1-9]\d{1,3})\.\d+\.\d+$/.test(chiDinh)) {
+    console.error('[stamp-version] AWORD_PHIEN_BAN khong hop le (can semver tu 2.0.0, vd 2.1.0): ' + chiDinh);
+    process.exit(1);
+}
+const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(pkg.version);
+const major = m ? Number(m[1]) : 0;
+const version = chiDinh || ((m && major >= 2 && major < 10000)
+    ? `${major}.${m[2]}.${Number(m[3]) + 1}`
+    : '2.0.0'); // số kiểu theo giờ / đời đầu 1.0.x / không đọc được -> mốc semver đầu tiên
+
+// Chỉ thay giá trị, KHÔNG format lại cả file (tránh diff nhiễu).
 raw = raw.replace(/("version":\s*")[^"]*(")/, `$1${version}$2`);
+if (/"buildTimestamp":\s*"[^"]*"/.test(raw)) {
+    raw = raw.replace(/("buildTimestamp":\s*")[^"]*(")/, `$1${buildTimestamp}$2`);
+} else {
+    raw = raw.replace(/("version":\s*"[^"]*",)/, `$1\n  "buildTimestamp": "${buildTimestamp}",`);
+}
 fs.writeFileSync(pkgPath, raw);
 console.log(version);

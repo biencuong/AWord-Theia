@@ -1,7 +1,8 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "20260914.20.34",
+  "version": "2.0.0",
+  "buildTimestamp": "20260914.2109",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
@@ -64,7 +65,19 @@
           "workbench.editorAssociations": {
             "*.md": "default"
           },
+          "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/.aword": true,
+            "**/.pdf_anh": true
+          },
           "files.watcherExclude": {
+            "**/.aword/**": true,
+            "**/.pdf_anh/**": true,
+            "**/~$*": true,
             "**/.git/objects/**": true,
             "**/.git/subtree-cache/**": true,
             "**/node_modules/**": true,
@@ -76,6 +89,8 @@
             "**/AppData/**": true
           },
           "search.exclude": {
+            "**/.aword": true,
+            "**/.pdf_anh": true,
             "**/node_modules": true,
             "**/.venv": true,
             "**/__pycache__": true,
