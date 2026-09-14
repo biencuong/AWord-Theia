@@ -223,6 +223,8 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         } catch { /* backend chưa sẵn sàng — vẫn hiện được thông tin bản mới */ }
 
         let release: ThongTinRelease | undefined;
+        // AWord Pro — dòng sản phẩm mới cài song song (bộ cài AWordPro-*, không phải bản cập nhật của dòng 2.x).
+        let releasePro: ThongTinRelease | undefined;
         let loi: string | undefined;
         try {
             const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=30`, {
@@ -233,6 +235,10 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
             } else {
                 const ds: ThongTinRelease[] = await res.json();
                 for (const r of Array.isArray(ds) ? ds : []) {
+                    if (!r.draft && !r.prerelease && (r.assets ?? []).some(a => /^AWordPro-Setup-.*\.exe$/i.test(a.name))
+                        && (!releasePro || soSanhPhienBan(r.tag_name ?? r.name ?? '', releasePro.tag_name ?? releasePro.name ?? '') > 0)) {
+                        releasePro = r;
+                    }
                     if (r.draft || r.prerelease || !(r.assets ?? []).some(a => /^AWord-/i.test(a.name))) { continue; }
                     if (!release || soSanhPhienBan(r.tag_name ?? r.name ?? '', release.tag_name ?? release.name ?? '') > 0) {
                         release = r;
@@ -275,8 +281,17 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         ketLuan.className = 'aword-update-status';
         ketLuan.textContent = coBanMoi
             ? 'Đã có phiên bản mới! Bấm "Tải bản mới" để tải bộ cài về và chạy cập nhật.'
-            : 'Bạn đang dùng phiên bản mới nhất.';
+            : 'Bạn đang dùng bản cuối cùng của dòng AWord 2.x — dòng này không nhận cập nhật mới nữa.';
         wrap.appendChild(ketLuan);
+
+        const goiPro = releasePro?.assets?.find(a => /^AWordPro-Setup-.*\.exe$/i.test(a.name));
+        const moiNangCapPro = !coBanMoi && !!releasePro;
+        if (moiNangCapPro) {
+            const pro = document.createElement('p');
+            pro.textContent = `AWord Pro ${dinhDangPhienBan((releasePro!.tag_name ?? releasePro!.name ?? '').replace(/^v/i, ''))} — dòng sản phẩm mới chạy song song bản web — đã phát hành. `
+                + 'AWord Pro cài song song, không gỡ bản này; hai bản dùng chung thư mục làm việc Documents\\AWord, cấu hình Claude, bộ nhớ và kết nối kho. Nâng cấp khi bạn có nhu cầu.';
+            wrap.appendChild(pro);
+        }
 
         const tomTat = (release.body ?? '').trim();
         if (tomTat) {
@@ -293,13 +308,15 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         const dongY = await new ConfirmDialog({
             title: AwordUpdateCommand.label!,
             msg: wrap,
-            ok: coBanMoi ? 'Tải bản mới' : Dialog.OK,
-            cancel: coBanMoi ? 'Để sau' : ''
+            ok: coBanMoi ? 'Tải bản mới' : moiNangCapPro ? 'Tải AWord Pro' : Dialog.OK,
+            cancel: coBanMoi || moiNangCapPro ? 'Để sau' : ''
         }).open();
 
         if (coBanMoi && dongY) {
             const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
             this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
+        } else if (moiNangCapPro && dongY) {
+            this.windowService.openNewWindow(goiPro?.browser_download_url ?? releasePro!.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
         }
     }
 
