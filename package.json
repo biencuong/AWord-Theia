@@ -6,8 +6,9 @@
   },
   "scripts": {
     "sync:i18n": "node scripts/sync-i18n-vi.mjs",
-    "build:browser": "npm run sync:i18n && npm --prefix browser-app run bundle",
-    "build:electron": "npm run sync:i18n && npm --prefix electron-app run bundle",
+    "build:ext": "npm --prefix aword-chat run build",
+    "build:browser": "npm run sync:i18n && npm run build:ext && npm --prefix browser-app run bundle",
+    "build:electron": "npm run sync:i18n && npm run build:ext && npm --prefix electron-app run bundle",
     "prepare": "lerna run prepare",
     "postinstall": "theia check:theia-version",
     "start:browser": "npm --prefix browser-app start",

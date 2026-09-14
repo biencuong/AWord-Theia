@@ -66,7 +66,7 @@ if exist "%CFG%" copy /y "%CFG%" "%CFG%.kho-backup" >nul 2>&1
 "%CLAUDE_EXE%" mcp add --scope user --transport http khodulieu "%KHO_URL%" --header "Authorization: Bearer %KHO_KEY%"
 if errorlevel 1 (
   echo.
-  echo [LOI] Dang ky khong thanh cong - dang KHOI PHUC ket noi cu (neu co)...
+  echo [LOI] Dang ky khong thanh cong - dang KHOI PHUC ket noi cu ^(neu co^)...
   if exist "%CFG%.kho-backup" copy /y "%CFG%.kho-backup" "%CFG%" >nul 2>&1
   echo       Kiem tra lai dia chi/ma khoa vua nhap roi chay lai tep nay.
   echo.

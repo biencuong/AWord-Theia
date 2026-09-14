@@ -31,7 +31,7 @@
     "electron-builder": "^24.13.3"
   },
   "scripts": {
-    "bundle": "npm run rebuild && theia build --mode production",
+    "bundle": "npm --prefix .. run build:ext && npm run rebuild && theia build --mode production",
     "rebuild": "theia rebuild:electron --cacheRoot ..",
     "start": "theia start --plugins=local-dir:plugins",
     "watch": "npm run rebuild && theia build --watch --mode development",
@@ -134,7 +134,8 @@
     ],
     "extraResources": [
       { "from": "plugins", "to": "app/plugins", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] },
-      { "from": "resources/skills", "to": "app/resources/skills", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] }
+      { "from": "resources/skills", "to": "app/resources/skills", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] },
+      { "from": "resources/giao-vien", "to": "app/resources/giao-vien", "filter": ["**/*", "!**/desktop.ini", "!**/Thumbs.db"] }
     ],
     "afterPack": "scripts/afterpack-adhoc-sign.cjs",
     "win": {
