@@ -11,7 +11,9 @@ description: Thẩm định độc lập giáo án/kế hoạch bài dạy, đ�
   phẩm với con mắt tìm lỗi, KHÔNG bênh vực lựa chọn của người soạn (kể cả khi chính mình soạn
   ở phiên trước — quên các lý do cũ, chỉ đánh giá cái đang có trên giấy).
 - Giọng góp ý: chuyên gia đi trước hướng dẫn đồng nghiệp — chỉ rõ lỗi + VÌ SAO là lỗi + sửa thế
-  nào; không chê chung chung, không khen xã giao.
+  nào; không chê chung chung, không khen xã giao. ĐIỀU CHỈNH THEO VAI TRÒ người dùng (đọc hồ sơ):
+  giáo sinh/GV mới → giảng giải kỹ từng lỗi như người hướng dẫn thực tập; tổ trưởng/quản lý →
+  phiếu chuẩn, ngắn gọn, đúng ngôn ngữ hội đồng để dùng ngay khi duyệt hồ sơ của tổ.
 - KHÔNG tự sửa vào file — chỉ trả phiếu thẩm định; người dùng đồng ý mục nào mới sửa mục đó
   (trừ khi người dùng nói "thẩm định xong sửa luôn").
 
@@ -31,7 +33,10 @@ Yêu cầu cần đạt của bài lấy từ `TU LIEU MON HOC/` (thiếu thì t
 1. **PHÁP LÝ — đúng khung, đúng chuẩn:** đủ đề mục theo đúng khung của cấp học? Mục tiêu bám đúng
    yêu cầu cần đạt (đối chiếu từng ý — thừa/thiếu/bịa)? Đề: ma trận ↔ đặc tả ↔ đề ↔ đáp án khớp
    nhau từng câu, đúng tỉ lệ mức độ? Trích dẫn văn bản đúng số ký hiệu?
-2. **SƯ PHẠM — dạy được thật không:** PPDH/KTDH có khớp đặc trưng bộ môn và dạng nội dung?
+2. **SƯ PHẠM — dạy được thật không:** KHBD có BẢNG PHÂN TÍCH BÀI DẠY (đơn vị kiến thức → dạng
+   nội dung → PPDH) không, và TỪNG hoạt động có truy ngược được về bảng đó không (hoạt động không
+   gắn với đơn vị kiến thức nào = hoạt động thừa; đơn vị kiến thức không có hoạt động nào = lỗ
+   hổng)? PPDH/KTDH có khớp đặc trưng bộ môn và dạng nội dung?
    Hoạt động có khả thi trong thời lượng (ước lượng phút từng hoạt động — tổng có vỡ tiết không)?
    Nhiệm vụ học sinh có sản phẩm quan sát được? Trình tự thể hiện slide có đúng phương pháp
    (đáp án sau câu hỏi, ví dụ trước khái niệm, dự đoán trước kết quả)? Phù hợp đối tượng

@@ -26,9 +26,11 @@ skill này CHỈ bổ sung LUẬT SƯ PHẠM, nằm trong 3 file references (đ�
    ④ Luyện tập (bài tập — MỖI câu hỏi 1 slide, đáp án ở slide SAU hoặc animation click);
    ⑤ Vận dụng (nhiệm vụ thực tiễn); ⑥ Củng cố – dặn dò. Tiểu học/mầm non thêm yếu tố trò chơi,
    hình ảnh sinh động; mầm non slide gần như toàn hình.
-3. **Áp trình tự thể hiện theo loại kiến thức**: với TỪNG hoạt động, xác định dạng nội dung
-   (khái niệm quy nạp? thí nghiệm POE? công thức từng bước? đọc hiểu?...) → tra đúng mục B trong
-   `hieu-ung-trinh-tu-su-pham.md` → áp thứ tự xuất hiện + hiệu ứng tương ứng. Mặc định thực hiện
+3. **Áp trình tự thể hiện theo loại kiến thức**: ưu tiên đọc BẢNG PHÂN TÍCH BÀI DẠY ở đầu mục III
+   của KHBD (đơn vị kiến thức → dạng nội dung → PPDH đã chọn) — slide phải THỂ HIỆN ĐÚNG phương
+   pháp đã chốt trong giáo án, không tự đổi. KHBD không có bảng thì tự xác định dạng nội dung
+   từng hoạt động (khái niệm quy nạp? thí nghiệm POE? công thức từng bước? đọc hiểu?...) →
+   tra đúng mục B trong `hieu-ung-trinh-tu-su-pham.md` → áp thứ tự xuất hiện + hiệu ứng tương ứng. Mặc định thực hiện
    bằng TÁCH SLIDE (tương thích mọi máy trường); chỉ chèn XML hiệu ứng thật khi người dùng yêu cầu.
 4. **Dựng file** theo skill `pptx`; bố cục + cỡ chữ + màu theo `bo-cuc-mau-chu.md`; theme thống
    nhất toàn bài (có thể dùng skill `theme-factory`).

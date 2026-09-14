@@ -15,6 +15,10 @@ Chỉ đọc file references khớp cấp học của người dùng:
 | GDTX | `references/cv-7991-ma-tran-dac-ta.md` + `references/danh-gia-gdtx-tt43.md` | Kỹ thuật đề theo 7991, chế độ đánh giá theo TT 43/2021 |
 | Mầm non | KHÔNG ra đề | Từ chối lịch sự, chuyển hướng: đánh giá trẻ theo mục tiêu Chương trình GDMN (skill soan-ke-hoach-bai-day, khung-mam-non.md) |
 
+**Tra SỔ HIỆU LỰC trước khi viện dẫn văn bản**: nếu có `HO SO CUA TOI/QUY DINH NAM HOC/_SO-HIEU-LUC.md`,
+số hiệu định trích (CV 7991, TT 22/27/43...) mà nằm trong danh sách HẾT hiệu lực thì dùng văn bản
+thay thế ghi trong sổ (sổ ưu tiên cao hơn references đóng gói).
+
 ## Quy trình 6 bước (bắt buộc, không bỏ bước)
 
 1. **Xác định phạm vi**: môn, lớp, loại bài (giữa kỳ I/cuối kỳ I/giữa kỳ II/cuối kỳ II),
