@@ -9,3 +9,4 @@ lib
 !electron-app/resources/
 electron-app/resources/pytools/
 electron-app/resources/aword-bin/
+.claude/worktrees/
