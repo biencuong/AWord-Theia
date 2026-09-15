@@ -5,7 +5,7 @@ description: Tra cứu Kho tri thức AI giảng dạy (MCP server `trithuc`, c�
 
 # Tra cứu Kho tri thức AI giảng dạy (MCP `trithuc`)
 
-**Kho tri thức AI giảng dạy** (gọi ngắn: *Kho tri thức AI*) là dịch vụ tri thức cho AI tại `https://aword.vn/trithuc/`
+**Kho tri thức AI giảng dạy** (gọi ngắn: *Kho tri thức AI*) là dịch vụ tri thức cho AI tại `https://trithuc.aword.vn/`
 do AWord cung cấp cho vai Giáo viên: dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn
 sách giáo khoa và tài liệu chuyên môn — bài học có cấu trúc (mục, hoạt động, bài tập, ghi nhớ, công thức LaTeX, bảng),
 hình ảnh bóc tách đúng vị trí và chú thích, chỉ mục tìm kiếm, bộ công cụ tra cứu cho AI soạn giảng. Nguồn hiện có: bộ
@@ -110,7 +110,7 @@ thiết cho bài dạy.
 
 ### 5.1. Tải hình từ `url_tai` để chèn vào docx/pptx/html
 
-`url_tai` là URL ký sẵn (`https://aword.vn/trithuc/f/<het_han>/<chu_ky>/<ma_sach>/<tep>`) — **không cần header**, sống
+`url_tai` là URL ký sẵn (`https://trithuc.aword.vn/f/<het_han>/<chu_ky>/<ma_sach>/<tep>`) — **không cần header**, sống
 **30 phút** → tải NGAY khi nhận. Tải bằng PowerShell:
 
 ```powershell

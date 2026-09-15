@@ -404,9 +404,13 @@ export class KhoTriThucServerImpl implements KhoTriThucServer {
     }
 
     // Địa chỉ máy chủ: biến AWORD_TRITHUC_URL (kiểm thử/triển khai nội bộ) → trithuc.json → tệp trithuc.url
-    // cạnh AWord.exe (script ghi khi người dùng nhập địa chỉ khác) → khosgk.url cũ (đổi /khosgk/ → /trithuc/) → mặc định.
+    // cạnh AWordPro.exe (script ghi khi người dùng nhập địa chỉ khác) → khosgk.url cũ (đổi /khosgk/ → /trithuc/) → mặc định.
+    // Địa chỉ cũ của AWord Pro 3.0.0 (đường dẫn /trithuc dưới tên miền chính, đã ghi vào trithuc.json) tự chuyển sang tên miền riêng;
+    // url khác đi thì thucHienDongBo ghi lại trithuc.json và đăng ký lại MCP.
     protected chonUrl(ch: CauHinhTriThuc | undefined): string {
-        const chuan = (u: string) => u.trim().replace(/\/khosgk\//i, '/trithuc/');
+        const chuan = (u: string) => u.trim()
+            .replace(/\/khosgk\//i, '/trithuc/')
+            .replace(/\/\/aword\.vn\/trithuc\//i, '//trithuc.aword.vn/');
         if (process.env.AWORD_TRITHUC_URL) { return chuan(process.env.AWORD_TRITHUC_URL); }
         if (typeof ch?.url === 'string' && /^https?:\/\//i.test(ch.url.trim())) { return chuan(ch.url); }
         const thuMucCai = path.dirname(process.execPath);

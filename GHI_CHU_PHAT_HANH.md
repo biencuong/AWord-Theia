@@ -1,3 +1,9 @@
+AWord Pro 3.0.1 — Kho tri thức AI giảng dạy chuyển sang địa chỉ chính thức **https://trithuc.aword.vn**. Máy đã cài 3.0.0:
+cập nhật rồi mở lại AWord Pro là tự kết nối (địa chỉ cũ đã lưu tự chuyển, giữ nguyên token và bản quyền) — không phải làm gì
+thêm. Script "Kết nối Kho tri thức AI (AWord Pro)", hook thông báo đầu phiên và skill tra-cuu-tri-thuc cũng dùng địa chỉ mới.
+
+---
+
 AWord Pro 3.0.0 — dòng sản phẩm mới của AWord, chạy song song bản web (bản web đăng nhập bằng tài khoản cá nhân
 sẽ ra mắt trong các bản 3.x tiếp theo). AWord Pro **cài song song**, không gỡ AWord 2.x: hai bản dùng chung thư
 mục làm việc Documents\AWord, cấu hình Claude, bộ nhớ, vai và kết nối Kho dữ liệu/Kho tri thức — không mất dữ

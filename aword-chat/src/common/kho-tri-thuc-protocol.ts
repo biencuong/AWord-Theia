@@ -9,7 +9,8 @@
 // Script Start Menu vẫn giữ làm đường dự phòng (đổi địa chỉ máy chủ thủ công).
 export const KHO_TRI_THUC_PATH = '/services/aword-kho-tri-thuc';
 
-export const URL_TRI_THUC_MAC_DINH = 'https://aword.vn/trithuc/mcp';
+// Máy chủ thật chạy trên tên miền riêng (VPS) từ 15/9/2026 — không phải đường dẫn /trithuc dưới tên miền chính (hosting khác, không chuyển tiếp được).
+export const URL_TRI_THUC_MAC_DINH = 'https://trithuc.aword.vn/mcp';
 
 // Kết quả liên lạc máy chủ ở lần kiểm gần nhất.
 export type TinhTrangMayChu = 'ket_noi' | 'khong_phan_hoi' | 'may_khong_khop' | 'bi_tu_choi' | 'chua_kiem_tra';

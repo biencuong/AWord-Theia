@@ -16,10 +16,12 @@ REM ============================================================
 REM -- Dia chi mac dinh: uu tien file trithuc.url canh script (giu qua cac lan cap nhat AWord,
 REM    vi file .cmd nay bi installer ghi de moi ban); co file ten cu khosgk.url thi doi duong dan
 REM    /khosgk/ sang /trithuc/; khong co thi dung dia chi chinh thuc --
-set "URL_MACDINH=https://aword.vn/trithuc/mcp"
+set "URL_MACDINH=https://trithuc.aword.vn/mcp"
 if exist "%~dp0khosgk.url" set /p URL_MACDINH=<"%~dp0khosgk.url"
 if exist "%~dp0trithuc.url" set /p URL_MACDINH=<"%~dp0trithuc.url"
 set "URL_MACDINH=%URL_MACDINH:/khosgk/=/trithuc/%"
+REM -- May chu da chuyen tu aword.vn/trithuc sang ten mien rieng trithuc.aword.vn (15/09/2026)
+set "URL_MACDINH=%URL_MACDINH://aword.vn/trithuc/=//trithuc.aword.vn/%"
 
 echo.
 echo  ================================================
@@ -149,7 +151,7 @@ if not errorlevel 1 (
   echo  ------------------------------------------------
   echo  [CHUA KET NOI DUOC] Da dang ky nhung may chu khong tra loi.
   echo   1^) May co mang Internet khong? ^(Kho tri thuc AI nam tren aword.vn^)
-  echo   2^) Dung dia chi %KHO_URL% chua? ^(mac dinh: https://aword.vn/trithuc/mcp^)
+  echo   2^) Dung dia chi %KHO_URL% chua? ^(mac dinh: https://trithuc.aword.vn/mcp^)
   echo   Neu chi la mat mang tam thoi: KHONG can chay lai tep nay,
   echo   mo AWord lai khi mang on la dung duoc.
   echo  ------------------------------------------------
