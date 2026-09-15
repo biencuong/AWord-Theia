@@ -77,6 +77,7 @@ export class CapNhatClaudeCodeServerImpl implements CapNhatClaudeCodeServer {
                 await fs.remove(thuMucPlugin).catch(() => { /* bỏ qua */ });
                 throw new Error('Gói tải về không đúng định dạng VSIX của Claude Code.');
             }
+            await this.boKhungDanhSachPhien(thuMucPlugin);
         } finally {
             await fs.remove(tepTam).catch(() => { /* bỏ qua */ });
         }
@@ -92,6 +93,30 @@ export class CapNhatClaudeCodeServerImpl implements CapNhatClaudeCodeServer {
     private thuMucBundle(): string {
         const resourcesPath = (process as unknown as { resourcesPath?: string }).resourcesPath;
         return resourcesPath ? path.join(resourcesPath, 'app', 'plugins') : path.join(process.cwd(), 'plugins');
+    }
+
+    // Gỡ khung "danh sách phiên" khỏi khai báo plugin — giống scripts/localize-claude-code-vi.cjs (lý do ghi ở đó).
+    // Lỗi thì bỏ qua: khung vẫn bị AWord đóng khi hiện (aword-welcome-contribution.ts), chỉ nhật ký có thêm lỗi webview.
+    private async boKhungDanhSachPhien(thuMucPlugin: string): Promise<void> {
+        const KHUNG = 'claude-sessions-sidebar';
+        const tep = path.join(thuMucPlugin, 'extension', 'package.json');
+        try {
+            const pkg = await fs.readJSON(tep);
+            const c = pkg.contributes ?? {};
+            let doi = false;
+            for (const vung of Object.keys(c.viewsContainers ?? {})) {
+                const truoc = c.viewsContainers[vung].length;
+                c.viewsContainers[vung] = c.viewsContainers[vung].filter((v: { id?: string }) => v.id !== KHUNG);
+                doi = doi || c.viewsContainers[vung].length !== truoc;
+            }
+            if (c.views?.[KHUNG]) {
+                delete c.views[KHUNG];
+                doi = true;
+            }
+            if (doi) {
+                await fs.writeFile(tep, JSON.stringify(pkg, null, 2), 'utf8');
+            }
+        } catch { /* bỏ qua */ }
     }
 
     private async docPhienBanPlugin(thuMucGoc: string): Promise<string | undefined> {

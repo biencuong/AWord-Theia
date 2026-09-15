@@ -74,11 +74,37 @@ const DICH_MO_TA = {
         'Claude Code cho AWord: Khai thác sức mạnh của Claude Code ngay trong ứng dụng',
 };
 
+// Gỡ khung "danh sách phiên" (view container claude-sessions-sidebar trên thanh hoạt động): AWord chỉ để Claude Code ở
+// thanh bên phụ. Trước đây khung bị đóng ngay khi Theia dựng nó, nhưng extension đã kịp resolve webview → nhật ký đầy lỗi
+// "No webview view registered for handle" / "Unknown Webview" ($show, $setBadge, $setOptions, $setHtml). Gỡ khỏi khai
+// báo thì khung không bao giờ được tạo; extension vẫn đăng ký provider nhưng không có view nào để resolve (vô hại).
+// Bản tải qua "Cập nhật Claude Code" được gỡ tương tự trong cap-nhat-claude-code-server-impl.ts.
+const KHUNG_DANH_SACH_PHIEN = 'claude-sessions-sidebar';
+function boKhungDanhSachPhien(pkg) {
+    const c = pkg.contributes ?? {};
+    let doi = false;
+    for (const vung of Object.keys(c.viewsContainers ?? {})) {
+        const truoc = c.viewsContainers[vung].length;
+        c.viewsContainers[vung] = c.viewsContainers[vung].filter(v => v.id !== KHUNG_DANH_SACH_PHIEN);
+        doi = doi || c.viewsContainers[vung].length !== truoc;
+    }
+    if (c.views && c.views[KHUNG_DANH_SACH_PHIEN]) {
+        delete c.views[KHUNG_DANH_SACH_PHIEN];
+        doi = true;
+    }
+    return doi;
+}
+
 function patchPluginDir(pluginRoot) {
     const pkgPath = path.join(pluginRoot, 'extension', 'package.json');
     if (!fs.existsSync(pkgPath)) return false;
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const daBoKhung = boKhungDanhSachPhien(pkg);
     if (pkg._aword_vi) {
+        if (daBoKhung) {
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+            console.log(`[localize-claude-code-vi] Đã gỡ khung danh sách phiên: ${pkgPath}`);
+        }
         console.log(`[localize-claude-code-vi] Đã vá từ trước: ${pkgPath}`);
         return true;
     }

@@ -1,3 +1,10 @@
+AWord Pro 3.0.3 — sửa lỗi bộ cài **"AWord Pro cannot be closed"**: bộ cài đóng AWord Pro kèm các tiến trình con (Terminal, tác vụ
+Claude…) trước khi cài; nếu một tiến trình cũ bị Windows giữ lại không đóng được thì báo rõ bằng tiếng Việt — khởi động lại máy
+tính rồi chạy lại bộ cài. Nhật ký gọn hơn: gỡ khung "danh sách phiên" ẩn của Claude Code (trước đây sinh lỗi webview mỗi lần mở).
+Hộp Giới thiệu hiện số phiên bản. Bản trên trình duyệt: menu Cập nhật phiên bản mới báo đúng (bản web cập nhật trên máy chủ).
+
+---
+
 AWord Pro 3.0.2 — Kho tri thức AI giảng dạy: **giới thiệu trước khi mua, bán theo gói**. Chưa kích hoạt vẫn hỏi Claude "Kho tri
 thức AI có những gì?" để xem giới thiệu ngắn gọn các nguồn và gói (công cụ `tt_gioi_thieu`, được phép sẵn không hỏi lại); skill
 tra-cuu-tri-thuc cập nhật theo máy chủ mới (giới thiệu bài khi chưa mở gói, mã lỗi `khoa_moi_can_duyet`). Kết nối kiên nhẫn hơn với

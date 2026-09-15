@@ -2,12 +2,14 @@
 //   1. Bản web đang chạy sẵn → chỉ mở trình duyệt.
 //   2. Tự làm mới những gì đã cũ: biên dịch aword-chat, plugin Claude Code (lấy bản của electron-app), native module cho
 //      Node (theia rebuild:browser — dùng bộ đệm, thường vài giây), build browser-app.
-//   3. Chạy máy chủ CHỈ trong máy (127.0.0.1) rồi mở http://localhost:<cổng>. Webview của Claude Code cần tên miền con
+//   3. Chạy máy chủ CHỈ trong máy (127.0.0.1) ở NỀN, KHÔNG cửa sổ (nhật ký: ~/.aword-web/nhat-ky.log), chờ sẵn sàng rồi mở
+//      http://localhost:<cổng> và thoát — cửa sổ dòng lệnh tự đóng. Webview của Claude Code cần tên miền con
 //      (*.webview.localhost) — mở bằng địa chỉ IP thì khung chat trắng.
 //   4. Cài đặt giao diện Theia tách riêng ở ~/.aword-web/theia (không lẫn tùy chọn DeepSeek... với AWord bản cài);
 //      dùng chung dữ liệu làm việc: Documents\AWord, ~/.claude, ~/.aword.
-// Đóng cửa sổ dòng lệnh (hoặc Ctrl+C) là tắt bản web.
-// Lưu ý: rebuild:browser đổi native module dùng chung sang bản cho Node; đóng gói bản cài (Phat_Hanh_AWord.ps1) tự rebuild lại cho Electron.
+// Tắt bản web: Tat_AWord_Web.cmd (= node chay-aword-web.cjs --tat) — dừng máy chủ kèm mọi tiến trình con.
+// Lưu ý: rebuild:browser đổi native module dùng chung sang bản cho Node; đóng gói bản cài (Phat_Hanh_AWord.ps1) tự rebuild lại
+// cho Electron — hãy tắt bản web trước khi đóng gói (tệp native đang bị máy chủ web giữ).
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -67,11 +69,41 @@ function moTrinhDuyet(url) {
     else { spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [url], { detached: true, stdio: 'ignore' }).unref(); }
 }
 
+const THU_MUC_WEB = path.join(os.homedir(), '.aword-web');
+const TEP_CONG = path.join(THU_MUC_WEB, 'cong.txt');
+const TEP_MAY_CHU = path.join(THU_MUC_WEB, 'may-chu.json'); // { pid, cong, luc } của máy chủ đang chạy nền
+const TEP_NHAT_KY = path.join(THU_MUC_WEB, 'nhat-ky.log');
+
+// Tắt máy chủ web: dừng cả cây tiến trình (plugin host, claude.exe, terminal...) — không để tiến trình mồ côi.
+function tatMayChu() {
+    const mc = docJson(TEP_MAY_CHU);
+    if (!mc?.pid) { bao('Bản web không chạy.'); return; }
+    // PID trong tệp có thể đã bị Windows cấp lại cho tiến trình khác (máy chủ dừng bất thường, khởi động lại máy):
+    // chỉ dừng khi đúng là máy chủ AWord Web.
+    const lenh = process.platform === 'win32'
+        ? spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+            `(Get-CimInstance Win32_Process -Filter "ProcessId=${Number(mc.pid)}").CommandLine`], { encoding: 'utf8', windowsHide: true }).stdout ?? ''
+        : '';
+    if (process.platform === 'win32' && !(lenh.includes('lib/backend/main.js') && lenh.includes(`--port=${mc.cong}`))) {
+        for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
+        bao('Bản web không chạy.');
+        return;
+    }
+    if (process.platform === 'win32') {
+        spawnSync('taskkill', ['/PID', String(mc.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true });
+    } else {
+        try { process.kill(-mc.pid, 'SIGTERM'); } catch { try { process.kill(mc.pid, 'SIGTERM'); } catch { /* đã dừng */ } }
+    }
+    for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
+    bao(`Đã tắt AWord Web (cổng ${mc.cong}).`);
+}
+
 (async () => {
+    if (process.argv.includes('--tat')) { tatMayChu(); return; }
     if (!fs.existsSync(THEIA)) { dung(`Chưa cài thư viện (không thấy ${THEIA}). Chạy "npm ci" ở ${REPO} trước.`); }
 
     // 1. Đang chạy sẵn → mở trình duyệt.
-    const tepCong = path.join(os.homedir(), '.aword-web', 'cong.txt');
+    const tepCong = TEP_CONG;
     const congCu = +(fs.existsSync(tepCong) ? fs.readFileSync(tepCong, 'utf8').trim() : 0);
     if (congCu && (await hoi(`http://127.0.0.1:${congCu}/`)) === 200) {
         bao(`Bản web đang chạy — mở http://localhost:${congCu}`);
@@ -110,27 +142,34 @@ function moTrinhDuyet(url) {
         }
     }
 
-    // 4. Chọn cổng, chạy máy chủ chỉ trong máy, mở trình duyệt khi sẵn sàng.
+    // 4. Chọn cổng, chạy máy chủ NỀN chỉ trong máy (không cửa sổ, nhật ký ra tệp), mở trình duyệt khi sẵn sàng.
     let cong = CONG_MAC_DINH;
     while (!(await congTrong(cong))) { cong++; }
-    fs.mkdirSync(path.dirname(tepCong), { recursive: true });
-    fs.writeFileSync(tepCong, String(cong));
+    fs.mkdirSync(THU_MUC_WEB, { recursive: true });
     const env = { ...process.env, THEIA_CONFIG_DIR: CAU_HINH };
     delete env.ELECTRON_RUN_AS_NODE;
     bao(`Khởi động máy chủ tại http://localhost:${cong} (chỉ máy này truy cập được)…`);
+    const nhatKy = fs.openSync(TEP_NHAT_KY, 'w');
     const mayChu = spawn(process.execPath, ['lib/backend/main.js', '--hostname=127.0.0.1', `--port=${cong}`, '--plugins=local-dir:plugins'],
-        { cwd: APP, env, stdio: 'inherit' });
-    mayChu.on('exit', ma => { try { fs.rmSync(tepCong, { force: true }); } catch { /* bỏ qua */ } bao(`Máy chủ đã dừng (mã ${ma}).`); process.exit(ma ?? 0); });
-    const tat = () => { try { mayChu.kill(); } catch { /* đã dừng */ } };
-    process.on('SIGINT', tat); process.on('SIGTERM', tat); process.on('SIGHUP', tat);
+        { cwd: APP, env, detached: true, windowsHide: true, stdio: ['ignore', nhatKy, nhatKy] });
+    fs.closeSync(nhatKy);
+    let daDung = false;
+    mayChu.on('exit', () => { daDung = true; });
+    fs.writeFileSync(tepCong, String(cong));
+    fs.writeFileSync(TEP_MAY_CHU, JSON.stringify({ pid: mayChu.pid, cong, luc: new Date().toISOString() }, null, 2));
 
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 120 && !daDung; i++) {
         if ((await hoi(`http://127.0.0.1:${cong}/`)) === 200) {
-            bao(`SẴN SÀNG — mở http://localhost:${cong}. Đóng cửa sổ này để tắt AWord Web.`);
+            mayChu.unref();
+            bao(`SẴN SÀNG — mở http://localhost:${cong}. Máy chủ chạy nền; tắt bằng "Tắt AWord Web" (Tat_AWord_Web.cmd).`);
             moTrinhDuyet(`http://localhost:${cong}`);
-            return;
+            process.exit(0);
         }
         await new Promise(r => setTimeout(r, 1000));
     }
-    bao('Máy chủ khởi động lâu hơn 2 phút — xem thông báo phía trên.');
+    for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
+    if (!daDung) { try { spawnSync('taskkill', ['/PID', String(mayChu.pid), '/T', '/F'], { stdio: 'ignore' }); } catch { /* bỏ qua */ } }
+    let duoi = '';
+    try { duoi = fs.readFileSync(TEP_NHAT_KY, 'utf8').split(/\r?\n/).slice(-25).join('\n'); } catch { /* bỏ qua */ }
+    dung(`Máy chủ ${daDung ? 'đã dừng ngay khi khởi động' : 'không sẵn sàng sau 2 phút'}. Nhật ký (${TEP_NHAT_KY}):\n${duoi}`);
 })();

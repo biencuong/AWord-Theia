@@ -3,7 +3,7 @@ import debounce = require('@theia/core/shared/lodash.debounce');
 import {
     Command, CommandContribution, CommandRegistry, CommandService,
     CompoundMenuNode, MenuContribution, MenuModelRegistry, MenuNode, MAIN_MENU_BAR, MutableCompoundMenuNode,
-    MessageService, SelectionService, URI
+    MessageService, SelectionService, URI, environment
 } from '@theia/core';
 import { CommonMenus, ConfirmDialog, Dialog } from '@theia/core/lib/browser';
 import { WindowService } from '@theia/core/lib/browser/window/window-service';
@@ -45,7 +45,7 @@ const MENU_BAR_AN = ['3_selection', '5_go', '7_terminal'];
 const GITHUB_REPO = 'biencuong/AWord-Theia';
 const TRANG_CHU = 'https://aword.vn';
 
-function buildAboutMessageNode(): HTMLElement {
+function buildAboutMessageNode(phienBan: string): HTMLElement {
     const wrap = document.createElement('div');
     wrap.className = 'aword-about-content';
 
@@ -62,8 +62,13 @@ function buildAboutMessageNode(): HTMLElement {
     const subtitle = document.createElement('div');
     subtitle.className = 'aword-about-subtitle';
     subtitle.textContent = 'Giải pháp AI & Chuyển đổi số';
+    const version = document.createElement('div');
+    version.className = 'aword-about-subtitle';
+    version.textContent = `Phiên bản ${phienBan ? dinhDangPhienBan(phienBan) + ' — ' : ''}`
+        + (environment.electron.is() ? 'bản cài đặt' : 'bản trên trình duyệt');
     titleBox.appendChild(title);
     titleBox.appendChild(subtitle);
+    titleBox.appendChild(version);
     header.appendChild(logo);
     header.appendChild(titleBox);
     wrap.appendChild(header);
@@ -153,12 +158,18 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         commands.registerCommand(AwordAboutCommand, {
             // Dựng ConfirmDialog trực tiếp (không qua DI) để tránh lỗi Inversify "asynchronous dependencies"
             // từng gặp khi bind một ReactDialog tuỳ biến làm service — xem ghi chú trong kế hoạch.
-            execute: () => new ConfirmDialog({
-                title: AwordAboutCommand.label!,
-                msg: buildAboutMessageNode(),
-                ok: Dialog.OK,
-                cancel: ''
-            }).open()
+            execute: async () => {
+                let phienBan = '';
+                try {
+                    phienBan = (await this.applicationServer.getApplicationInfo())?.version ?? '';
+                } catch { /* backend chưa sẵn sàng — hộp thoại vẫn hiện, chỉ thiếu số phiên bản */ }
+                return new ConfirmDialog({
+                    title: AwordAboutCommand.label!,
+                    msg: buildAboutMessageNode(phienBan),
+                    ok: Dialog.OK,
+                    cancel: ''
+                }).open();
+            }
         });
         commands.registerCommand(AwordUpdateCommand, {
             execute: () => this.kiemTraCapNhat()
@@ -221,6 +232,21 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         try {
             banHienTai = (await this.applicationServer.getApplicationInfo())?.version ?? '';
         } catch { /* backend chưa sẵn sàng — vẫn hiện được thông tin bản mới */ }
+
+        // Bản web: không có bộ cài để tải — mã nguồn được cập nhật trên máy chủ, người dùng chỉ cần tải lại trang.
+        if (!environment.electron.is()) {
+            const web = document.createElement('div');
+            web.className = 'aword-about-content aword-update-content';
+            const p = document.createElement('p');
+            p.textContent = `Bạn đang dùng AWord Pro${banHienTai ? ' ' + dinhDangPhienBan(banHienTai) : ''} bản trên trình duyệt.`;
+            const p2 = document.createElement('p');
+            p2.className = 'aword-about-subtitle';
+            p2.textContent = 'Bản web không cần cài đặt hay cập nhật trên máy bạn: khi máy chủ lên phiên bản mới, chỉ cần tải lại trang (F5).';
+            web.appendChild(p);
+            web.appendChild(p2);
+            await new ConfirmDialog({ title: AwordUpdateCommand.label!, msg: web, ok: Dialog.OK, cancel: '' }).open();
+            return;
+        }
 
         let release: ThongTinRelease | undefined;
         let loi: string | undefined;

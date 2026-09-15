@@ -44,4 +44,11 @@ if (/"buildTimestamp":\s*"[^"]*"/.test(raw)) {
     raw = raw.replace(/("version":\s*"[^"]*",)/, `$1\n  "buildTimestamp": "${buildTimestamp}",`);
 }
 fs.writeFileSync(pkgPath, raw);
+
+// Bản web (browser-app) mang CÙNG số phiên bản — Theia báo số này qua ApplicationServer (menu Cập nhật phiên bản mới).
+const pkgWeb = path.join(__dirname, '..', '..', 'browser-app', 'package.json');
+if (fs.existsSync(pkgWeb)) {
+    const rawWeb = fs.readFileSync(pkgWeb, 'utf8');
+    fs.writeFileSync(pkgWeb, rawWeb.replace(/("version":\s*")[^"]*(")/, `$1${version}$2`));
+}
 console.log(version);
