@@ -5,14 +5,16 @@
 //     host của Origin TRÙNG header Host → đổi Host thành IP container là khung làm việc mất kết nối.
 //   - PluginApiContribution (@theia/plugin-ext): webview phục vụ theo vhost khớp THEIA_WEBVIEW_EXTERNAL_ENDPOINT
 //     (mặc định {{uuid}}.webview.{{hostname}}) — so với header Host của yêu cầu.
-// Không chuyển vào phiên: cookie `aword_phien`, header Authorization, mọi header `x-aword-*` (xác thực của cổng).
-// Phản hồi của phiên không được đặt cookie `aword_phien` (phiên do người dùng/AI điều khiển, không tin cậy).
+// Không chuyển vào phiên: mọi cookie của cổng (tiền tố `aword_`: phiên đăng nhập, CSRF trước đăng nhập…), header
+// Authorization, mọi header `x-aword-*`. Phản hồi của phiên không được đặt cookie `aword_*` (phiên do người dùng/AI
+// điều khiển, không tin cậy).
 import * as http from 'node:http';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { guiTrangCho } from './trang.ts';
 
 export const COOKIE_CONG = 'aword_phien';
+const laCookieCong = (ten: string): boolean => ten.trim().toLowerCase().startsWith('aword_');
 
 const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'proxy-connection',
     'te', 'trailer', 'transfer-encoding', 'upgrade']);
@@ -40,7 +42,7 @@ export function tachDiaChi(diaChi: string): { host: string; port: number } {
 /** Bỏ cookie của cổng khỏi chuỗi Cookie, giữ nguyên các cookie khác (vd theia-connection-token). */
 export function locCookie(chuoi: string): string {
     return chuoi.split(';').map(s => s.trim())
-        .filter(s => s.length > 0 && s.split('=')[0].trim() !== COOKIE_CONG)
+        .filter(s => s.length > 0 && !laCookieCong(s.split('=')[0]))
         .join('; ');
 }
 
@@ -91,7 +93,7 @@ export function locHeaderPhanHoi(raw: string[], giuNangCap = false): string[] {
         const t = raw[i].toLowerCase();
         const v = raw[i + 1];
         if (!giuNangCap && (HOP_BY_HOP.has(t) || trongConnection.has(t))) { continue; }
-        if (t === 'set-cookie' && v.split(';')[0].split('=')[0].trim() === COOKIE_CONG) { continue; }
+        if (t === 'set-cookie' && laCookieCong(v.split(';')[0].split('=')[0])) { continue; }
         ra.push(raw[i], v);
     }
     return ra;

@@ -67,7 +67,7 @@ export async function dungMoiTruong(tuy: Partial<Omit<TuyChonCongAi, 'db' | 'cau
     const db = moCsdl(':memory:');
     const gio = { hienTai: GIO_MAC_DINH };
     const cauHinh: CauHinh = {
-        cong: 0, diaChiNghe: '127.0.0.1', tenMien: 'aword.localhost', https: false, thuMucDuLieu: '', thuMucHeThong: '',
+        cong: 0, diaChiNghe: '127.0.0.1', tenMien: 'aword.localhost', tenMienUngDung: 'app.aword.localhost', https: false, thuMucDuLieu: '', thuMucHeThong: '',
         trinhDieuPhoi: 'tien-trinh', anhDocker: '', phutNguKhiRanh: 30, diaChiCongAiChoPhien: '',
         khoaAi: tuy.khoaAi ?? { ...KHOA },
         diaChiAi: { anthropic: diaChiNhaCungCap, deepseek: `${diaChiNhaCungCap}/anthropic`, openai: `${diaChiNhaCungCap}/` },

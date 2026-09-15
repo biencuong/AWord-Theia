@@ -107,6 +107,22 @@ test('khởi động phiên: thư mục riêng, token mới (thu hồi token cũ
     await assert.rejects(dp.damBaoPhien(99), (e: unknown) => e instanceof LoiPhien && /không tồn tại/.test(e.message));
 });
 
+test('thiết lập Theia của phiên web: không hỏi tin tưởng thư mục, không màn hình đăng nhập Claude; giữ thiết lập người dùng', async t => {
+    const du = thuMucTam('dp');
+    const tep = path.join(du, 'tai-khoan', '1', '.theia', 'settings.json');
+    fs.mkdirSync(path.dirname(tep), { recursive: true });
+    fs.writeFileSync(tep, JSON.stringify({ 'editor.fontSize': 16, 'security.workspace.trust.enabled': true }));
+    const trinh = taoTrinhGia();
+    const dp = taoDieuPhoi({ db: taoCsdl(), cauHinh: taoCauHinh(du), congAi: taoCongAiGia(), trinh, nhipKiemMs: 20 });
+    t.after(() => trinh.donDep());
+    await dp.damBaoPhien(1);
+    await dp.damBaoPhien(2);
+    assert.deepEqual(JSON.parse(fs.readFileSync(tep, 'utf8')),
+        { 'editor.fontSize': 16, 'security.workspace.trust.enabled': false, 'claudeCode.disableLoginPrompt': true });
+    const tep2 = path.join(du, 'tai-khoan', '2', '.theia', 'settings.json');
+    assert.deepEqual(JSON.parse(fs.readFileSync(tep2, 'utf8')), { 'security.workspace.trust.enabled': false, 'claudeCode.disableLoginPrompt': true });
+});
+
 test('trình có home riêng trong phiên (docker): env dùng đường dẫn trong container', async t => {
     const db = taoCsdl();
     const trinh = taoTrinhGia({ home: '/home/aword' });

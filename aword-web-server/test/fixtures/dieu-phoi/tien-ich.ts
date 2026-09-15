@@ -44,7 +44,7 @@ export function taoCsdl(soTaiKhoan = 3): DatabaseSync {
 
 export function taoCauHinh(thuMucDuLieu: string, ghiDe: Partial<CauHinh> = {}): CauHinh {
     return {
-        cong: 8080, diaChiNghe: '127.0.0.1', tenMien: 'aword.localhost', https: false,
+        cong: 8080, diaChiNghe: '127.0.0.1', tenMien: 'aword.localhost', tenMienUngDung: 'app.aword.localhost', https: false,
         thuMucDuLieu, thuMucHeThong: path.join(thuMucDuLieu, 'he-thong'),
         trinhDieuPhoi: 'tien-trinh', anhDocker: 'aword-web:latest', phutNguKhiRanh: 30,
         diaChiCongAiChoPhien: 'http://host.docker.internal:8080/ai',

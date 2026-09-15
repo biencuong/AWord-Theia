@@ -269,7 +269,7 @@ test('OpenAI streaming qua Cổng AI: text + tool call → đúng chuỗi sự k
     assert.equal(dong.chi_phi_dong, 50);
 });
 
-test('OpenAI không stream và lỗi HTTP qua Cổng AI: JSON Anthropic; lỗi giữ mã HTTP, che khóa API trong thông báo', async t => {
+test('OpenAI không stream và lỗi HTTP qua Cổng AI: JSON Anthropic; lỗi thường giữ mã HTTP, che khóa API; khóa tổ chức hỏng → 503', async t => {
     const mt = await dungMoiTruong();
     t.after(() => mt.dong());
     mt.themMoHinh('gpt-5-codex', 'openai', { gia_vao: 1_000_000 }, 'gpt-5-codex');
@@ -286,17 +286,32 @@ test('OpenAI không stream và lỗi HTTP qua Cổng AI: JSON Anthropic; lỗi g
     const dong = await choDen(() => cacDongSuDung(mt.db)[0], 'ghi sử dụng');
     assert.deepEqual([dong.token_vao, dong.token_ra, dong.chi_phi_dong, dong.trang_thai], [12, 3, 12, 'xong']);
 
+    // Lỗi thường (400): giữ mã HTTP, che khóa nếu thông báo có nhắc tới
+    mt.datXuLy((_yc, res) => {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { message: 'Invalid parameter (key sk-to-chu*********************-MAT).', type: 'invalid_request_error', code: 'invalid_value' } }));
+    });
+    r = await mt.goi('/ai/v1/messages', { model: 'gpt-5-codex', max_tokens: 50, stream: true, messages: [{ role: 'user', content: 'x' }] });
+    assert.equal(r.status, 400);
+    const e = await r.json() as { type: string; error: { type: string; message: string } };
+    assert.equal(e.type, 'error');
+    assert.match(e.error.message, /OpenAI trả lỗi HTTP 400: .*sk-\*\*\*/);
+    assert.ok(!e.error.message.includes('MAT'), 'không được lộ phần nào của khóa');
+    const dongLoi = await choDen(() => cacDongSuDung(mt.db)[1], 'ghi lỗi');
+    assert.deepEqual([dongLoi.trang_thai, dongLoi.ma_loi], ['loi', 'http_400:invalid_value']);
+
+    // Khóa tổ chức sai (401): 503 tiếng Việt cho quản trị — không để Claude Code hiểu nhầm là token phiên hỏng
     mt.datXuLy((_yc, res) => {
         res.writeHead(401, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { message: 'Incorrect API key provided: sk-to-chu*********************-MAT.', type: 'invalid_request_error', code: 'invalid_api_key' } }));
     });
     r = await mt.goi('/ai/v1/messages', { model: 'gpt-5-codex', max_tokens: 50, stream: true, messages: [{ role: 'user', content: 'x' }] });
-    assert.equal(r.status, 401);
-    const e = await r.json() as { type: string; error: { type: string; message: string } };
-    assert.equal(e.type, 'error');
-    assert.equal(e.error.type, 'authentication_error');
-    assert.match(e.error.message, /OpenAI trả lỗi HTTP 401: Incorrect API key provided: sk-\*\*\*/);
-    assert.ok(!e.error.message.includes('MAT'), 'không được lộ phần nào của khóa');
-    const dongLoi = await choDen(() => cacDongSuDung(mt.db)[1], 'ghi lỗi');
-    assert.deepEqual([dongLoi.trang_thai, dongLoi.ma_loi], ['loi', 'http_401:invalid_api_key']);
+    assert.equal(r.status, 503);
+    assert.equal(r.headers.get('x-should-retry'), 'false');
+    const e2 = await r.json() as { type: string; error: { type: string; message: string } };
+    assert.equal(e2.error.type, 'api_error');
+    assert.match(e2.error.message, /Khóa AI của tổ chức cho OpenAI không hợp lệ/);
+    assert.ok(!e2.error.message.includes('MAT'));
+    const dongLoi2 = await choDen(() => cacDongSuDung(mt.db)[2], 'ghi lỗi khóa');
+    assert.deepEqual([dongLoi2.trang_thai, dongLoi2.ma_loi], ['loi', 'khoa_to_chuc_401:invalid_api_key']);
 });

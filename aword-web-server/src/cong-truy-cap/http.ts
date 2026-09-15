@@ -12,11 +12,16 @@ export class LoiHttp extends Error {
     }
 }
 
-/** Header bảo mật cho mọi phản hồi của cổng (trang, API, tài nguyên tĩnh). */
-export function datHeaderBaoMat(res: ServerResponse, https: boolean): void {
+/**
+ * Header bảo mật cho mọi phản hồi của cổng (trang, API, tài nguyên tĩnh).
+ * `mayPhien`: tên miền của phiên AWord — sau đăng nhập/đổi mật khẩu, biểu mẫu chuyển hướng "/" rồi sang máy của phiên;
+ * trình duyệt áp form-action cho CẢ chuỗi chuyển hướng nên phải cho phép máy đó, không thì bị chặn ở bước cuối.
+ */
+export function datHeaderBaoMat(res: ServerResponse, https: boolean, mayPhien?: string): void {
+    const dichBieuMau = mayPhien ? ` ${https ? 'https' : 'http'}://${mayPhien}:*` : '';
     res.setHeader('Content-Security-Policy',
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "
-        + "object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+        + `object-src 'none'; base-uri 'none'; form-action 'self'${dichBieuMau}; frame-ancestors 'none'`);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     // same-origin: vẫn gửi Referer trong cùng máy (dự phòng kiểm tra nguồn gốc), không lộ ra ngoài

@@ -8,8 +8,13 @@ export interface CauHinh {
     /** Cổng HTTP của cổng truy cập (sau Caddy/Nginx lo HTTPS). */
     cong: number;
     diaChiNghe: string;
-    /** Tên miền giao diện, vd web.aword.vn — webview Claude Code dùng {uuid}.webview.<tenMien>. */
+    /** Tên miền của cổng (đăng nhập, tài khoản, quản trị), vd web.aword.vn — không kèm cổng. */
     tenMien: string;
+    /**
+     * Tên miền RIÊNG của phiên AWord (mặc định app.<tenMien>); webview Claude Code dùng {uuid}.webview.<tenMienUngDung>.
+     * Tách khỏi tenMien để mã chạy trong phiên (do người dùng/AI điều khiển) không cùng nguồn gốc với trang quản trị.
+     */
+    tenMienUngDung: string;
     /** Chạy sau proxy HTTPS → cookie Secure. */
     https: boolean;
     /** CSDL + ổ dữ liệu riêng từng tài khoản (du-lieu/tai-khoan/<id>). */
@@ -48,17 +53,21 @@ export function docCauHinh(env: NodeJS.ProcessEnv = process.env): CauHinh {
     }
     const cong = so('AWORD_WEB_CONG', 8080);
     const thuMucDuLieu = path.resolve(env.AWORD_WEB_DU_LIEU ?? 'du-lieu');
+    const tenMien = (env.AWORD_WEB_TEN_MIEN ?? 'aword.localhost').trim().toLowerCase().replace(/:\d+$/, '');
     return {
         cong,
-        diaChiNghe: env.AWORD_WEB_NGHE ?? '127.0.0.1',
-        tenMien: env.AWORD_WEB_TEN_MIEN ?? 'aword.localhost',
+        // Trình docker: container phải gọi được Cổng AI trên máy chủ → nghe mọi giao diện (đặt tường lửa chặn từ ngoài).
+        diaChiNghe: env.AWORD_WEB_NGHE ?? (trinh === 'docker' ? '0.0.0.0' : '127.0.0.1'),
+        tenMien,
+        tenMienUngDung: (env.AWORD_WEB_TEN_MIEN_UNG_DUNG ?? `app.${tenMien}`).trim().toLowerCase().replace(/:\d+$/, ''),
         https: env.AWORD_WEB_HTTPS === '1',
         thuMucDuLieu,
         thuMucHeThong: path.resolve(env.AWORD_WEB_HE_THONG ?? path.join(thuMucDuLieu, 'he-thong')),
         trinhDieuPhoi: trinh,
         anhDocker: env.AWORD_WEB_ANH ?? 'aword-web:latest',
         phutNguKhiRanh: so('AWORD_WEB_PHUT_NGU', 30),
-        diaChiCongAiChoPhien: env.AWORD_WEB_CONG_AI_CHO_PHIEN ?? `http://host.docker.internal:${cong}/ai`,
+        diaChiCongAiChoPhien: env.AWORD_WEB_CONG_AI_CHO_PHIEN
+            ?? (trinh === 'docker' ? `http://host.docker.internal:${cong}/ai` : `http://127.0.0.1:${cong}/ai`),
         khoaAi: {
             anthropic: env.AWORD_KHOA_ANTHROPIC || undefined,
             deepseek: env.AWORD_KHOA_DEEPSEEK || undefined,

@@ -189,6 +189,17 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
             : `${dauCau} Hiện chưa có mô hình nào được bật — liên hệ quản trị hệ thống.`;
     }
 
+    /**
+     * Nhà cung cấp từ chối KHÓA CỦA TỔ CHỨC (401/403): lỗi phía hệ thống, không phải của người dùng. Chuyển nguyên trạng thì
+     * Claude Code hiểu nhầm là token của phiên hỏng và gợi ý /login — nên trả 503 với thông điệp tiếng Việt cho quản trị.
+     */
+    function loiKhoaToChuc(res: ServerResponse, status: number, ncc: NhaCungCap): boolean {
+        if (status !== 401 && status !== 403) { return false; }
+        guiLoi(res, 503, 'api_error', `Khóa AI của tổ chức cho ${TEN_NHA_CUNG_CAP[ncc]} không hợp lệ hoặc không đủ quyền (mã ${status}). `
+            + 'Đây là lỗi cấu hình máy chủ, không phải do tài khoản của bạn — hãy báo quản trị hệ thống kiểm tra khóa AI.');
+        return true;
+    }
+
     // ───────── Ghi sử dụng ─────────
 
     function ghiSuDung(luot: LuotGoi, trangThai: 'xong' | 'loi' | 'huy', maLoi?: string): void {
@@ -328,13 +339,17 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
             dk.daCoPhanHoi();
 
             if (!phanHoi.ok) {
-                // Lỗi của nhà cung cấp: chuyển về nguyên trạng (mã HTTP + thân).
+                // Lỗi của nhà cung cấp: chuyển về nguyên trạng (mã HTTP + thân) — trừ lỗi khóa tổ chức (xem loiKhoaToChuc).
                 const than = await docHetPhanHoi(phanHoi, GIOI_HAN_THAN_LOI);
                 let loaiLoi = '';
                 try {
                     const v: unknown = JSON.parse(than.toString('utf8'));
                     if (laDoiTuong(v) && laDoiTuong(v.error) && typeof v.error.type === 'string') { loaiLoi = `:${v.error.type}`; }
                 } catch { /* thân không phải JSON */ }
+                if (loiKhoaToChuc(res, phanHoi.status, ncc)) {
+                    ghiSuDung(luot, 'loi', `khoa_to_chuc_${phanHoi.status}${loaiLoi}`);
+                    return;
+                }
                 res.writeHead(phanHoi.status, headerTraVe(phanHoi.headers, false));
                 res.end(than);
                 ghiSuDung(luot, 'loi', `http_${phanHoi.status}${loaiLoi}`);
@@ -424,6 +439,10 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
 
             if (!phanHoi.ok) {
                 const loi = dichLoiOpenAi(phanHoi.status, (await docHetPhanHoi(phanHoi, GIOI_HAN_THAN_LOI)).toString('utf8'));
+                if (loiKhoaToChuc(res, phanHoi.status, 'openai')) {
+                    ghiSuDung(luot, 'loi', `khoa_to_chuc_${phanHoi.status}${loi.ma ? `:${loi.ma}` : ''}`);
+                    return;
+                }
                 const header: Record<string, string> = {};
                 const thuLaiSau = phanHoi.headers.get('retry-after');
                 if (thuLaiSau) { header['retry-after'] = thuLaiSau; }
@@ -548,8 +567,10 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
         if ('loi' in xacThuc) { guiLoi(res, 401, 'authentication_error', xacThuc.loi); return; }
         const tk = lenh.taiKhoan.get(xacThuc.taiKhoanId) as DongTaiKhoan | undefined;
         if (!tk) { guiLoi(res, 401, 'authentication_error', 'Tài khoản gắn với token Cổng AI không còn tồn tại. Liên hệ quản trị đơn vị.'); return; }
+        // Từ chối theo CHÍNH SÁCH (tài khoản, mô hình, hạn mức) trả 400: Claude Code coi 401/403 là lỗi đăng nhập ("Failed to
+        // authenticate" + màn hình đăng nhập tài khoản Claude — kiểm chứng 15/9/2026), còn 429/5xx thì tự thử lại vô ích.
         const loiTk = loiTaiKhoan(tk, luc);
-        if (loiTk) { guiLoi(res, 403, 'permission_error', loiTk); return; }
+        if (loiTk) { guiLoi(res, 400, 'invalid_request_error', loiTk); return; }
 
         let than: Buffer;
         try {
@@ -573,7 +594,7 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
         if (!Array.isArray(yc.messages)) { guiLoi(res, 400, 'invalid_request_error', 'Thiếu trường "messages" (mảng tin nhắn) trong yêu cầu.'); return; }
 
         const gia = timMoHinh(yc.model);
-        if (!gia || gia.bat !== 1) { guiLoi(res, 403, 'permission_error', loiMoHinh(yc.model, gia)); return; }
+        if (!gia || gia.bat !== 1) { guiLoi(res, 400, 'invalid_request_error', loiMoHinh(yc.model, gia)); return; }
 
         // Đếm token miễn phí → không chặn theo hạn mức, không ghi sử dụng.
         if (tuyen === 'count_tokens') { await demToken(req, res, timKiem, yc, gia); return; }
@@ -582,8 +603,8 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
             const thang = thangViet(luc);
             const daDung = daDungThang(tk.id, thang);
             if (daDung >= tk.han_muc_thang_dong) {
-                // 403 chứ không 429: Claude Code tự thử lại 429 nhiều lần, trong khi hết hạn mức thì thử lại vô ích.
-                guiLoi(res, 403, 'permission_error', `Đã dùng hết hạn mức AI tháng ${thangHienThi(thang)} (${dinhDangTien(daDung)} đồng / `
+                // Không dùng 429: Claude Code tự thử lại 429 nhiều lần, trong khi hết hạn mức thì thử lại vô ích.
+                guiLoi(res, 400, 'invalid_request_error', `Đã dùng hết hạn mức AI tháng ${thangHienThi(thang)} (${dinhDangTien(daDung)} đồng / `
                     + `${dinhDangTien(tk.han_muc_thang_dong)} đồng). Liên hệ quản trị đơn vị để nâng hạn mức.`);
                 return;
             }

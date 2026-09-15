@@ -409,7 +409,7 @@ export function taoCongTruyCap(tuy: { db: DatabaseSync; cauHinh: CauHinh; dieuPh
             return false;
         }
         if (!laDuongDanCong(url.pathname) || laMayCon(req, cauHinh.tenMien)) { return false; }
-        datHeaderBaoMat(res, cauHinh.https);
+        datHeaderBaoMat(res, cauHinh.https, cauHinh.tenMienUngDung);
         try {
             await dinhTuyen(req, res, url);
         } catch (e) {

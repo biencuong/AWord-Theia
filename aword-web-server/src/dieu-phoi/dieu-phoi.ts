@@ -168,7 +168,27 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
     function taoThuMucRieng(id: number): string {
         const thuMucRieng = path.join(cauHinh.thuMucDuLieu, 'tai-khoan', String(id));
         for (const con of THU_MUC_CON_HOME) { fs.mkdirSync(path.join(thuMucRieng, con), { recursive: true }); }
+        datThietLapPhien(path.join(thuMucRieng, '.theia', 'settings.json'));
         return thuMucRieng;
+    }
+
+    /**
+     * Thiết lập Theia bắt buộc cho phiên web (bổ sung vào settings.json của tài khoản, không ghi đè thiết lập khác):
+     * - thư mục làm việc là của chính người dùng → không hỏi "tin tưởng tác giả";
+     * - AI đi qua Cổng AI bằng token phiên → Claude Code không hiện màn hình đăng nhập tài khoản Claude khi gặp lỗi.
+     */
+    function datThietLapPhien(tep: string): void {
+        const batBuoc: Record<string, unknown> = { 'security.workspace.trust.enabled': false, 'claudeCode.disableLoginPrompt': true };
+        let hienCo: Record<string, unknown> = {};
+        try {
+            if (fs.existsSync(tep)) {
+                const v: unknown = JSON.parse(fs.readFileSync(tep, 'utf8'));
+                if (!v || typeof v !== 'object' || Array.isArray(v)) { return; }
+                hienCo = v as Record<string, unknown>;
+            }
+        } catch { return; } // có chú thích/lỗi cú pháp: không đụng vào tệp người dùng đã sửa
+        if (Object.entries(batBuoc).every(([k, v]) => hienCo[k] === v)) { return; }
+        fs.writeFileSync(tep, JSON.stringify({ ...hienCo, ...batBuoc }, null, 4));
     }
 
     async function choSanSang(diaChi: string, maTrinh: string): Promise<void> {

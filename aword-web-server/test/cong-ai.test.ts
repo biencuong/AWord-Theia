@@ -146,7 +146,7 @@ test('token: thiếu, sai, hết hạn, thu hồi → 401 authentication_error; 
     assert.throws(() => mt.congAi.capToken(mt.taiKhoanId, 0));
 });
 
-test('tài khoản bị khóa hoặc hết hạn dùng → 403 permission_error', async t => {
+test('tài khoản bị khóa hoặc hết hạn dùng → 400 invalid_request_error', async t => {
     const mt = await dungMoiTruong();
     t.after(() => mt.dong());
     mt.themMoHinh('claude-sonnet-5', 'anthropic');
@@ -154,16 +154,16 @@ test('tài khoản bị khóa hoặc hết hạn dùng → 403 permission_error'
 
     mt.db.prepare("UPDATE tai_khoan SET trang_thai = 'khoa' WHERE id = ?").run(mt.taiKhoanId);
     let r = await mt.goi('/ai/v1/messages', TIN);
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     let e = await docLoi(r);
-    assert.equal(e.type, 'permission_error');
+    assert.equal(e.type, 'invalid_request_error');
     assert.match(e.message, /bị khóa/);
 
     mt.db.prepare("UPDATE tai_khoan SET trang_thai = 'hoat_dong', han_dung = ? WHERE id = ?").run(GIO_MAC_DINH, mt.taiKhoanId);
     r = await mt.goi('/ai/v1/messages', TIN);
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     e = await docLoi(r);
-    assert.equal(e.type, 'permission_error');
+    assert.equal(e.type, 'invalid_request_error');
     assert.match(e.message, /hết hạn từ ngày 15\/09\/2026/);
 
     mt.db.prepare('UPDATE tai_khoan SET han_dung = ? WHERE id = ?').run(GIO_MAC_DINH + 86_400_000, mt.taiKhoanId);
@@ -173,21 +173,21 @@ test('tài khoản bị khóa hoặc hết hạn dùng → 403 permission_error'
     assert.equal(mt.yeuCauLen.length, 1);
 });
 
-test('mô hình chưa có trong bảng giá hoặc đang tắt → 403 nêu rõ tên mô hình', async t => {
+test('mô hình chưa có trong bảng giá hoặc đang tắt → 400 nêu rõ tên mô hình', async t => {
     const mt = await dungMoiTruong();
     t.after(() => mt.dong());
     mt.themMoHinh('claude-opus-5', 'anthropic', { bat: 0 });
     mt.themMoHinh('claude-sonnet-5', 'anthropic');
 
     let r = await mt.goi('/ai/v1/messages', { ...TIN, model: 'claude-opus-5' });
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     let e = await docLoi(r);
-    assert.equal(e.type, 'permission_error');
+    assert.equal(e.type, 'invalid_request_error');
     assert.match(e.message, /"claude-opus-5".*đang tắt/);
     assert.match(e.message, /được phép: claude-sonnet-5/);
 
     r = await mt.goi('/ai/v1/messages', { ...TIN, model: 'mo-hinh-la' });
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     e = await docLoi(r);
     assert.match(e.message, /"mo-hinh-la".*chưa có trong bảng giá/);
     assert.equal(mt.yeuCauLen.length, 0);
@@ -227,7 +227,7 @@ test('thân yêu cầu: JSON hỏng / thiếu model → 400; vượt giới hạ
     assert.equal(mt.yeuCauLen.length, 0);
 });
 
-test('hết hạn mức tháng → 403 với số tiền kiểu Việt Nam; tháng trước không tính; NULL = không giới hạn', async t => {
+test('hết hạn mức tháng → 400 với số tiền kiểu Việt Nam; tháng trước không tính; NULL = không giới hạn', async t => {
     const mt = await dungMoiTruong();
     t.after(() => mt.dong());
     mt.themMoHinh('claude-sonnet-5', 'anthropic');
@@ -238,10 +238,10 @@ test('hết hạn mức tháng → 403 với số tiền kiểu Việt Nam; thá
     chenSuDung(mt, '2026-08', 5_000_000);
 
     let r = await mt.goi('/ai/v1/messages', TIN);
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     assert.equal(r.headers.get('x-should-retry'), 'false');
     const e = await docLoi(r);
-    assert.equal(e.type, 'permission_error');
+    assert.equal(e.type, 'invalid_request_error');
     assert.equal(e.message, 'Đã dùng hết hạn mức AI tháng 09/2026 (1.234.567 đồng / 1.000.000 đồng). Liên hệ quản trị đơn vị để nâng hạn mức.');
     assert.equal(mt.congAi.daDungThang(mt.taiKhoanId), 1_234_567);
     assert.equal(mt.congAi.daDungThang(mt.taiKhoanId, '2026-08'), 5_000_000);
@@ -279,7 +279,7 @@ test('tháng tính hạn mức và ghi sử dụng theo giờ Việt Nam', async
 
     chenSuDung(mt, '2026-09', 70);
     r = await mt.goi('/ai/v1/messages', TIN);
-    assert.equal(r.status, 403);
+    assert.equal(r.status, 400);
     assert.match((await docLoi(r)).message, /tháng 09\/2026 \(100 đồng \/ 100 đồng\)/);
 });
 

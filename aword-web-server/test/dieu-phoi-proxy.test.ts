@@ -17,6 +17,8 @@ test('tách địa chỉ và lọc cookie của cổng', () => {
     assert.throws(() => tachDiaChi('khong-co-cong'));
     assert.equal(locCookie('aword_phien=bi-mat; theia-connection-token=abc;  khac=1'), 'theia-connection-token=abc; khac=1');
     assert.equal(locCookie('aword_phien=bi-mat'), '');
+    // Mọi cookie của cổng (tiền tố aword_, không phân biệt hoa thường) đều không vào phiên
+    assert.equal(locCookie('aword_truoc_dang_nhap=csrf; AWORD_KHAC=1; theia-connection-token=abc'), 'theia-connection-token=abc');
 });
 
 test('proxy HTTP: chuyển method/body/header, giữ Host, bỏ xác thực của cổng và hop-by-hop, thêm X-Forwarded-*', async t => {
