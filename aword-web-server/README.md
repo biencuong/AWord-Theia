@@ -8,8 +8,8 @@ của tổ chức và trừ **hạn mức tháng quy ra đồng**. Thiết kế 
 
 | Mục | Chốt |
 |---|---|
-| Tạo tài khoản | Quản trị hệ thống / quản trị đơn vị tạo (lẻ hoặc nhập Excel/CSV, kèm số điện thoại); đổi mật khẩu lần đầu |
-| Đăng nhập | Đơn giản: **mật khẩu** hoặc **Zalo qua số điện thoại** (mã 6 số gửi bằng Zalo ZNS). KHÔNG dùng xác thực hai lớp (người dùng chốt 15/9/2026: phức tạp) |
+| Tạo tài khoản | Quản trị hệ thống / quản trị đơn vị tạo (lẻ hoặc nhập Excel/CSV); mỗi tài khoản có email và/hoặc số điện thoại; đổi mật khẩu lần đầu |
+| Đăng nhập | Đơn giản: **email hoặc số điện thoại + mật khẩu**. KHÔNG xác thực hai lớp, KHÔNG đăng nhập Zalo (người dùng chốt 15/9/2026). Quên mật khẩu: quản trị đặt lại |
 | Lịch sử trò chuyện | Đồng bộ tệp + bộ nhớ làm việc (`.aword/bo-nho`), không đồng bộ nguyên văn phiên Claude Code |
 | Hạn mức | Quy ra **đồng** = số token × bảng giá từng mô hình |
 | Kho tri thức AI | Bản quyền theo tài khoản/đơn vị thay cho mã máy (Giai đoạn 2) |
@@ -70,8 +70,8 @@ Quy ước chung:
 - `taoCongTruyCap({ db, cauHinh, dieuPhoi })` → `{ xuLy(req, res), xacThucYeuCau(req): Promise<TaiKhoanDangNhap | null> }`.
 - Cookie phiên `aword_phien` HttpOnly, SameSite=Lax, `Domain=<tenMien>` (webview ở tên miền con cũng nhận), Secure khi https.
 - Sai mật khẩu 5 lần → khóa 15 phút; tài khoản mới phải đổi mật khẩu lần đầu.
-- Đăng nhập Zalo: chỉ số điện thoại quản trị đã gán; mã 6 số hết hạn 5 phút, sai 5 lần hủy mã, gửi lại sau 60 giây,
-  tối đa 5 mã/số/ngày. Cấu hình Zalo Official Account qua `AWORD_ZALO_*` (thiếu thì ẩn cách đăng nhập này).
+- Ô đăng nhập nhận email (không phân biệt hoa thường) hoặc số điện thoại Việt Nam (chuẩn hóa về 0xxxxxxxxx); email và số
+  điện thoại đều duy nhất; cột `ten_dang_nhap` tự điền theo email/số, không hiện cho người dùng.
 
 ### Điều phối phiên — `src/dieu-phoi/`
 - `taoDieuPhoi({ db, cauHinh, congAi })` → `{ damBaoPhien(taiKhoanId): Promise<{ diaChi: string }>, dungPhien(taiKhoanId), proxy(req, res, diaChi), proxyWebSocket(req, socket, head, diaChi) }`.
