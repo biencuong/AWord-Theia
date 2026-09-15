@@ -281,15 +281,15 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         ketLuan.className = 'aword-update-status';
         ketLuan.textContent = coBanMoi
             ? 'Đã có phiên bản mới! Bấm "Tải bản mới" để tải bộ cài về và chạy cập nhật.'
-            : 'Bạn đang dùng bản cuối cùng của dòng AWord 2.x — dòng này không nhận cập nhật mới nữa.';
+            : 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN — không còn nhận bản sửa lỗi, tính năng mới hay cập nhật Claude Code.';
         wrap.appendChild(ketLuan);
 
         const goiPro = releasePro?.assets?.find(a => /^AWordPro-Setup-.*\.exe$/i.test(a.name));
         const moiNangCapPro = !coBanMoi && !!releasePro;
         if (moiNangCapPro) {
             const pro = document.createElement('p');
-            pro.textContent = `AWord Pro ${dinhDangPhienBan((releasePro!.tag_name ?? releasePro!.name ?? '').replace(/^v/i, ''))} — dòng sản phẩm mới chạy song song bản web — đã phát hành. `
-                + 'AWord Pro cài song song, không gỡ bản này; hai bản dùng chung thư mục làm việc Documents\\AWord, cấu hình Claude, bộ nhớ và kết nối kho. Nâng cấp khi bạn có nhu cầu.';
+            pro.textContent = `Khuyến nghị nâng cấp lên AWord Pro ${dinhDangPhienBan((releasePro!.tag_name ?? releasePro!.name ?? '').replace(/^v/i, ''))} — dòng sản phẩm mới chạy song song bản web. `
+                + 'AWord Pro cài song song, không gỡ bản này; hai bản dùng chung thư mục làm việc Documents\\AWord, cấu hình Claude, bộ nhớ và kết nối kho — không mất dữ liệu.';
             wrap.appendChild(pro);
         }
 

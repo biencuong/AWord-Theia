@@ -119,22 +119,26 @@ ${marker}
       app.quit();
     };
 
-    // AWord 2.0.1 là bản CUỐI của dòng 2.x. Giới thiệu AWord Pro — sản phẩm mới cài SONG SONG, dùng chung dữ liệu
-    // làm việc — chỉ khi đã có bản phát hành AWord Pro và máy chưa cài nó. "Để sau" nhắc lại sau 7 ngày, "Không nhắc
-    // lại" thì thôi hẳn. Bộ cài Pro đặt tên AWordPro-* nên kiemTraCapNhat ở trên (chỉ nhận AWord-Setup-*) không coi
-    // Pro là bản cập nhật của dòng 2.x.
-    const daCaiAwordPro = () => {
+    // DÒNG AWord 2.x ĐÃ NGỪNG PHÁT TRIỂN (từ 2.0.2): MỖI LẦN MỞ app đều báo và mời nâng cấp lên AWord Pro 3.x — sản phẩm
+    // mới cài SONG SONG, dùng chung dữ liệu làm việc. Không còn "Không nhắc lại" (bỏ qua cả trạng thái đã lưu ở 2.0.1).
+    //   - Máy đã cài AWord Pro: nút "Mở AWord Pro".
+    //   - Chưa cài: nút "Cài AWord Pro ngay" → tải bộ cài (tiến độ trên thanh tác vụ) rồi tự mở; lỗi thì mở trang tải.
+    // Bộ cài Pro đặt tên AWordPro-* nên kiemTraCapNhat ở trên (chỉ nhận AWord-Setup-*) không coi Pro là bản cập nhật của 2.x.
+    const TRANG_TAI = 'https://github.com/' + REPO + '/releases';
+    let dangThoat = false;
+    app.on('before-quit', () => { dangThoat = true; });
+
+    const duongDanAwordPro = () => {
       const ungVien = process.platform === 'darwin'
         ? ['/Applications/AWord Pro.app', path.join(app.getPath('home'), 'Applications', 'AWord Pro.app')]
         : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'AWordPro', 'AWordPro.exe')]; // executableName AWordPro → thư mục cài AWordPro
-      return ungVien.some(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+      return ungVien.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
     };
-    const gioiThieuAwordPro = async () => {
-      const tepTrangThai = path.join(app.getPath('userData'), 'gioi-thieu-aword-pro.json');
-      let tt = {};
-      try { tt = JSON.parse(fs.readFileSync(tepTrangThai, 'utf8')) || {}; } catch (e) { tt = {}; }
-      if (tt.khongNhacLai || daCaiAwordPro()) { return; }
-      if (tt.nhacLuc && Date.now() - tt.nhacLuc < 7 * 24 * 3600 * 1000) { return; }
+    const moAwordPro = p => {
+      if (process.platform === 'darwin') { spawn('open', [p], { detached: true, stdio: 'ignore' }).unref(); }
+      else { spawn(p, [], { detached: true, stdio: 'ignore', cwd: path.dirname(p) }).unref(); }
+    };
+    const timBanAwordPro = async () => {
       const macOS = process.platform === 'darwin';
       const khopPro = a => macOS ? /^AWordPro-.*\\.dmg$/i.test(a.name) : /^AWordPro-Setup-.*\\.exe$/i.test(a.name);
       const ds = await layJson('https://api.github.com/repos/' + REPO + '/releases?per_page=30');
@@ -146,36 +150,79 @@ ${marker}
         if (!g) { continue; }
         if (!rel || soSanhPhienBan(r.tag_name || r.name || '', rel.tag_name || rel.name || '') > 0) { rel = r; goi = g; }
       }
-      if (!rel) { return; }
-      const ghi = moi => {
-        try { fs.writeFileSync(tepTrangThai, JSON.stringify(Object.assign(tt, moi), null, 2)); } catch (e) { /* bỏ qua */ }
-      };
+      return rel ? { phienBan: String(rel.tag_name || rel.name || '').replace(/^v/i, ''), goi, trang: rel.html_url || TRANG_TAI } : null;
+    };
+    // Tải bộ cài Pro: tiến độ hiện trên nút app ở thanh tác vụ (bộ cài vài trăm MB), xong thì tự chạy bộ cài.
+    const taiVaCaiAwordPro = async ban => {
+      const { BrowserWindow, Notification } = require('electron');
+      const cuaSo = BrowserWindow.getAllWindows()[0];
+      const dich = path.join(app.getPath('temp'), ban.goi.name);
+      const tong = ban.goi.size || 0;
+      try {
+        if (Notification.isSupported()) {
+          new Notification({ title: 'Đang tải AWord Pro ' + ban.phienBan, body: 'Bộ cài sẽ tự mở khi tải xong (xem tiến độ trên thanh tác vụ). Bạn vẫn dùng AWord bình thường.' }).show();
+        }
+      } catch (e) { /* bỏ qua */ }
+      const hen = tong && cuaSo ? setInterval(() => {
+        try { cuaSo.setProgressBar(Math.min(0.99, fs.statSync(dich).size / tong)); } catch (e) { /* chưa có tệp */ }
+      }, 1000) : null;
+      try {
+        await taiTep(ban.goi.browser_download_url, dich);
+      } finally {
+        if (hen) { clearInterval(hen); }
+        try { if (cuaSo && !cuaSo.isDestroyed()) { cuaSo.setProgressBar(-1); } } catch (e) { /* bỏ qua */ }
+      }
+      if (process.platform === 'darwin') { spawn('open', [dich], { detached: true, stdio: 'ignore' }).unref(); }
+      else { spawn(dich, [], { detached: true, stdio: 'ignore' }).unref(); }
+    };
+
+    const baoNgungPhatTrien = async () => {
+      if (dangThoat) { return; }
+      const daCai = duongDanAwordPro();
+      let ban = null;
+      if (!daCai) { try { ban = await timBanAwordPro(); } catch (e) { ban = null; /* offline: vẫn báo, nút mở trang tải */ } }
+      if (dangThoat) { return; }
+      const tenPro = 'AWord Pro' + (ban ? ' ' + ban.phienBan : ' 3.x');
       const chon = await dialog.showMessageBox({
-        type: 'info',
-        title: 'AWord Pro đã phát hành',
-        message: 'AWord Pro ' + String(rel.tag_name || rel.name || '').replace(/^v/i, '') + ' — dòng sản phẩm mới của AWord, chạy song song bản web.',
+        type: 'warning',
+        title: 'AWord 2.x đã ngừng phát triển',
+        message: daCai
+          ? 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN. Máy bạn đã có AWord Pro — hãy chuyển sang dùng AWord Pro.'
+          : 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN. Khuyến nghị nâng cấp lên ' + tenPro + '.',
         detail: [
-          'Bản AWord ' + app.getVersion() + ' bạn đang dùng vẫn chạy bình thường, nhưng dòng AWord 2.x sẽ không nhận cập nhật mới nữa.',
+          'Bản AWord ' + app.getVersion() + ' vẫn mở được nhưng KHÔNG còn nhận bản sửa lỗi, tính năng mới hay cập nhật Claude Code.',
           '',
           'AWord Pro cài SONG SONG, không gỡ bản này. Hai bản dùng chung thư mục làm việc Documents\\\\AWord, cấu hình Claude, bộ nhớ và kết nối Kho dữ liệu — không mất dữ liệu.',
           '',
-          'Có sẵn trong AWord Pro: tự kết nối Kho tri thức AI giảng dạy, mô hình AI DeepSeek, Claude Code mới nhất; sắp có bản web đăng nhập bằng tài khoản cá nhân.',
-          '',
-          'Nâng cấp khi bạn có nhu cầu.'
+          'Có trong AWord Pro: tự kết nối Kho tri thức AI giảng dạy, mô hình AI DeepSeek, Claude Code mới nhất; sắp có bản web đăng nhập bằng tài khoản cá nhân.'
         ].join('\\n'),
-        buttons: ['Tải AWord Pro', 'Để sau', 'Không nhắc lại'],
+        buttons: [daCai ? 'Mở AWord Pro' : (ban ? 'Cài AWord Pro ngay' : 'Mở trang tải AWord Pro'), 'Để sau'],
         defaultId: 0, cancelId: 1, noLink: true
       });
-      if (chon.response === 2) { ghi({ khongNhacLai: true, luc: new Date().toISOString() }); return; }
-      ghi({ nhacLuc: Date.now() });
-      if (chon.response === 0) { shell.openExternal(goi.browser_download_url || rel.html_url); }
+      if (chon.response !== 0 || dangThoat) { return; }
+      if (daCai) { moAwordPro(daCai); return; }
+      if (!ban) { shell.openExternal(TRANG_TAI); return; }
+      try {
+        await taiVaCaiAwordPro(ban);
+      } catch (e) {
+        const loi = await dialog.showMessageBox({
+          type: 'error',
+          title: 'Chưa tải được AWord Pro',
+          message: 'Tải bộ cài AWord Pro không thành công (' + (e && e.message ? e.message : e) + ').',
+          detail: 'Bạn có thể tải thủ công trên trang phát hành rồi chạy tệp ' + ban.goi.name + '.',
+          buttons: ['Mở trang tải', 'Đóng'], defaultId: 0, cancelId: 1, noLink: true
+        });
+        if (loi.response === 0) { shell.openExternal(ban.trang); }
+      }
     };
 
     app.whenReady().then(() => {
-      // Chờ 15s sau khởi động cho app ổn định rồi mới kiểm tra; lỗi mạng thì im lặng bỏ qua.
-      setTimeout(() => { kiemTraCapNhat().catch(() => { /* offline/không có release: bỏ qua */ }); }, 15000);
-      // Lệch 10s để không chồng hai hộp thoại.
-      setTimeout(() => { gioiThieuAwordPro().catch(() => { /* offline: bỏ qua */ }); }, 25000);
+      // Chờ 15s sau khởi động cho app ổn định: kiểm tra bản cập nhật 2.x trước (máy còn ở 2.0.0/bản cầu nối lên bản
+      // 2.x cuối), rồi mới báo ngừng phát triển — nối tiếp để hai hộp thoại không chồng nhau; lỗi mạng thì bỏ qua.
+      setTimeout(async () => {
+        try { await kiemTraCapNhat(); } catch (e) { /* offline/không có release: bỏ qua */ }
+        try { await baoNgungPhatTrien(); } catch (e) { /* bỏ qua */ }
+      }, 15000);
     });
   } catch (e) { console.error('[AWord] Khởi tạo kiểm tra cập nhật thất bại:', e); }
 })();

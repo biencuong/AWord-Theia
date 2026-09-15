@@ -155,8 +155,13 @@ lines.push(
     '  !define MUI_FINISHPAGE_RUN_FUNCTION "StartApp"',
     '  !insertmacro MUI_PAGE_FINISH',
     '!macroend',
-    ''
+    '',
+    ...require('./nsis-dong-app.cjs')
 );
+if (!fs.existsSync(path.join(appDir, 'build', 'aword-dong-app.ps1'))) {
+    console.error('[gen-installer-nsh] Thiếu build/aword-dong-app.ps1 (script đóng app trước khi cài)!');
+    process.exit(1);
+}
 
 fs.writeFileSync(outPath, lines.join('\n'), 'utf8');
 console.log(`[gen-installer-nsh] Đã sinh installer.nsh cho ${skills.length} skill: ${skills.join(', ')}`);
