@@ -4,7 +4,7 @@ import { ghiNhatKy, giaoDich, moCsdl, thangViet } from '../src/csdl/csdl.ts';
 
 test('tạo lược đồ, khóa ngoại và ràng buộc hoạt động', () => {
     const db = moCsdl(':memory:');
-    assert.equal((db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version, 1);
+    assert.equal((db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version, 2);
     const bang = (db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all() as Array<{ name: string }>).map(r => r.name);
     for (const t of ['bang_gia', 'don_vi', 'nhat_ky', 'phien_dang_nhap', 'phien_lam_viec', 'su_dung_ai', 'tai_khoan', 'token_ai']) {
         assert.ok(bang.includes(t), `thiếu bảng ${t}`);
