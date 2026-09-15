@@ -1,0 +1,19 @@
+{
+  "name": "aword-web-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AWord Web đa người dùng — cổng truy cập, quản trị tài khoản, Cổng AI có hạn mức, điều phối phiên cô lập",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "kiem-tra": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

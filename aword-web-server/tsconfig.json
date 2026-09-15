@@ -1,0 +1,17 @@
+{
+  // Node 24 chạy thẳng .ts (bỏ kiểu khi nạp) — tsc chỉ để KIỂM TRA kiểu, không sinh mã.
+  // erasableSyntaxOnly: cấm cú pháp Node không bỏ được (enum, namespace, tham số-thuộc-tính constructor).
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["src", "test"]
+}
