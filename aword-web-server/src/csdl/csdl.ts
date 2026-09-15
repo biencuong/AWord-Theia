@@ -129,6 +129,19 @@ const NANG_CAP: string[] = [
     );
     CREATE INDEX nhat_ky_luc ON nhat_ky(luc);
     `,
+    // 2 — đăng nhập bằng email hoặc số điện thoại (0xxxxxxxxx). ten_dang_nhap giữ làm khóa nội bộ = email (chữ thường)
+    // nếu có, không thì số điện thoại. Mỗi tài khoản cần ít nhất một trong hai (kiểm ở tầng ứng dụng).
+    `
+    ALTER TABLE tai_khoan ADD COLUMN so_dien_thoai TEXT;
+    UPDATE tai_khoan SET email = NULL WHERE email IS NOT NULL AND trim(email) = '';
+    UPDATE tai_khoan SET email = lower(ten_dang_nhap)
+        WHERE email IS NULL AND ten_dang_nhap LIKE '%_@_%'
+          AND NOT EXISTS (SELECT 1 FROM tai_khoan k WHERE k.email = lower(tai_khoan.ten_dang_nhap) COLLATE NOCASE);
+    UPDATE tai_khoan SET so_dien_thoai = ten_dang_nhap
+        WHERE ten_dang_nhap GLOB '0[35789][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
+    CREATE UNIQUE INDEX tai_khoan_email ON tai_khoan(email COLLATE NOCASE) WHERE email IS NOT NULL;
+    CREATE UNIQUE INDEX tai_khoan_so_dien_thoai ON tai_khoan(so_dien_thoai) WHERE so_dien_thoai IS NOT NULL;
+    `,
 ];
 
 export function moCsdl(tep: string): DatabaseSync {
