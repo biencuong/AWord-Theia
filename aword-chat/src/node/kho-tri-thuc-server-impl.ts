@@ -20,7 +20,8 @@ const TEN_TEP = 'trithuc.json';
 const TEN_TEP_CU = 'khosgk.json';
 const RE_TOKEN = /^[A-Za-z0-9]{32,200}$/;
 const RE_MA_MAY = /^M-[0-9A-F]{4}(-[0-9A-F]{4}){4}$/;
-const HAN_REST_MS = 8000;
+// Mạng trường học/cơ quan có thể chậm: đo thật tới trithuc.aword.vn có lượt ~6–8 giây — hạn 15 giây để không bỏ lỡ đăng ký.
+const HAN_REST_MS = 15000;
 const HAN_CLI_MS = 60000;
 
 // Mã máy — NGUYÊN VĂN thuật toán của Ket_Noi_KhoTriThuc.cmd (bước 3): "M-" + 20 hex đầu (in hoa) của
@@ -247,7 +248,7 @@ export class KhoTriThucServerImpl implements KhoTriThucServer {
                 if (!bq) { return `${dau}.`; }
                 const han = ngayVn(bq.hetHan);
                 switch (bq.trangThai) {
-                    case 'chua_kich_hoat': return `${dau} — chưa kích hoạt: gõ "Thanh toán Kho tri thức AI" trong khung chat để nhận mã QR.`;
+                    case 'chua_kich_hoat': return `${dau} — chưa kích hoạt: hỏi Claude "Kho tri thức AI có những gì?" để xem giới thiệu các gói, gõ "Thanh toán Kho tri thức AI" để mua.`;
                     case 'hoat_dong': return `${dau} — đang hoạt động${han ? ' đến ' + han : ''}${bq.soDiem ? `, ${bq.soDiem} điểm tích lũy` : ''}.`;
                     case 'sap_het_han': return `${dau} — sắp hết hạn${han ? ' (' + han + ')' : ''}: gõ "Thanh toán Kho tri thức AI" trong khung chat để gia hạn.`;
                     case 'het_han': return `${dau} — đã hết hạn${han ? ' từ ' + han : ''}: gõ "Thanh toán Kho tri thức AI" trong khung chat để gia hạn.`;

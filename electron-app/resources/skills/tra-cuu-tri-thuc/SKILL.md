@@ -32,9 +32,10 @@ dữ liệu "được huấn luyện" (dữ liệu được số hóa và cấu 
 |---|---|---|
 | Chưa kết nối | Không có công cụ nào tên `tt_*` trong phiên | AWord **tự kết nối** khi vai Giáo viên đang bật (mỗi lần mở AWord, cần Internet; mã máy và token sinh tự động, không cần mã khóa). Hướng dẫn: kiểm tra mạng → menu **Trợ giúp → "Kết nối lại Kho tri thức AI giảng dạy"** (hoặc trang Chào mừng → bấm lại vai **Giáo viên**) — AWord tự khởi động lại khung chat khi kết nối xong. Dự phòng cho kỹ thuật viên (đổi địa chỉ máy chủ): Start Menu → "Kết nối Kho tri thức AI (AWord)". |
 | Mất mạng/máy chủ tạm ngừng | Công cụ có nhưng gọi lỗi mạng | Báo tạm thời, KHÔNG bảo chạy lại tệp kết nối; làm tiếp bằng PDF trong `TU LIEU MON HOC` nếu có. |
-| Chưa kích hoạt / hết hạn | JSON `{"loi":"chua_kich_hoat"}` / `"het_han"` kèm `huong_dan` | Mục 6 (thanh toán QR trong chat). |
+| Chưa kích hoạt / hết hạn | JSON `{"loi":"chua_kich_hoat"}` / `"het_han"` kèm `huong_dan`, `che_do:"gioi_thieu"` | Mục 5a: giới thiệu ngắn gọn kho và GÓI chứa nội dung cần; người dùng đồng ý mua → mục 6. |
 | Sách cần bản nâng cấp | `{"loi":"can_cap_nhat_lon"}` | Mục 6 với `loai="cap_nhat_lon"`, hoặc đổi điểm (mục 8) nếu đủ. |
-| Sách thuộc gói dữ liệu chưa mở | `{"loi":"can_mo_goi", "ma_goi", "gia", "diem"}` | Mục 7: nêu tên gói, giá, số điểm; hỏi mở bằng thanh toán hay bằng điểm. |
+| Sách thuộc gói dữ liệu chưa mở | `{"loi":"can_mo_goi", "ma_goi", "gia", "diem"}` + `goi_chua_nguon` | Mục 7: nêu tên gói, các nguồn trong gói, giá, số điểm; hỏi mở bằng thanh toán hay bằng điểm. |
+| Máy chủ đòi duyệt khoá mới | HTTP 403 `khoa_moi_can_duyet` | Máy đã có bản quyền nhưng khoá thiết bị bị tạo lại (cài lại Windows/AWord): liên hệ quản trị để "Cho gắn khoá mới" rồi mở lại AWord. |
 | Sai máy | HTTP 403 `may_khong_khop` | Token gắn với máy khác (đổi phần cứng/cài lại Windows): AWord tự tính lại mã máy ở lần mở sau — bảo người dùng mở lại AWord hoặc Trợ giúp → "Kết nối lại Kho tri thức AI giảng dạy"; vẫn lệch hoặc là máy mới thay máy cũ → `tt_chuyen_may(ly_do, ma_may_cu?)` (quản trị duyệt, ≤ 2 lần/năm; `ma_may_cu` bắt buộc khi máy mới dùng token mới). |
 | Bị khóa | `{"loi":"khoa"}` hoặc HTTP 403 `khoa` | Báo người dùng liên hệ hỗ trợ AWord (Hotline/Zalo 0983 606 845). |
 | Vượt hạn mức | `{"loi":"vuot_han_muc","reset_luc"}` | Báo giờ được dùng lại, làm tiếp bằng nội dung đã lấy. |
@@ -70,13 +71,14 @@ Bình thường KHÔNG cần — skill này đã đủ luật.
 | `tt_thong_bao` | `danh_dau_da_doc?` | thông báo chưa đọc của máy + toàn hệ thống |
 | `tt_gop_y` | `ma_sach, pdf_trang, noi_dung` | `{id, cam_on}` |
 
-### 4.2. Tri thức (cần dịch vụ còn hạn; sách thuộc gói bổ sung cần thêm quyền gói)
+### 4.2. Tri thức (nội dung cần gói; chưa mua vẫn giới thiệu được — mục 5a)
 | Công cụ | Tham số | Trả về |
 |---|---|---|
+| `tt_gioi_thieu` | `mon?, lop?` | **dùng được trước khi mua**: quy mô kho, nguồn theo lớp/môn/loại, `goi[]{ma_goi, ten_goi, gia, don_vi, nguon[], da_mo, cach_mua}`, `ai_lam_duoc`, `nguyen_tac_ban` |
 | `tt_danh_sach` | `mon?, lop?, loai?` (`sgk\|sgv\|sbt\|cd\|tk`) | bảng sách: `ma_sach, ten, loai, mon, lop, tap, so_bai, phien_ban, goi, da_mo` |
 | `tt_muc_luc` | `ma_sach` | mục lục: chương → bài → trang in → `bai_id` |
 | `tt_bai` | `ma_sach`, `bai_id` hoặc `trang_in`, `phan?` (`tat-ca\|muc-tieu\|hoat-dong\|bai-tap\|ghi-nho\|noi-dung`), `khong_hinh?` | markdown bài (đã lọc) + `hinh[]{id, so_hinh, chu_thich, url_tai}` |
-| `tt_tim` | `query, mon?, lop?, loai?, gioi_han?≤8` | `[{ma_sach, ten_sach, bai_id, ten_bai, trang_in, trich}]` |
+| `tt_tim` | `query, mon?, lop?, loai?, gioi_han?≤8` | `[{ma_sach, ten_sach, bai_id, ten_bai, trang_in, trich}]`; nguồn chưa mở: `che_do:"gioi_thieu"`, trích ≤ 120 ký tự, `goi`, kèm `goi_lien_quan[]` (chưa mua: ≤ 5 kết quả, 30 lượt/ngày) |
 | `tt_hinh` | `ma_sach, hinh_id, kem_anh?` | `id, so_hinh, chu_thich, mo_ta, bai_id, trang_in, bbox, url_tai` (+ ảnh base64 nếu `kem_anh`) |
 | `tt_hinh_theo_bai` | `ma_sach, bai_id` | danh mục hình của bài + `url_tai` từng hình |
 | `tt_yeu_cau_can_dat` | `ma_sach, bai_id` | mục tiêu bài (SGK) + gợi ý dạy học/đáp án trong SGV tương ứng |
@@ -125,6 +127,17 @@ rồi chèn: docx → `document.add_picture(path, width=Inches(4.5))` (skill `do
 **Chạy PowerShell có đường dẫn tiếng Việt:** ưu tiên công cụ PowerShell nếu phiên có; nếu chỉ có Bash thì GHI lệnh ra tệp
 `.ps1` UTF-8 CÓ BOM rồi chạy `powershell -NoProfile -ExecutionPolicy Bypass -File "<tệp.ps1>"` — truyền chuỗi tiếng Việt
 trực tiếp qua đối số dòng lệnh của Bash dễ hỏng mã hóa.
+
+## 5a. Chưa mua gói — giới thiệu ngắn gọn, bán theo gói
+
+Máy chưa kích hoạt/hết hạn, hoặc nội dung thuộc gói chưa mở, máy chủ vẫn cho **giới thiệu**: `tt_gioi_thieu`, `tt_danh_sach`,
+`tt_muc_luc`, `tt_tim` (trích ngắn); `tt_bai`/`tt_hinh`/`tt_hinh_theo_bai`/`tt_yeu_cau_can_dat` trả `gioi_thieu_bai` (tên bài,
+chương, trang, cấu trúc, số hình, tóm tắt 1 câu) + `goi_chua_nguon`. Cách làm:
+1. Người dùng hỏi kho có gì / cần một nội dung: `tt_gioi_thieu(mon?, lop?)` hoặc `tt_tim(query)` — trả lời NGẮN (3–6 câu hoặc bảng
+   nhỏ): có những nguồn/bài nào phù hợp, nằm trong **gói** nào, giá gói, gói gồm những nguồn nào.
+2. KHÔNG tự viết lại, suy đoán hay "nhớ" nội dung sách thay cho dữ liệu chưa mở; không trích dài hơn phần máy chủ trả.
+3. **Bán theo gói, không bán lẻ**: không đề nghị mua một bài, một sách, một hình riêng — luôn nêu gói chứa nội dung.
+4. Hỏi người dùng có muốn mua gói không (AskUserQuestion). Đồng ý → mục 6 (Gói cơ bản = bản quyền năm) hoặc mục 7 (gói bổ sung).
 
 ## 6. Kích hoạt, gia hạn, nâng cấp — thanh toán QR ngay trong chat
 

@@ -129,7 +129,7 @@ export function hopNhatHookTriThuc(settings: Record<string, unknown>, lenh: stri
 // chuyển tiền), đóng góp (skill đã hỏi xác nhận quyền chia sẻ). CỐ Ý KHÔNG có: tt_doi_diem (tiêu điểm tích lũy, không
 // hoàn lại) và tt_chuyen_may (chuyển bản quyền, giới hạn 2 lần/năm) — Claude Code vẫn hỏi người dùng trước khi gọi.
 export const QUYEN_TRI_THUC = [
-    'tt_trang_thai', 'tt_thanh_toan', 'tt_kiem_tra_thanh_toan', 'tt_thong_bao', 'tt_gop_y', 'tt_danh_sach', 'tt_muc_luc',
+    'tt_trang_thai', 'tt_gioi_thieu', 'tt_thanh_toan', 'tt_kiem_tra_thanh_toan', 'tt_thong_bao', 'tt_gop_y', 'tt_danh_sach', 'tt_muc_luc',
     'tt_bai', 'tt_tim', 'tt_hinh', 'tt_hinh_theo_bai', 'tt_yeu_cau_can_dat', 'tt_cap_nhat', 'tt_dong_gop_tao', 'tt_dong_gop_ds', 'tt_diem'
 ].map(t => `mcp__trithuc__${t}`);
 

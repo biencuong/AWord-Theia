@@ -1,3 +1,10 @@
+AWord Pro 3.0.2 — Kho tri thức AI giảng dạy: **giới thiệu trước khi mua, bán theo gói**. Chưa kích hoạt vẫn hỏi Claude "Kho tri
+thức AI có những gì?" để xem giới thiệu ngắn gọn các nguồn và gói (công cụ `tt_gioi_thieu`, được phép sẵn không hỏi lại); skill
+tra-cuu-tri-thuc cập nhật theo máy chủ mới (giới thiệu bài khi chưa mở gói, mã lỗi `khoa_moi_can_duyet`). Kết nối kiên nhẫn hơn với
+mạng chậm (chờ máy chủ tới 15 giây).
+
+---
+
 AWord Pro 3.0.1 — Kho tri thức AI giảng dạy chuyển sang địa chỉ chính thức **https://trithuc.aword.vn**. Máy đã cài 3.0.0:
 cập nhật rồi mở lại AWord Pro là tự kết nối (địa chỉ cũ đã lưu tự chuyển, giữ nguyên token và bản quyền) — không phải làm gì
 thêm. Script "Kết nối Kho tri thức AI (AWord Pro)", hook thông báo đầu phiên và skill tra-cuu-tri-thuc cũng dùng địa chỉ mới.
