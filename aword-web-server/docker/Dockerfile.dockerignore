@@ -1,0 +1,27 @@
+# Bỏ qua khi build ảnh AWord Web. Ngữ cảnh build là THƯ MỤC GỐC repo; BuildKit dùng tệp "<Dockerfile>.dockerignore" nằm
+# cạnh Dockerfile (docker build -f aword-web-server/docker/Dockerfile .). Builder cũ không có BuildKit: chép tệp này thành
+# .dockerignore ở gốc repo.
+.git
+.github
+.vscode
+.claude
+**/node_modules
+**/lib
+**/*.log
+**/dist
+
+# Ứng dụng: chỉ package.json (+ tài nguyên của electron-app); thứ sinh ra khi build (plugins, src-gen, gen-esbuild...) bỏ qua
+browser-app/*
+!browser-app/package.json
+electron-app/*
+!electron-app/package.json
+!electron-app/resources
+electron-app/resources/pytools
+electron-app/resources/aword-bin
+electron-app/resources/skills
+
+# Máy chủ đa người dùng: dữ liệu và CSDL không bao giờ vào ảnh
+aword-web-server/du-lieu
+aword-web-server/**/*.db
+aword-web-server/**/*.db-*
+*.vsix
