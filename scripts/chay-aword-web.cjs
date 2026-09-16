@@ -84,7 +84,9 @@ function tatMayChu() {
         ? spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
             `(Get-CimInstance Win32_Process -Filter "ProcessId=${Number(mc.pid)}").CommandLine`], { encoding: 'utf8', windowsHide: true }).stdout ?? ''
         : '';
-    if (process.platform === 'win32' && !(lenh.includes('lib/backend/main.js') && lenh.includes(`--port=${mc.cong}`))) {
+    const laMayChu = lenh.includes('may-chu.cmd') // tệp trung gian tạo console ẩn
+        || (/lib[\\/]backend[\\/]main\.js/.test(lenh) && lenh.includes(`--port=${mc.cong}`));
+    if (process.platform === 'win32' && !laMayChu) {
         for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
         bao('Bản web không chạy.');
         return;
@@ -96,6 +98,49 @@ function tatMayChu() {
     }
     for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
     bao(`Đã tắt AWord Web (cổng ${mc.cong}).`);
+}
+
+/**
+ * Chạy máy chủ ở NỀN, KHÔNG cửa sổ nào hiện ra, và sống tiếp sau khi cửa sổ dòng lệnh đóng. Trả về PID để theo dõi/tắt.
+ *
+ * Trên Windows phải cho máy chủ một console RIÊNG nhưng ẨN:
+ *   - tách rời (detached = DETACHED_PROCESS): máy chủ không có console nào → mỗi tiến trình con là ứng dụng console
+ *     (plugin host, claude.exe…) tự mở một cửa sổ mới — đúng hai cửa sổ người dùng thấy;
+ *   - chỉ ẩn cửa sổ (windowsHide = CREATE_NO_WINDOW): máy chủ dùng chung console của cửa sổ dòng lệnh → đóng cửa sổ đó
+ *     là máy chủ bị tắt theo.
+ * Cách dùng ở đây: một tệp .cmd trung gian (đặt biến môi trường + chuyển nhật ký ra tệp) chạy qua
+ * `Start-Process -WindowStyle Hidden`, tức ShellExecute với SW_HIDE: console mới được tạo nhưng ẩn, mọi tiến trình con
+ * dùng chung console ẩn đó.
+ */
+function chayMayChuNen(cong, env) {
+    const lenhNode = `"${process.execPath}" lib${path.sep}backend${path.sep}main.js --hostname=127.0.0.1 --port=${cong} --plugins=local-dir:plugins`;
+    if (process.platform !== 'win32') {
+        const nhatKy = fs.openSync(TEP_NHAT_KY, 'w');
+        const p = spawn(process.execPath, ['lib/backend/main.js', '--hostname=127.0.0.1', `--port=${cong}`, '--plugins=local-dir:plugins'],
+            { cwd: APP, env, detached: true, stdio: ['ignore', nhatKy, nhatKy] });
+        fs.closeSync(nhatKy);
+        p.unref();
+        return p.pid;
+    }
+    fs.writeFileSync(TEP_NHAT_KY, ''); // mỗi lần chạy một nhật ký mới (cmd chỉ biết nối thêm)
+    const tepCmd = path.join(THU_MUC_WEB, 'may-chu.cmd');
+    fs.writeFileSync(tepCmd, [
+        '@echo off',
+        'chcp 65001 >nul',
+        `cd /d "${APP}"`,
+        `set "THEIA_CONFIG_DIR=${CAU_HINH}"`,
+        'set "ELECTRON_RUN_AS_NODE="',
+        `${lenhNode} >> "${TEP_NHAT_KY}" 2>&1`,
+        '',
+    ].join('\r\n'), 'ascii');
+    const ps = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+        `(Start-Process -FilePath '${tepCmd.replace(/'/g, "''")}' -WindowStyle Hidden -PassThru).Id`],
+        { encoding: 'utf8', windowsHide: true });
+    const pid = parseInt(String(ps.stdout ?? '').trim(), 10);
+    if (!Number.isInteger(pid) || pid <= 0) {
+        dung(`Không khởi động được máy chủ ở nền: ${String(ps.stderr ?? '').trim() || 'PowerShell không trả về mã tiến trình'}`);
+    }
+    return pid;
 }
 
 (async () => {
@@ -149,26 +194,22 @@ function tatMayChu() {
     const env = { ...process.env, THEIA_CONFIG_DIR: CAU_HINH };
     delete env.ELECTRON_RUN_AS_NODE;
     bao(`Khởi động máy chủ tại http://localhost:${cong} (chỉ máy này truy cập được)…`);
-    const nhatKy = fs.openSync(TEP_NHAT_KY, 'w');
-    const mayChu = spawn(process.execPath, ['lib/backend/main.js', '--hostname=127.0.0.1', `--port=${cong}`, '--plugins=local-dir:plugins'],
-        { cwd: APP, env, detached: true, windowsHide: true, stdio: ['ignore', nhatKy, nhatKy] });
-    fs.closeSync(nhatKy);
-    let daDung = false;
-    mayChu.on('exit', () => { daDung = true; });
+    const pid = chayMayChuNen(cong, env);
     fs.writeFileSync(tepCong, String(cong));
-    fs.writeFileSync(TEP_MAY_CHU, JSON.stringify({ pid: mayChu.pid, cong, luc: new Date().toISOString() }, null, 2));
+    fs.writeFileSync(TEP_MAY_CHU, JSON.stringify({ pid, cong, luc: new Date().toISOString() }, null, 2));
 
-    for (let i = 0; i < 120 && !daDung; i++) {
+    const conSong = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
+    for (let i = 0; i < 120 && conSong(); i++) {
         if ((await hoi(`http://127.0.0.1:${cong}/`)) === 200) {
-            mayChu.unref();
             bao(`SẴN SÀNG — mở http://localhost:${cong}. Máy chủ chạy nền; tắt bằng "Tắt AWord Web" (Tat_AWord_Web.cmd).`);
             moTrinhDuyet(`http://localhost:${cong}`);
             process.exit(0);
         }
         await new Promise(r => setTimeout(r, 1000));
     }
+    const daDung = !conSong();
     for (const t of [TEP_MAY_CHU, TEP_CONG]) { try { fs.rmSync(t, { force: true }); } catch { /* bỏ qua */ } }
-    if (!daDung) { try { spawnSync('taskkill', ['/PID', String(mayChu.pid), '/T', '/F'], { stdio: 'ignore' }); } catch { /* bỏ qua */ } }
+    if (!daDung) { try { spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true }); } catch { /* bỏ qua */ } }
     let duoi = '';
     try { duoi = fs.readFileSync(TEP_NHAT_KY, 'utf8').split(/\r?\n/).slice(-25).join('\n'); } catch { /* bỏ qua */ }
     dung(`Máy chủ ${daDung ? 'đã dừng ngay khi khởi động' : 'không sẵn sàng sau 2 phút'}. Nhật ký (${TEP_NHAT_KY}):\n${duoi}`);
