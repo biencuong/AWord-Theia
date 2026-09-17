@@ -1,0 +1,284 @@
+/* Chỉ báo token trên thanh tiêu đề + trang thống kê.
+   Tiền tố `aword-` để không đụng vào lớp nào của Theia; màu lấy từ biến theme (app dùng theme TỐI) cộng
+   màu thương hiệu AWord, KHÔNG dùng bảng "kem – coral" (bảng đó không thuộc AWord Pro). */
+
+/* ===== Chỉ báo trên thanh tiêu đề =====
+   Widget được thêm vào vùng `top` của ApplicationShell. Vùng đó là flex container, và Lumino chỉ chèn
+   widget vào Panel chứ không đặt position:absolute — nên đây là một flex item bình thường và
+   `margin-left: auto` là đủ để đẩy sang phải.
+   `margin-right: 144px` chừa đúng chỗ cho #window-controls (3 nút cửa sổ × 48px). Không chừa thì nút ĐÓNG
+   CỬA SỔ nằm đè lên con số. */
+#aword-chi-so-token {
+    margin-left: auto;
+    margin-right: 144px;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 4px;
+    -webkit-app-region: no-drag;
+    cursor: pointer;
+    user-select: none;
+}
+
+#aword-chi-so-token .aword-cs-trong {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--theia-titleBar-border, transparent);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--theia-titleBar-activeForeground);
+}
+
+#aword-chi-so-token:hover .aword-cs-trong {
+    background: rgba(255, 255, 255, 0.11);
+    border-color: var(--aword-cam);
+}
+
+#aword-chi-so-token .aword-cs-so {
+    color: var(--aword-cam);
+    font-weight: 600;
+}
+
+#aword-chi-so-token .aword-cs-canh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--aword-cam);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+#aword-chi-so-token .aword-cs-cham {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--aword-cam);
+    animation: aword-cs-nhap-nhay 1.1s ease-in-out infinite;
+}
+
+@keyframes aword-cs-nhap-nhay {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+/* ===== Chừa chỗ cho tiêu đề cửa sổ =====
+   Theia ghi `left` cho #theia-custom-title bằng style INLINE trong adjustTitleToCenter(), nên chỉ rule
+   !important mới thắng được. Đánh đổi có chủ đích: ta DỒN tiêu đề sang phải thay vì căn giữa — giữ căn
+   giữa thì không bảo đảm được là không đè, vì thanh menu bên trái đẩy mép phải của tiêu đề ra xa.
+   `--aword-tt-rong` do chính chỉ báo công bố sau mỗi lần vẽ (0px khi chỉ báo bị ẩn). */
+#theia-custom-title {
+    left: auto !important;
+    right: calc(144px + 16px + var(--aword-tt-rong, 0px)) !important;
+    transform: none !important;
+    max-width: min(45vw, 560px) !important;
+}
+
+/* ===== Trang thống kê ===== */
+.aword-tk {
+    height: 100%;
+    overflow-y: auto;
+    padding: 22px 26px 40px;
+    background: var(--theia-editor-background);
+    color: var(--theia-editor-foreground);
+    font-family: var(--theia-ui-font-family);
+    line-height: 1.55;
+}
+
+.aword-tk-dau {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.aword-tk-dau h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.aword-tk-dang-quet {
+    font-size: 12px;
+    color: var(--aword-cam);
+}
+
+.aword-tk-the {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.aword-tk-o {
+    flex: 1 1 160px;
+    min-width: 150px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--theia-editorWidget-background);
+    border: 1px solid var(--theia-editorWidget-border);
+}
+
+.aword-tk-o-nhan {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--theia-descriptionForeground);
+}
+
+.aword-tk-o-tien {
+    font-size: 19px;
+    font-weight: 600;
+    margin: 4px 0 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.aword-tk-o-phu {
+    font-size: 12px;
+    color: var(--theia-descriptionForeground);
+}
+
+.aword-tk-canh {
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--aword-cam);
+    background: rgba(244, 81, 30, 0.09);
+    font-size: 13px;
+}
+
+.aword-tk-khoi {
+    margin-bottom: 22px;
+}
+
+.aword-tk-khoi h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--theia-descriptionForeground);
+    margin: 0 0 8px;
+}
+
+.aword-tk-mo {
+    font-size: 12.5px;
+    color: var(--theia-descriptionForeground);
+    margin: 0 0 8px;
+}
+
+.aword-tk-bang {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.aword-tk-bang th,
+.aword-tk-bang td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--theia-editorWidget-border);
+    text-align: left;
+}
+
+.aword-tk-bang th {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--theia-descriptionForeground);
+}
+
+.aword-tk-bang .so {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.aword-tk-bang .mono {
+    font-family: var(--theia-code-font-family, monospace);
+    font-size: 12.5px;
+}
+
+.aword-tk-chuag {
+    color: var(--aword-cam);
+    font-size: 12px;
+}
+
+/* Biểu đồ cột: div/CSS thuần. aword-chat chỉ có react và react-dom — không thêm thư viện biểu đồ. */
+.aword-tk-bieu {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 130px;
+    padding: 8px 0 0;
+    border-bottom: 1px solid var(--theia-editorWidget-border);
+}
+
+.aword-tk-cot {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.aword-tk-cot-than {
+    width: 100%;
+    min-height: 1px;
+    background: var(--aword-cam);
+    border-radius: 2px 2px 0 0;
+}
+
+.aword-tk-cot:hover .aword-tk-cot-than {
+    background: var(--aword-cam-sang);
+}
+
+.aword-tk-cot-nhan {
+    font-size: 9.5px;
+    color: var(--theia-descriptionForeground);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.aword-tk-hang {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.aword-tk-nut {
+    padding: 4px 12px;
+    font-size: 12.5px;
+    border-radius: 5px;
+    border: 1px solid var(--theia-editorWidget-border);
+    background: var(--theia-editorWidget-background);
+    color: var(--theia-editor-foreground);
+    cursor: pointer;
+}
+
+.aword-tk-nut:hover:not(:disabled) {
+    border-color: var(--aword-cam);
+    color: var(--aword-cam);
+}
+
+.aword-tk-nut:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.aword-tk-muon,
+.aword-tk-trong {
+    font-size: 12.5px;
+    color: var(--theia-descriptionForeground);
+}

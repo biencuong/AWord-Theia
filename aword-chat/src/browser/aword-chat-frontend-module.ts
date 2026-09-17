@@ -15,9 +15,13 @@ import { AwordCauHinhDeepSeekContribution } from './aword-cau-hinh-deepseek-cont
 import { KhoTriThucServer, KHO_TRI_THUC_PATH } from '../common/kho-tri-thuc-protocol';
 import { AwordKhoTriThucContribution } from './aword-kho-tri-thuc-contribution';
 import { ChiSoTokenServer, CHI_SO_TOKEN_PATH } from '../common/chi-so-token-protocol';
+import { AwordThongKeWidget } from './aword-thong-ke-widget';
+import { AwordChiSoTokenWidget } from './aword-chi-so-token-widget';
+import { AwordThongKeContribution } from './aword-thong-ke-contribution';
 
 import '../../src/browser/style/index.css';
 import '../../src/browser/style/thong-bao-giua.css';
+import '../../src/browser/style/chi-so-token.css';
 
 // Package aword-chat: tùy biến AWord trên nền Theia — menu (ẩn Terminal, tinh gọn Xem/Trợ giúp),
 // trang Chào mừng, khởi động chat-first (tự tạo workspace + mở khung chat Claude giữa màn hình).
@@ -84,4 +88,16 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     })).inSingletonScope();
     bindViewContribution(bind, AwordWelcomeContribution);
     bind(FrontendApplicationContribution).toService(AwordWelcomeContribution);
+
+    // Thống kê token: trang đầy đủ + chỉ báo nhỏ trên thanh tiêu đề.
+    // Chỉ báo phải là singleton vì nó tự giữ nhịp hỏi số và theo dõi bề rộng cửa sổ; tạo hai thể hiện là
+    // hai vòng hẹn giờ cùng chạy và hai lần ghi đè biến bề rộng.
+    bind(AwordThongKeWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: AwordThongKeWidget.ID,
+        createWidget: () => ctx.container.get<AwordThongKeWidget>(AwordThongKeWidget)
+    })).inSingletonScope();
+    bind(AwordChiSoTokenWidget).toSelf().inSingletonScope();
+    bindViewContribution(bind, AwordThongKeContribution);
+    bind(FrontendApplicationContribution).toService(AwordThongKeContribution);
 });

@@ -1,3 +1,10 @@
+/* Màu thương hiệu AWord. Trước đây là literal rải rác (#f4511e ở vạch nhấn hộp thoại, #ff8a3d ở nút chính)
+   nên muốn dùng lại phải chép tay — chép tay thì có ngày lệch. */
+:root {
+    --aword-cam: #f4511e;
+    --aword-cam-sang: #ff8a3d;
+}
+
 #widget-container h2 {
     color: var(--theia-ui-font-color1);
     font-size: 12px;
@@ -120,7 +127,7 @@
     max-width: min(620px, 92vw);
     border-radius: 10px;
     border: 1px solid var(--theia-editorWidget-border);
-    border-top: 3px solid #f4511e; /* vạch nhấn cam thương hiệu AWord */
+    border-top: 3px solid var(--aword-cam); /* vạch nhấn cam thương hiệu AWord */
     background-color: var(--theia-editorWidget-background);
     color: var(--theia-editor-foreground);
     font-family: var(--theia-ui-font-family);
@@ -162,7 +169,7 @@
 
 /* Nút chính trong hộp thoại mang màu thương hiệu, khớp logo/vạch nhấn */
 .lm-Widget.dialogOverlay .theia-button.main {
-    background: linear-gradient(135deg, #ff8a3d, #f4511e);
+    background: linear-gradient(135deg, var(--aword-cam-sang), var(--aword-cam));
     color: #ffffff;
     border: none;
 }
