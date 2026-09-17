@@ -15,7 +15,7 @@ export const TEN_MIEN = 'aword.test';
 export function cauHinhThu(them: Partial<CauHinh> = {}): CauHinh {
     return {
         cong: 0, diaChiNghe: '127.0.0.1', tenMien: TEN_MIEN, tenMienUngDung: `app.${TEN_MIEN}`, https: false, thuMucDuLieu: '.', thuMucHeThong: '.',
-        trinhDieuPhoi: 'tien-trinh', anhDocker: 'aword-web:latest', phutNguKhiRanh: 30, diaChiCongAiChoPhien: 'http://127.0.0.1/ai',
+        trinhDieuPhoi: 'tien-trinh', anhDocker: 'aword-web:latest', phutNguKhiRanh: 30, giuNhatKyNgay: 0, diaChiCongAiChoPhien: 'http://127.0.0.1/ai',
         khoaAi: {}, diaChiAi: { anthropic: 'http://127.0.0.1', deepseek: 'http://127.0.0.1', openai: 'http://127.0.0.1' },
         biMat: BI_MAT, ...them,
     };

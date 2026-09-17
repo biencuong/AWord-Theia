@@ -376,6 +376,11 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
             });
             const cacDoanJson: Uint8Array[] = [];
             let coJson = 0;
+            // Thân phản hồi vượt trần thì ta vẫn chuyển tiếp cho máy khách nhưng KHÔNG còn đọc được usage.
+            // Đánh dấu để lát nữa ghi nhận là lượt lỗi — bản cũ rơi vào JSON.parse hỏng, catch nuốt im lặng,
+            // rồi ghi 'xong' với 0 token: lượt đó biến mất khỏi mọi báo cáo chi phí và không bao giờ tính
+            // vào hạn mức tháng, dù tiền đã chi thật.
+            let thanBiCat = false;
 
             if (phanHoi.body) {
                 const docGia = phanHoi.body.getReader();
@@ -387,6 +392,8 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
                     } else if (coJson < GIOI_HAN_THAN_JSON) {
                         cacDoanJson.push(value);
                         coJson += value.length;
+                    } else {
+                        thanBiCat = true;
                     }
                     await ghiDoan(res, value, dk.tinHieu); // chuyển nguyên từng đoạn, không đệm cả phản hồi
                 }
@@ -407,7 +414,9 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
                     const v: unknown = JSON.parse(Buffer.concat(cacDoanJson).toString('utf8'));
                     if (laDoiTuong(v)) { napUsageAnthropic(luot.soToken, v.usage); }
                 } catch { /* không đọc được usage: ghi 0 token */ }
-                ghiSuDung(luot, 'xong');
+                // Không đọc được usage vì thân quá lớn thì ghi 'loi' kèm mã lý do, để lượt đó còn dấu vết
+                // trong sổ chi phí thay vì hiện ra như một lượt thành công tốn 0 đồng.
+                ghiSuDung(luot, thanBiCat ? 'loi' : 'xong', thanBiCat ? 'than_qua_lon_khong_doc_duoc_usage' : undefined);
             }
         } catch (e) {
             xuLyGianDoan(res, luot, dk, e, laLuongSse);
@@ -524,7 +533,11 @@ export function taoCongAi(tuy: TuyChonCongAi): CongAi {
         }
         const khoa = cauHinh.khoaAi.anthropic;
         if (!khoa) { guiLoiThieuKhoa(res, gia); return; }
-        const dk = taoDieuKhien(res, undefined, hanGioByteDau);
+        // Đếm token là lượt gọi KHÔNG stream, cùng loại với hai đường messages: tổng hạn là hanGioTong
+        // (15 phút), không phải hạn chờ byte đầu (120 giây). Bản cũ truyền nhầm hanGioByteDau vào ô hạn
+        // tổng, nên đếm token cho một hội thoại lớn bị cắt ở 120 giây và trả 504 — đúng những lượt lớn
+        // nhất, là những lượt cần đếm nhất.
+        const dk = taoDieuKhien(res, undefined, hanGioTong);
         try {
             const phanHoi = await fetchFn(noiDuongDan(cauHinh.diaChiAi.anthropic, '/v1/messages/count_tokens') + timKiem, {
                 method: 'POST',

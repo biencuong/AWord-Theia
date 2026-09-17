@@ -6,7 +6,7 @@
 //   node src/main.ts tao-quan-tri <email|số điện thoại> "<Họ tên>"   tạo quản trị hệ thống đầu tiên (in mật khẩu tạm)
 import * as path from 'node:path';
 import { docCauHinh } from './cau-hinh.ts';
-import { moCsdl } from './csdl/csdl.ts';
+import { donNhatKyCu, moCsdl } from './csdl/csdl.ts';
 import { napBangGiaMacDinh, taoCongAi } from './cong-ai/cong-ai.ts';
 import { taoCongTruyCap, taoQuanTriDauTien } from './cong-truy-cap/cong-truy-cap.ts';
 import { taoDieuPhoi } from './dieu-phoi/dieu-phoi.ts';
@@ -41,12 +41,27 @@ const mayChu = taoMayChu({ cauHinh, congAi, congTruyCap, dieuPhoi });
 const henNgu = setInterval(() => { dieuPhoi.quetNgu().catch(e => console.error('[aword-web] quét phiên rảnh', e)); }, 60_000);
 henNgu.unref();
 
+// Dọn nhật ký cũ. Một lần lúc khởi động (bắt kịp phần tồn đọng sau nhiều ngày chạy) rồi mỗi ngày một lần.
+// Chạy ở đây chứ không trong quetNgu: quetNgu là vòng 60 giây của nghiệp vụ phiên, không nên gánh việc dọn dẹp.
+function donNhatKy(): void {
+    try {
+        const n = donNhatKyCu(db, cauHinh.giuNhatKyNgay);
+        if (n > 0) { console.log(`[aword-web] dọn ${n} dòng nhật ký cũ hơn ${cauHinh.giuNhatKyNgay} ngày`); }
+    } catch (e) {
+        console.error('[aword-web] dọn nhật ký', e);
+    }
+}
+donNhatKy();
+const henDon = setInterval(donNhatKy, 24 * 3600 * 1000);
+henDon.unref();
+
 let dangTat = false;
 async function tat(tinHieu: string): Promise<void> {
     if (dangTat) { return; }
     dangTat = true;
     console.log(`[aword-web] Nhận ${tinHieu} — dừng các phiên và tắt máy chủ...`);
     clearInterval(henNgu);
+    clearInterval(henDon);
     mayChu.close();
     await dieuPhoi.dungTatCa().catch(e => console.error('[aword-web] dừng phiên', e));
     db.close();

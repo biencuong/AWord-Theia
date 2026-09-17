@@ -144,7 +144,7 @@ test('nâng cấp lược đồ 2 trên CSDL cũ: chép tên đăng nhập dạn
         them.run('nguyenvana', 'C', 'c@truong.vn', 'x');
         db.close();
         db = moCsdl(tep);
-        assert.equal((db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version, 2);
+        assert.equal((db.prepare('PRAGMA user_version').get() as { user_version: number }).user_version, 3);
         assert.deepEqual(db.prepare('SELECT ten_dang_nhap, email, so_dien_thoai FROM tai_khoan ORDER BY id').all().map(r => ({ ...r })), [
             { ten_dang_nhap: 'QuanTri@So.gov.vn', email: 'quantri@so.gov.vn', so_dien_thoai: null },
             { ten_dang_nhap: '0912345678', email: null, so_dien_thoai: '0912345678' },

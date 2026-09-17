@@ -229,6 +229,27 @@ export function taoApiQuanTri(ctx: {
         return n;
     }
 
+    /**
+     * Ép cờ bật/tắt về 0|1, KHÔNG dùng tính đúng-sai của giá trị.
+     *
+     * Bản cũ viết `t.bat ? 1 : 0`, mà `"false"` và `"0"` đều là chuỗi khác rỗng nên đều là "đúng" — khách
+     * gửi JSON `{"bat":"false"}` để TẮT mô hình lại bật nó lên. Với mô hình để giá 0 thì hậu quả không
+     * chỉ là hiển thị sai: mô hình được phục vụ bằng khóa thật của cơ quan, ghi nhận 0 đồng, nên hạn mức
+     * tháng không bao giờ chặn trong khi tiền vẫn chi. Nhận đúng cả dạng chuỗi/số mà biểu mẫu và script
+     * hay gửi, còn lại thì từ chối chứ không đoán.
+     */
+    function coKhong(v: unknown, ten: string, macDinh: number): number {
+        if (v === undefined || v === null) { return macDinh; }
+        if (v === true || v === 1) { return 1; }
+        if (v === false || v === 0) { return 0; }
+        if (typeof v === 'string') {
+            const s = v.trim().toLowerCase();
+            if (['true', '1', 'on', 'bat', 'bật', 'co', 'có'].includes(s)) { return 1; }
+            if (['false', '0', 'off', 'tat', 'tắt', 'khong', 'không', ''].includes(s)) { return 0; }
+        }
+        throw new LoiHttp(400, `${ten} chỉ nhận đúng/sai (true|false).`);
+    }
+
     // ---------------- Định tuyến ----------------
 
     return async function xuLyApi(req: IncomingMessage, res: ServerResponse, url: URL, p: PhienHienTai, ip: string): Promise<void> {
@@ -388,7 +409,7 @@ export function taoApiQuanTri(ctx: {
             if (db.prepare('SELECT 1 FROM bang_gia WHERE ma = ?').get(ma)) { throw new LoiHttp(400, `Mô hình "${ma}" đã có trong bảng giá.`); }
             const g = [soGia(t.giaVao, 'Giá đầu vào'), soGia(t.giaRa, 'Giá đầu ra'), soGia(t.giaCacheDoc ?? 0, 'Giá đọc bộ nhớ đệm'), soGia(t.giaCacheGhi ?? 0, 'Giá ghi bộ nhớ đệm')];
             db.prepare(`INSERT INTO bang_gia (ma, nha_cung_cap, mo_hinh_goc, ten_hien_thi, gia_vao, gia_ra, gia_cache_doc, gia_cache_ghi, bat, cap_nhat_luc)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(ma, nhaCungCap, moHinhGoc, tenHienThi, ...g, t.bat === false ? 0 : 1, luc);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(ma, nhaCungCap, moHinhGoc, tenHienThi, ...g, coKhong(t.bat, 'Trạng thái bật', 1), luc);
             ghiNhatKyLuc(db, luc, { taiKhoanId: nguoi.id, hanhDong: 'them_bang_gia', doiTuong: `bang_gia:${ma}`, ip, chiTiet: { nhaCungCap, moHinhGoc, gia: g } });
             return guiJson(res, 201, giaJson(db.prepare('SELECT * FROM bang_gia WHERE ma = ?').get(ma) as unknown as DongBangGia));
         }
@@ -409,7 +430,7 @@ export function taoApiQuanTri(ctx: {
             if ('giaRa' in t) { moi.gia_ra = soGia(t.giaRa, 'Giá đầu ra'); }
             if ('giaCacheDoc' in t) { moi.gia_cache_doc = soGia(t.giaCacheDoc, 'Giá đọc bộ nhớ đệm'); }
             if ('giaCacheGhi' in t) { moi.gia_cache_ghi = soGia(t.giaCacheGhi, 'Giá ghi bộ nhớ đệm'); }
-            if ('bat' in t) { moi.bat = t.bat ? 1 : 0; }
+            if ('bat' in t) { moi.bat = coKhong(t.bat, 'Trạng thái bật', moi.bat); }
             db.prepare(`UPDATE bang_gia SET ten_hien_thi = ?, gia_vao = ?, gia_ra = ?, gia_cache_doc = ?, gia_cache_ghi = ?, bat = ?, cap_nhat_luc = ? WHERE ma = ?`)
                 .run(moi.ten_hien_thi, moi.gia_vao, moi.gia_ra, moi.gia_cache_doc, moi.gia_cache_ghi, moi.bat, luc, ma);
             const truoc: Record<string, unknown> = {}, sau: Record<string, unknown> = {};
@@ -423,11 +444,16 @@ export function taoApiQuanTri(ctx: {
         if (duong === '/nhat-ky' && pt === 'GET') {
             const dieuKien: string[] = [];
             const thamSo: Array<string | number> = [];
+            // Chỉ nhánh quản trị đơn vị mới cần join sang tai_khoan (lọc theo đơn vị của NGƯỜI THỰC HIỆN).
+            // Các nhánh còn lại chỉ đụng cột của nk, nên câu ĐẾM bỏ được join — mà đếm là phần đắt nhất:
+            // nhat_ky chỉ ghi thêm, không dọn, nên mỗi lần mở trang lại phải quét toàn bộ lịch sử tích lũy.
+            let canJoin = false;
             if (nguoi.vaiTro === 'quan_tri_don_vi') {
                 canDonVi();
                 dieuKien.push(`(nguoi.don_vi_id = ? OR (nk.doi_tuong LIKE 'tai_khoan:%'
                     AND CAST(substr(nk.doi_tuong, 11) AS INTEGER) IN (SELECT id FROM tai_khoan WHERE don_vi_id = ?)))`);
                 thamSo.push(nguoi.donViId as number, nguoi.donViId as number);
+                canJoin = true;
             }
             const idTk = url.searchParams.get('tai_khoan_id');
             if (idTk && /^\d+$/.test(idTk)) {
@@ -436,7 +462,8 @@ export function taoApiQuanTri(ctx: {
             }
             const where = dieuKien.length ? `WHERE ${dieuKien.join(' AND ')}` : '';
             const tu = `FROM nhat_ky nk LEFT JOIN tai_khoan nguoi ON nguoi.id = nk.tai_khoan_id`;
-            const tong = Number((db.prepare(`SELECT COUNT(*) AS n ${tu} ${where}`).get(...thamSo) as { n: number }).n);
+            const tuDem = canJoin ? tu : 'FROM nhat_ky nk';
+            const tong = Number((db.prepare(`SELECT COUNT(*) AS n ${tuDem} ${where}`).get(...thamSo) as { n: number }).n);
             const trang = Math.max(1, Math.min(100_000, Number(url.searchParams.get('trang')) || 1));
             const ds = db.prepare(`SELECT nk.*, nguoi.ho_ten AS ho_ten_nguoi_lam,
                     (SELECT ho_ten FROM tai_khoan WHERE nk.doi_tuong = 'tai_khoan:' || id) AS ten_doi_tuong

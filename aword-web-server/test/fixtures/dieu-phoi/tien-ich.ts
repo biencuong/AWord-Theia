@@ -46,7 +46,7 @@ export function taoCauHinh(thuMucDuLieu: string, ghiDe: Partial<CauHinh> = {}): 
     return {
         cong: 8080, diaChiNghe: '127.0.0.1', tenMien: 'aword.localhost', tenMienUngDung: 'app.aword.localhost', https: false,
         thuMucDuLieu, thuMucHeThong: path.join(thuMucDuLieu, 'he-thong'),
-        trinhDieuPhoi: 'tien-trinh', anhDocker: 'aword-web:latest', phutNguKhiRanh: 30,
+        trinhDieuPhoi: 'tien-trinh', anhDocker: 'aword-web:latest', phutNguKhiRanh: 30, giuNhatKyNgay: 0,
         diaChiCongAiChoPhien: 'http://host.docker.internal:8080/ai',
         khoaAi: {}, diaChiAi: { anthropic: 'x', deepseek: 'x', openai: 'x' },
         biMat: 'b'.repeat(40),

@@ -142,6 +142,13 @@ const NANG_CAP: string[] = [
     CREATE UNIQUE INDEX tai_khoan_email ON tai_khoan(email COLLATE NOCASE) WHERE email IS NOT NULL;
     CREATE UNIQUE INDEX tai_khoan_so_dien_thoai ON tai_khoan(so_dien_thoai) WHERE so_dien_thoai IS NOT NULL;
     `,
+    // 3 — chỉ mục phục vụ trang Nhật ký và việc dọn nhật ký cũ.
+    //     Lọc theo người thực hiện là truy vấn phổ biến nhất của trang (bấm vào một tài khoản), và
+    //     `luc` là cột dùng để cắt theo thời hạn lưu. nhat_ky chỉ ghi thêm nên không có chỉ mục thì
+    //     mỗi lần mở trang lại quét toàn bộ lịch sử, càng chạy càng chậm.
+    `
+    CREATE INDEX IF NOT EXISTS nhat_ky_tai_khoan ON nhat_ky(tai_khoan_id, id);
+    `,
 ];
 
 export function moCsdl(tep: string): DatabaseSync {
@@ -187,4 +194,31 @@ export function ghiNhatKy(db: DatabaseSync, muc: {
     db.prepare('INSERT INTO nhat_ky (luc, tai_khoan_id, hanh_dong, doi_tuong, chi_tiet, ip) VALUES (?, ?, ?, ?, ?, ?)')
         .run(bayGio(), muc.taiKhoanId ?? null, muc.hanhDong, muc.doiTuong ?? null,
             muc.chiTiet === undefined ? null : JSON.stringify(muc.chiTiet), muc.ip ?? null);
+}
+
+/**
+ * Xóa nhật ký cũ hơn `giuNgay` ngày. Trả về số dòng đã xóa. `giuNgay <= 0` = giữ mãi, không xóa gì.
+ *
+ * Vì sao phải dọn: nhat_ky chỉ ghi thêm — mỗi lần đăng nhập, đăng xuất, mỗi thao tác quản trị và mỗi lần
+ * phiên đổi trạng thái đều thêm một dòng, không có chỗ nào xóa. Trang Nhật ký lại đếm và lọc trên toàn
+ * bảng, nên thời gian mở trang tăng dần theo thời gian máy chủ chạy, không theo lượng dữ liệu người dùng
+ * thực sự xem.
+ *
+ * Xóa theo lô có trần: xóa một phát cả triệu dòng sẽ giữ khóa ghi hàng chục giây và chặn mọi yêu cầu khác
+ * (SQLite đồng bộ trên cùng một luồng). Mỗi lô 5.000 dòng, tối đa 40 lô mỗi lần chạy — phần còn lại để lần
+ * chạy hôm sau, vì đây là việc dọn nền chứ không phải việc gấp.
+ *
+ * LƯU Ý: đây là nhật ký kiểm toán. Đặt AWORD_WEB_GIU_NHAT_KY_NGAY=0 để giữ vĩnh viễn nếu cơ quan yêu cầu.
+ */
+export function donNhatKyCu(db: DatabaseSync, giuNgay: number): number {
+    if (!Number.isFinite(giuNgay) || giuNgay <= 0) { return 0; }
+    const moc = bayGio() - giuNgay * 24 * 3600 * 1000;
+    const lenh = db.prepare('DELETE FROM nhat_ky WHERE id IN (SELECT id FROM nhat_ky WHERE luc < ? LIMIT 5000)');
+    let tong = 0;
+    for (let i = 0; i < 40; i++) {
+        const n = Number(lenh.run(moc).changes);
+        tong += n;
+        if (n < 5000) { break; }
+    }
+    return tong;
 }

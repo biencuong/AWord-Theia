@@ -29,7 +29,11 @@ export async function kiemMatKhau(matKhau: string, chuoiBam: string): Promise<bo
 /** Chính sách mật khẩu: trả về thông báo lỗi tiếng Việt, hoặc undefined nếu đạt. */
 export function loiMatKhau(matKhau: string, tenDangNhap?: string): string | undefined {
     if (matKhau.length < 10) { return 'Mật khẩu cần tối thiểu 10 ký tự.'; }
-    if (!/[A-Za-zÀ-ỹ]/.test(matKhau) || !/\d/.test(matKhau)) { return 'Mật khẩu cần có cả chữ và số.'; }
+    // \p{L} chứ không phải khoảng mã [A-Za-zÀ-ỹ]: khoảng đó tính theo điểm mã, mà giữa U+00C0 (À) và
+    // U+1EF9 (ỹ) có bao nhiêu thứ KHÔNG phải chữ cái — × U+00D7, ÷ U+00F7, dấu tổ hợp U+0300 trở đi,
+    // ký hiệu toán học và chữ-like. "123456789×" lọt qua điều kiện "phải có chữ" trong khi thực chất chỉ
+    // là dãy số kèm một ký hiệu. \p{L} chỉ đúng chữ cái, mọi hệ chữ.
+    if (!/\p{L}/u.test(matKhau) || !/\d/.test(matKhau)) { return 'Mật khẩu cần có cả chữ và số.'; }
     if (tenDangNhap && matKhau.toLowerCase().includes(tenDangNhap.toLowerCase())) { return 'Mật khẩu không được chứa tên đăng nhập.'; }
     return undefined;
 }

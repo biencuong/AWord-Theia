@@ -9,7 +9,7 @@ import * as fs from 'node:fs';
 import * as http from 'node:http';
 import * as path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import type { Duplex } from 'node:stream';
 import type { CauHinh } from '../cau-hinh.ts';
 import { ghiNhatKy } from '../csdl/csdl.ts';
@@ -20,6 +20,24 @@ import { taoTrinhDocker } from './trinh-docker.ts';
 import { taoTrinhTienTrinh } from './trinh-tien-trinh.ts';
 
 export { LoiPhien } from './loi-phien.ts';
+
+/**
+ * Chạy `viec` cho từng phần tử, tối đa `tran` việc cùng lúc, và LUÔN chờ hết rồi mới trả về.
+ *
+ * Dùng cho các vòng quét định kỳ phải hỏi một tài nguyên bên ngoài (Docker, tiến trình con): chạy tuần tự
+ * thì N phần tử tốn N vòng nối đuôi; chạy `Promise.all` trần trụi thì N lớn sẽ dội cả N tiến trình cùng
+ * lúc. Trần giữ cả hai đầu. Lỗi của một phần tử không làm hỏng các phần tử còn lại — hàm gọi tự bắt lỗi
+ * trong thân `viec`, đúng như vòng lặp tuần tự trước đây vẫn làm.
+ */
+async function chaySongSong<T>(ds: readonly T[], tran: number, viec: (p: T) => Promise<void>): Promise<void> {
+    let ke = 0;
+    const nguoiLam = Array.from({ length: Math.max(1, Math.min(tran, ds.length)) }, async () => {
+        for (let i = ke++; i < ds.length; i = ke++) {
+            await viec(ds[i] as T);
+        }
+    });
+    await Promise.all(nguoiLam);
+}
 
 export interface CongAiChoDieuPhoi {
     capToken(taiKhoanId: number, soGio: number): string;
@@ -109,12 +127,21 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
     const dangKiemSong = new Set<number>();
     let dangTat = false;
 
-    const docDong = (id: number): DongPhien | undefined =>
-        db.prepare('SELECT * FROM phien_lam_viec WHERE tai_khoan_id = ?').get(id) as DongPhien | undefined;
-    const tatCaDong = (): DongPhien[] => db.prepare('SELECT * FROM phien_lam_viec').all() as unknown as DongPhien[];
+    // Câu lệnh biên dịch MỘT LẦN lúc dựng điều phối, không phải mỗi lần gọi: docDong() nằm trên đường
+    // proxy từng yêu cầu và trên mỗi lần nâng cấp WebSocket, nên bản cũ biên dịch lại SQL cho từng tệp
+    // tĩnh của mỗi trang Theia, cho mọi người dùng, suốt vòng đời tiến trình. Cùng quy ước với `lenh`
+    // trong cong-ai/cong-ai.ts.
+    const lenhPhien = {
+        docDong: db.prepare('SELECT * FROM phien_lam_viec WHERE tai_khoan_id = ?'),
+        tatCaDong: db.prepare('SELECT * FROM phien_lam_viec'),
+        datKhongChay: db.prepare('UPDATE phien_lam_viec SET trang_thai = ?, dia_chi = NULL, ma_trinh = NULL WHERE tai_khoan_id = ?'),
+    } satisfies Record<string, StatementSync>;
+
+    const docDong = (id: number): DongPhien | undefined => lenhPhien.docDong.get(id) as DongPhien | undefined;
+    const tatCaDong = (): DongPhien[] => lenhPhien.tatCaDong.all() as unknown as DongPhien[];
     // Phiên không còn chạy (ngủ/lỗi) → xóa địa chỉ và mã trình để không ai proxy tới địa chỉ cũ.
     const datKhongChay = (id: number, trangThai: 'ngu' | 'loi'): void => {
-        db.prepare('UPDATE phien_lam_viec SET trang_thai = ?, dia_chi = NULL, ma_trinh = NULL WHERE tai_khoan_id = ?').run(trangThai, id);
+        lenhPhien.datKhongChay.run(trangThai, id);
     };
     const nhatKy = (id: number, hanhDong: string, chiTiet?: unknown): void => {
         try { ghiNhatKy(db, { hanhDong, doiTuong: `tai_khoan:${id}`, chiTiet }); } catch { /* nhật ký không được làm hỏng điều phối */ }
@@ -360,14 +387,18 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
         async quetNgu(): Promise<void> {
             await doiChieu;
             const nguongMs = cauHinh.phutNguKhiRanh * 60_000;
-            for (const r of tatCaDong()) {
+            const canQuet = tatCaDong().filter(r => r.trang_thai === 'chay' && !dangKhoiDong.has(r.tai_khoan_id));
+            // Quét SONG SONG có trần, không tuần tự: mỗi phiên là một vòng hỏi Docker, và ở chế độ tiến
+            // trình thì mỗi vòng spawn một powershell.exe. Bản cũ chạy tuần tự nên N phiên tốn N vòng
+            // nối đuôi nhau mỗi phút — N tiến trình đẻ lần lượt, vừa chậm vừa giành CPU với chính vòng
+            // lặp đang phát câu trả lời cho người dùng. Trần 8 để không dội cả trăm tiến trình cùng lúc.
+            await chaySongSong(canQuet, 8, async r => {
                 const id = r.tai_khoan_id;
-                if (r.trang_thai !== 'chay' || dangKhoiDong.has(id)) { continue; }
                 const cuoi = Math.max(hoatDongCuoi.get(id) ?? 0, r.hoat_dong_cuoi ?? 0, r.bat_dau ?? 0);
                 try {
                     if (nguongMs > 0 && bayGio() - cuoi >= nguongMs) {
                         await dungNoiBo(id, 'ranh');
-                        continue;
+                        return;
                     }
                     if (r.ma_trinh && !(await trinh.conChay(r.ma_trinh).catch(() => true))) {
                         danhDauChet(id, 'quet_dinh_ky');
@@ -375,7 +406,7 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
                 } catch (e) {
                     nhatKy(id, 'phien_loi_dung', { loi: moTaLoi(e) });
                 }
-            }
+            });
         },
 
         proxy,

@@ -26,6 +26,9 @@ export interface CauHinh {
     anhDocker: string;
     /** Phiên không hoạt động quá số phút này thì cho ngủ (dừng container, giữ dữ liệu). */
     phutNguKhiRanh: number;
+    /** Số ngày giữ nhật ký thao tác (bảng nhat_ky). Bảng này chỉ ghi thêm, không dọn thì mỗi lần mở
+     *  trang Nhật ký lại phải quét toàn bộ lịch sử tích lũy — chậm dần theo thời gian chạy. 0 = giữ mãi. */
+    giuNhatKyNgay: number;
     /** Địa chỉ Cổng AI mà phiên người dùng gọi tới (từ bên trong container). */
     diaChiCongAiChoPhien: string;
     khoaAi: { anthropic?: string; deepseek?: string; openai?: string };
@@ -66,6 +69,7 @@ export function docCauHinh(env: NodeJS.ProcessEnv = process.env): CauHinh {
         trinhDieuPhoi: trinh,
         anhDocker: env.AWORD_WEB_ANH ?? 'aword-web:latest',
         phutNguKhiRanh: so('AWORD_WEB_PHUT_NGU', 30),
+        giuNhatKyNgay: so('AWORD_WEB_GIU_NHAT_KY_NGAY', 180),
         diaChiCongAiChoPhien: env.AWORD_WEB_CONG_AI_CHO_PHIEN
             ?? (trinh === 'docker' ? `http://host.docker.internal:${cong}/ai` : `http://127.0.0.1:${cong}/ai`),
         khoaAi: {
