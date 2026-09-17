@@ -8,6 +8,8 @@ import { CauHinhDeepSeekServer, CAU_HINH_DEEPSEEK_PATH } from '../common/cau-hin
 import { CauHinhDeepSeekServerImpl } from './cau-hinh-deepseek-server-impl';
 import { KhoTriThucServer, KHO_TRI_THUC_PATH } from '../common/kho-tri-thuc-protocol';
 import { KhoTriThucServerImpl } from './kho-tri-thuc-server-impl';
+import { ChiSoTokenServer, CHI_SO_TOKEN_PATH } from '../common/chi-so-token-protocol';
+import { ChiSoTokenServerImpl } from './chi-so-token-server-impl';
 
 export default new ContainerModule(bind => {
     // Kho tri thức AI giảng dạy: tự kết nối cho vai Giáo viên (token, mã máy, đăng ký MCP `trithuc`). Bind TRƯỚC
@@ -17,6 +19,16 @@ export default new ContainerModule(bind => {
     bind(ConnectionHandler).toDynamicValue(ctx =>
         new RpcConnectionHandler(KHO_TRI_THUC_PATH, () =>
             ctx.container.get(KhoTriThucServer)
+        )
+    ).inSingletonScope();
+
+    // Chỉ số token: đọc sổ phiên Claude Code để biết đã dùng bao nhiêu. Một thể hiện duy nhất để trạng thái
+    // đọc (vị trí byte từng tệp) không bị hai bản ghi đè lẫn nhau.
+    bind(ChiSoTokenServerImpl).toSelf().inSingletonScope();
+    bind(ChiSoTokenServer).toService(ChiSoTokenServerImpl);
+    bind(ConnectionHandler).toDynamicValue(ctx =>
+        new RpcConnectionHandler(CHI_SO_TOKEN_PATH, () =>
+            ctx.container.get(ChiSoTokenServer)
         )
     ).inSingletonScope();
 

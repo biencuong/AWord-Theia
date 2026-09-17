@@ -14,6 +14,7 @@ import { CauHinhDeepSeekServer, CAU_HINH_DEEPSEEK_PATH } from '../common/cau-hin
 import { AwordCauHinhDeepSeekContribution } from './aword-cau-hinh-deepseek-contribution';
 import { KhoTriThucServer, KHO_TRI_THUC_PATH } from '../common/kho-tri-thuc-protocol';
 import { AwordKhoTriThucContribution } from './aword-kho-tri-thuc-contribution';
+import { ChiSoTokenServer, CHI_SO_TOKEN_PATH } from '../common/chi-so-token-protocol';
 
 import '../../src/browser/style/index.css';
 import '../../src/browser/style/thong-bao-giua.css';
@@ -61,6 +62,12 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bind(CommandContribution).toService(AwordKhoTriThucContribution);
     bind(MenuContribution).toService(AwordKhoTriThucContribution);
     bind(FrontendApplicationContribution).toService(AwordKhoTriThucContribution);
+
+    // Chỉ số token và chi phí (đọc sổ phiên Claude Code) — chỉ báo trên thanh tiêu đề và trang thống kê.
+    bind(ChiSoTokenServer).toDynamicValue(ctx => {
+        const provider = ctx.container.get(WebSocketConnectionProvider);
+        return provider.createProxy<ChiSoTokenServer>(CHI_SO_TOKEN_PATH);
+    }).inSingletonScope();
 
     bind(AwordMenuContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(AwordMenuContribution);
