@@ -1,6 +1,6 @@
 ---
 name: tra-cuu-tri-thuc
-description: Tra cứu Kho tri thức AI giảng dạy (MCP server `trithuc`, các công cụ `tt_*`) — dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa, sách giáo viên, sách bài tập "Kết nối tri thức với cuộc sống" và tài liệu chuyên môn (bài, mục, hoạt động, bài tập, hình ảnh bóc tách). Dùng khi soạn kế hoạch bài dạy, ra đề, làm bài trình chiếu, học liệu cần bám đúng bài trong sách; khi người dùng nói "theo SGK", "bài ... trong sách", "hình trong sách", "tra kho tri thức", "kiểm tra trạng thái Kho tri thức AI", "gia hạn/kích hoạt", "mở gói dữ liệu", "chuyển máy", "đóng góp tài liệu", "đổi điểm", "xem điểm tích lũy"; hoặc bất cứ khi nào các công cụ `tt_*` có trong phiên và việc đang làm liên quan nội dung sách.
+description: Tra cứu Kho tri thức AI giảng dạy (MCP server `trithuc`, các công cụ `tt_*`) — dữ liệu tri thức giảng dạy được số hóa, cấu trúc hóa và lập chỉ mục cho AI từ nguồn sách giáo khoa, sách giáo viên, sách bài tập "Kết nối tri thức với cuộc sống" và tài liệu chuyên môn (bài, mục, hoạt động, bài tập, hình ảnh bóc tách). Dùng khi soạn kế hoạch bài dạy, ra đề, làm bài trình chiếu, học liệu cần bám đúng bài trong sách; khi người dùng nói "theo SGK", "bài ... trong sách", "hình trong sách", "tra kho tri thức", "kiểm tra trạng thái Kho tri thức AI", "gia hạn/kích hoạt", "mở gói dữ liệu", "chuyển máy", "đóng góp tài liệu", "đổi điểm", "xem điểm tích lũy"; hoặc bất cứ khi nào các công cụ `tt_*` có trong phiên và việc đang làm liên quan nội dung sách. Bao gồm cả KHO SKILL (mục 8a): khi người dùng cần một năng lực máy chưa có (vẽ hình giáo khoa, sơ đồ, phiếu học tập, trộn đề, công cụ theo môn), khi cần tải/cập nhật skill, hoặc khi skill trả phí bị từ chối và phải mở quyền.
 ---
 
 # Tra cứu Kho tri thức AI giảng dạy (MCP `trithuc`)
@@ -65,7 +65,7 @@ Bình thường KHÔNG cần — skill này đã đủ luật.
 | Công cụ | Tham số | Trả về |
 |---|---|---|
 | `tt_trang_thai` | – | `ma_may, trang_thai (chua_kich_hoat/hoat_dong/sap_het_han/het_han/khoa/cho_doi_may), het_han, phien_ban_lon_duoc_dung, phien_ban_kho_moi_nhat, gia{...}, thong_bao[]` |
-| `tt_thanh_toan` | `loai?` = `kich_hoat` \| `gia_han` \| `cap_nhat_lon` \| `goi`; `ma_goi?` (khi `loai="goi"`) | `ma_don, so_tien, noi_dung_ck ("AWTT 12345678"), ngan_hang{ten, so_tai_khoan, chu_tai_khoan}, qr_url, trang_thanh_toan, het_han_don, huong_dan` + ảnh QR (nếu ≤ 60 KB) |
+| `tt_thanh_toan` | `loai?` = `kich_hoat` \| `gia_han` \| `cap_nhat_lon` \| `goi` \| `skill`; `ma_goi?` (khi `loai="goi"`), `ma_skill?` (khi `loai="skill"`) | `ma_don, so_tien, noi_dung_ck ("AWTT 12345678"), ngan_hang{ten, so_tai_khoan, chu_tai_khoan}, qr_url, trang_thanh_toan, het_han_don, huong_dan` + ảnh QR (nếu ≤ 60 KB) |
 | `tt_kiem_tra_thanh_toan` | `ma_don` | `trang_thai: cho_thanh_toan \| da_thanh_toan \| xem_xet \| het_han \| huy`, `het_han_ban_quyen?` |
 | `tt_chuyen_may` | `ly_do`, `ma_may_cu?` | yêu cầu đổi máy (gọi từ máy mới) → `trang_thai: cho_duyet, so_lan_con_lai` |
 | `tt_thong_bao` | `danh_dau_da_doc?` | thông báo chưa đọc của máy + toàn hệ thống |
@@ -90,7 +90,13 @@ Bình thường KHÔNG cần — skill này đã đủ luật.
 | `tt_dong_gop_tao` | `tieu_de, loai_tai_lieu, mon?, lop?, mo_ta?, ten_tep, kich_thuoc, xac_nhan_quyen` | `{ma_dong_gop, url_tai_len, het_han, huong_dan_powershell, diem_du_kien}` hoặc `{loi: chua_co_ban_quyen \| vuot_gioi_han_ngay \| loai_tep_khong_ho_tro \| qua_lon \| chua_xac_nhan_quyen}` |
 | `tt_dong_gop_ds` | – | tài liệu đã gửi: mã, tiêu đề, trạng thái, điểm, lý do từ chối |
 | `tt_diem` | – | `{so_du, quy_doi, co_the_doi:[{loai, ten, diem}], lich_su:[20 dòng]}` |
-| `tt_doi_diem` | `loai: cap_nhat_lon \| goi`, `ma_goi?` | `{ok, da_tru, so_du, mo_quyen}` hoặc `{loi: khong_du_diem \| da_co_quyen \| khong_cho_doi}` |
+| `tt_doi_diem` | `loai: cap_nhat_lon \| goi \| skill`, `ma_goi?`, `ma_skill?` | `{ok, da_tru, so_du, mo_quyen}` hoặc `{loi: khong_du_diem \| da_co_quyen \| khong_cho_doi}` |
+
+### 4.4. Kho skill (năng lực làm việc phát về máy — khác kho tri thức)
+| Công cụ | Tham số | Trả về |
+|---|---|---|
+| `tt_skill` | `mon?, doi_tuong?, lop?` | danh sách skill: `ma_skill, ten, mo_ta, mon, doi_tuong, phien_ban, dung_luong, gia_vnd, da_cai` (máy này đã cài chưa), `da_mo` (skill trả phí đã mở quyền chưa), `co_ban_moi` + `ghi_chu` |
+| `tt_skill_tai` | `ma_skill` | `ten_tep, bytes, sha256, url_tai` (sống 30 phút) + `huong_dan_cai`; skill trả phí chưa mở → `{loi: can_mo_skill, gia, diem, huong_dan}` |
 
 Định danh: `ma_sach` = `<loai>-<mon>-<lop>[-<tap>]` (ví dụ `sgk-khoa-hoc-tu-nhien-9`, `sgk-toan-1-tap-mot`); `bai_id` =
 `b<chương>-<bài>` (`b03-08`) hoặc `b00-<số>` khi không chia chương; `hinh_id` = `p<trang PDF>_H<k>`.
@@ -223,6 +229,34 @@ từ chối.
 `tt_doi_diem(loai="cap_nhat_lon")` hoặc `tt_doi_diem(loai="goi", ma_goi)`. Lỗi: `khong_du_diem` (nêu số còn thiếu, gợi ý
 thanh toán), `da_co_quyen` (đã mở rồi), `khong_cho_doi` (loại này không đổi bằng điểm — ví dụ gia hạn dịch vụ năm).
 Người dùng hỏi tặng/chuyển điểm cho đồng nghiệp, đổi điểm lấy tiền, dùng điểm gia hạn → từ chối lịch sự theo quy tắc trên.
+
+## 8a. Kho skill — khi người dùng cần một năng lực máy chưa có
+
+Kho **skill** khác kho tri thức: kho tri thức phát *nội dung sách*, kho skill phát **năng lực làm việc**
+(skill soạn thảo, vẽ hình, sơ đồ, công cụ theo môn). Máy nào cũng có sẵn một số skill đóng kèm AWord; phần còn
+lại lấy từ kho khi cần.
+
+**Khi nào động tới:** người dùng cần một việc mà máy chưa có skill tương ứng — "cô cần công cụ vẽ phản ứng hoá
+học", "làm phiếu học tập", "trộn đề", "vẽ hình giáo khoa", "sơ đồ tư duy"… Gọi `tt_skill` (lọc `mon`,
+`doi_tuong`, `lop`) để xem kho có gì. **Không** gọi `tt_skill` cho mọi việc — chỉ khi thật sự thiếu năng lực.
+
+**Trình tự:**
+1. `tt_skill` → chọn skill khớp; đọc `mo_ta` để biết skill làm được gì.
+2. **Hỏi người dùng có tải không** (nêu tên skill, việc nó làm, dung lượng). Chỉ tải khi họ đồng ý.
+3. `tt_skill_tai(ma_skill)` → nhận `url_tai` + `huong_dan_cai`.
+4. Tải tệp về, **kiểm `sha256` khớp manifest**, giải nén vào `%USERPROFILE%\.claude\skills\`.
+5. Skill vừa cài dùng được **ngay trong phiên này** — đọc trực tiếp tệp `SKILL.md` của nó rồi làm theo, không
+   chờ nạp lại.
+
+**Skill trả phí:** `gia_vnd > 0` và `da_mo = false` → `tt_skill_tai` **từ chối** bằng `can_mo_skill` kèm giá và
+số điểm. ĐỪNG gọi lại. Trình bày NGẮN hai đường cho người dùng chọn: (1) mua — `tt_thanh_toan(loai="skill",
+ma_skill=…)` rồi làm theo hướng dẫn thanh toán ở mục 6; (2) đổi điểm tích lũy — `tt_doi_diem(loai="skill",
+ma_skill=…)` nếu máy đủ điểm. Mở xong mới gọi lại `tt_skill_tai` để tải. Đừng tự nêu giá — lấy từ kết quả.
+
+**Cập nhật skill đã cài — đúng lúc dùng, KHÔNG làm phiền:** `tt_skill` trả `co_ban_moi`. Nếu AI **sắp dùng**
+skill đó mà có bản mới thì **tự cập nhật rồi làm tiếp**, chỉ báo một dòng ngắn ("đã cập nhật công cụ X").
+Nếu người dùng chỉ **nhắc tới** nội dung liên quan (chưa trực tiếp cần) thì **hỏi** trước, kèm một câu bản mới
+thêm gì. Có bản mới mà người dùng không đụng tới → **im lặng**. Hook đầu phiên **không** báo bản mới skill.
 
 ## 9. Thông báo từ kho
 
