@@ -14,7 +14,7 @@ const HUONG_DAN: { icon: string; text: string }[] = [
     { icon: '@', text: 'Gõ @ trong khung chat để đính kèm tệp làm ngữ cảnh; hoặc chuột phải tệp trong Explorer → "Thêm vào Claude Code (@)"; kéo-thả tệp vào khung chat cũng được.' },
     { icon: '📄', text: 'Đọc mọi loại văn bản: docx, xlsx, pdf — kể cả PDF scan và ảnh chụp; cứ đưa tệp và yêu cầu "đọc/tóm tắt", Claude tự xử lý.' },
     { icon: '✏️', text: 'Claude đọc và sửa tệp trực tiếp — mỗi thay đổi đều hiện diff để bạn duyệt trước khi chấp nhận.' },
-    { icon: '⚡', text: 'AWord có sẵn gần 40 kỹ năng (văn bản Nghị định 30, xử lý văn bản đến, giáo án, đề kiểm tra, trình chiếu, bảng tính...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
+    { icon: '⚡', text: 'AWord có sẵn gần 50 kỹ năng (văn bản Nghị định 30, xử lý văn bản đến, giáo án, phiếu học tập, đề kiểm tra, sổ chủ nhiệm, thiết kế bài trình chiếu, bảng tính...) — cứ mô tả việc cần làm, Claude tự chọn kỹ năng phù hợp.' },
     { icon: '🧠', text: 'Claude tự ghi nhớ việc đang làm vào thư mục ẩn .aword/bo-nho trong thư mục làm việc — phiên sau nối tiếp liền mạch; công cụ AI khác cũng dùng chung được qua tệp AGENTS.md.' },
     { icon: '📚', text: 'Tra cứu văn bản cơ quan: chạy "Kết nối Kho dữ liệu (AWord)" trong Start Menu một lần (nhập địa chỉ + mã khóa do quản trị cấp) — sau đó hỏi Claude về văn bản, quy định; Claude tự tra kho và trích dẫn số ký hiệu.' },
     { icon: '🔄', text: 'Cập nhật phiên bản mới trong menu Trợ giúp → Cập nhật phiên bản mới.' },
@@ -62,6 +62,16 @@ export class AwordWelcomeWidget extends ReactWidget {
     render(): React.ReactElement {
         return <div className='aword-welcome'>
             <div className='aword-welcome-inner'>
+                <div className='aword-nang-cap-pro'>
+                    <span className='aword-nang-cap-pro-nhan'>Ngừng phát triển</span>
+                    <span className='aword-nang-cap-pro-chu'>
+                        Dòng AWord 2.x không còn nhận bản sửa lỗi, tính năng mới hay cập nhật Claude Code.
+                        Hãy nâng cấp lên <b>AWord Pro</b> — cài song song với bản này, dùng chung thư mục làm việc,
+                        cấu hình Claude và bộ nhớ nên không mất dữ liệu.
+                    </span>
+                    <button className='theia-button main aword-nang-cap-pro-nut'
+                        onClick={() => this.moNangCapPro()}>Nâng cấp lên AWord Pro</button>
+                </div>
                 <div className='aword-about-header aword-welcome-header'>
                     <div className='aword-about-logo' dangerouslySetInnerHTML={{ __html: AWORD_LOGO_SVG }} />
                     <div>
@@ -110,6 +120,11 @@ export class AwordWelcomeWidget extends ReactWidget {
                 </div>
             </div>
         </div>;
+    }
+
+    /** Nút trên dòng thông báo: mở hộp thoại "Cập nhật phiên bản mới" — hộp này tự tra bản AWord Pro mới nhất và cho tải. */
+    protected moNangCapPro(): void {
+        this.commandService.executeCommand('aword:check-update');
     }
 
     protected renderMucGanDay(uri: string): React.ReactElement {

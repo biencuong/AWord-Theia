@@ -1,6 +1,6 @@
 import { injectable, inject } from '@theia/core/shared/inversify';
 import { MenuModelRegistry, CommandRegistry, Command, URI } from '@theia/core';
-import { AbstractViewContribution, CommonMenus, FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { AbstractViewContribution, CommonMenus, FrontendApplication, FrontendApplicationContribution, StatusBar, StatusBarAlignment } from '@theia/core/lib/browser';
 import { EnvVariablesServer } from '@theia/core/lib/common/env-variables';
 import { BinaryBuffer } from '@theia/core/lib/common/buffer';
 import { FileService } from '@theia/filesystem/lib/browser/file-service';
@@ -44,6 +44,9 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     @inject(EnvVariablesServer)
     protected readonly envServer: EnvVariablesServer;
 
+    @inject(StatusBar)
+    protected readonly statusBar: StatusBar;
+
     constructor() {
         super({
             widgetId: AwordWelcomeWidget.ID,
@@ -58,6 +61,7 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     // - Đã có workspace → mở khung chat Claude ở vùng soạn thảo chính; trang chào mừng chỉ hiện lần đầu.
     // - Người dùng CHỦ ĐỘNG đóng workspace (đã có mục gần đây) → tôn trọng, chỉ hiện trang chào mừng.
     async onDidInitializeLayout(app: FrontendApplication): Promise<void> {
+        this.hienDongNangCapPro();
         // Ẩn các icon sidebar không dùng: ẩn NGAY một lần, rồi NGHE SỰ KIỆN thêm widget để
         // ẩn nốt view container nào xuất hiện trễ — thay cho việc quét mù nhiều lần theo mốc
         // thời gian cứng (tốn và kéo dài "đuôi" khởi động). Tự ngừng nghe sau khi layout ổn định.
@@ -100,6 +104,18 @@ export class AwordWelcomeContribution extends AbstractViewContribution<AwordWelc
     }
 
     // Ẩn view container Quản lý mã nguồn / Kiểm thử / Gỡ lỗi khỏi thanh bên trái.
+    // Dòng thông báo thường trực ở thanh trạng thái: dòng 2.x đã ngừng phát triển. Bấm vào mở hộp thoại
+    // "Cập nhật phiên bản mới" — hộp đó tự tra bản AWord Pro mới nhất và cho tải về.
+    protected hienDongNangCapPro(): void {
+        this.statusBar.setElement('aword-nang-cap-pro', {
+            text: '$(rocket) AWord 2.x đã ngừng phát triển — nâng cấp lên AWord Pro',
+            alignment: StatusBarAlignment.RIGHT,
+            priority: 1000,
+            command: 'aword:check-update',
+            tooltip: 'Dòng AWord 2.x không còn nhận bản sửa lỗi hay tính năng mới. AWord Pro cài song song, dùng chung dữ liệu làm việc — bấm để xem và tải.'
+        });
+    }
+
     protected anIconSidebar(app: FrontendApplication): void {
         try {
             for (const w of app.shell.getWidgets('left')) {

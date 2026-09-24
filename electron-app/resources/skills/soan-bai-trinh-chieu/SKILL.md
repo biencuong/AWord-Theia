@@ -5,7 +5,9 @@ description: Soạn bài trình chiếu (.pptx) cho bài dạy — cấu trúc s
 
 # Soạn bài trình chiếu cho bài dạy
 
-Kỹ thuật dựng file .pptx (python-pptx, template, font, layout) làm theo skill **`pptx`** chính thống —
+Kỹ thuật dựng file .pptx (python-pptx, template, font, layout) làm theo skill **`pptx`** chính thống;
+phần NHÌN (bộ màu, phông, bố cục từng slide, biểu đồ, ảnh, rà lỗi trình bày) theo skill
+**`thiet-ke-trinh-chieu`** —
 skill này CHỈ bổ sung LUẬT SƯ PHẠM, nằm trong 3 file references (đọc CHỌN LỌC đúng phần cần):
 - `references/quy-tac-slide-su-pham.md` — cỡ chữ theo cấp, cấu trúc, checklist rà.
 - `references/hieu-ung-trinh-tu-su-pham.md` — TRÌNH TỰ THỂ HIỆN + HIỆU ỨNG theo LOẠI KIẾN THỨC
