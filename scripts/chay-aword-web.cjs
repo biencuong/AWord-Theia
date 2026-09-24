@@ -145,15 +145,19 @@ function chayMayChuNen(cong, env) {
 
 (async () => {
     if (process.argv.includes('--tat')) { tatMayChu(); return; }
+    // --chi-chuan-bi: chỉ làm mới mã đã cũ rồi thoát (bản có đăng nhập gọi sang để dùng chung các bước này).
+    const chiChuanBi = process.argv.includes('--chi-chuan-bi');
     if (!fs.existsSync(THEIA)) { dung(`Chưa cài thư viện (không thấy ${THEIA}). Chạy "npm ci" ở ${REPO} trước.`); }
 
     // 1. Đang chạy sẵn → mở trình duyệt.
     const tepCong = TEP_CONG;
-    const congCu = +(fs.existsSync(tepCong) ? fs.readFileSync(tepCong, 'utf8').trim() : 0);
-    if (congCu && (await hoi(`http://127.0.0.1:${congCu}/`)) === 200) {
-        bao(`Bản web đang chạy — mở http://localhost:${congCu}`);
-        moTrinhDuyet(`http://localhost:${congCu}`);
-        return;
+    if (!chiChuanBi) {
+        const congCu = +(fs.existsSync(tepCong) ? fs.readFileSync(tepCong, 'utf8').trim() : 0);
+        if (congCu && (await hoi(`http://127.0.0.1:${congCu}/`)) === 200) {
+            bao(`Bản web đang chạy — mở http://localhost:${congCu}`);
+            moTrinhDuyet(`http://localhost:${congCu}`);
+            return;
+        }
     }
 
     // 2a. aword-chat: mã nguồn mới hơn bản biên dịch → biên dịch.
@@ -186,6 +190,8 @@ function chayMayChuNen(cong, env) {
             if (fs.existsSync(nguon)) { fs.copyFileSync(nguon, path.join(CAU_HINH, ten)); }
         }
     }
+
+    if (chiChuanBi) { bao('Đã chuẩn bị xong bản web.'); return; }
 
     // 4. Chọn cổng, chạy máy chủ NỀN chỉ trong máy (không cửa sổ, nhật ký ra tệp), mở trình duyệt khi sẵn sàng.
     let cong = CONG_MAC_DINH;
