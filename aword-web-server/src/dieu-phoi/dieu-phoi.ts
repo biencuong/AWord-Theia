@@ -192,10 +192,34 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
         }
     })().catch(e => { console.error('[AWord Web] Lỗi đối chiếu phiên làm việc:', e); });
 
+    /**
+     * CHẾ ĐỘ CÁ NHÂN (máy một người dùng, trình "tiến trình"): biến `AWORD_WEB_HOME_TAI_KHOAN_<id>` trỏ tài khoản đó vào
+     * THƯ MỤC NHÀ THẬT của máy, nên phiên kế thừa nguyên vẹn lịch sử phiên Claude Code, skill, cấu hình và thư mục làm
+     * việc đã có — lịch sử Claude Code lưu theo ĐƯỜNG DẪN thư mục làm việc nên phải dùng đúng đường dẫn thật, không
+     * thể thay bằng liên kết. KHÔNG dùng khi nhiều người chung máy chủ: các tài khoản sẽ thấy dữ liệu của nhau.
+     */
+    function homeChiDinh(id: number): string | undefined {
+        const duongDan = (process.env[`AWORD_WEB_HOME_TAI_KHOAN_${id}`] ?? '').trim();
+        if (!duongDan) { return undefined; }
+        if (!fs.existsSync(duongDan)) {
+            console.error(`[AWord Web] Bỏ qua AWORD_WEB_HOME_TAI_KHOAN_${id}: không thấy thư mục "${duongDan}".`);
+            return undefined;
+        }
+        return duongDan;
+    }
+
+    /**
+     * Cấu hình Theia của phiên LUÔN nằm trong du-lieu, kể cả chế độ cá nhân: bố cục, thư mục gần đây, thiết lập của bản
+     * web phải tách khỏi ~/.theia mà AWord bản cài đang dùng, không thì hai bên ghi đè nhau.
+     */
+    const thuMucTheia = (id: number): string => path.join(cauHinh.thuMucDuLieu, 'tai-khoan', String(id), '.theia');
+
     function taoThuMucRieng(id: number): string {
-        const thuMucRieng = path.join(cauHinh.thuMucDuLieu, 'tai-khoan', String(id));
+        const thuMucRieng = homeChiDinh(id) ?? path.join(cauHinh.thuMucDuLieu, 'tai-khoan', String(id));
         for (const con of THU_MUC_CON_HOME) { fs.mkdirSync(path.join(thuMucRieng, con), { recursive: true }); }
-        datThietLapPhien(path.join(thuMucRieng, '.theia', 'settings.json'));
+        const theia = thuMucTheia(id);
+        fs.mkdirSync(theia, { recursive: true });
+        datThietLapPhien(path.join(theia, 'settings.json'));
         return thuMucRieng;
     }
 
@@ -256,7 +280,7 @@ export function taoDieuPhoi(tuy: TuyChonDieuPhoi) {
                 ANTHROPIC_AUTH_TOKEN: token,
                 AWORD_HOME: home,
                 CLAUDE_CONFIG_DIR: noiDuongDan(home, '.claude'),
-                THEIA_CONFIG_DIR: noiDuongDan(home, '.theia'),
+                THEIA_CONFIG_DIR: home === thuMucRieng ? thuMucTheia(id) : noiDuongDan(home, '.theia'),
                 HOME: home,
                 // Cho aword-chat biết đang chạy trong AWord Web đa người dùng (ẩn cập nhật Claude Code, đăng nhập...).
                 AWORD_CHE_DO: 'web-da-nguoi-dung',

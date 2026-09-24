@@ -123,6 +123,31 @@ test('thiết lập Theia của phiên web: không hỏi tin tưởng thư mục
     assert.deepEqual(JSON.parse(fs.readFileSync(tep2, 'utf8')), { 'security.workspace.trust.enabled': false, 'claudeCode.disableLoginPrompt': true });
 });
 
+test('chế độ cá nhân: AWORD_WEB_HOME_TAI_KHOAN_<id> trỏ vào thư mục nhà thật (kế thừa lịch sử Claude Code)', async t => {
+    const nhaThat = thuMucTam('nha-that');
+    const trinh = taoTrinhGia();
+    const dp = taoDieuPhoi({ db: taoCsdl(), cauHinh: taoCauHinh(thuMucTam('dp')), congAi: taoCongAiGia(), trinh, nhipKiemMs: 20 });
+    t.after(() => {
+        delete process.env.AWORD_WEB_HOME_TAI_KHOAN_2;
+        delete process.env.AWORD_WEB_HOME_TAI_KHOAN_3;
+        return trinh.donDep();
+    });
+
+    process.env.AWORD_WEB_HOME_TAI_KHOAN_2 = nhaThat;
+    await dp.damBaoPhien(2);
+    const goi = trinh.khoiDongGoi[0];
+    assert.equal(goi.thuMucRieng, nhaThat);
+    assert.equal(goi.env.HOME, nhaThat);
+    assert.equal(goi.env.CLAUDE_CONFIG_DIR, path.join(nhaThat, '.claude'));
+    // Cấu hình Theia vẫn để riêng trong du-lieu — không đè ~/.theia của AWord bản cài
+    assert.ok(goi.env.THEIA_CONFIG_DIR.endsWith(path.join('tai-khoan', '2', '.theia')), goi.env.THEIA_CONFIG_DIR);
+
+    // Đường dẫn không tồn tại → bỏ qua, quay về thư mục riêng trong du-lieu
+    process.env.AWORD_WEB_HOME_TAI_KHOAN_3 = path.join(nhaThat, 'khong-co-that');
+    await dp.damBaoPhien(3);
+    assert.ok(trinh.khoiDongGoi[1].thuMucRieng.endsWith(path.join('tai-khoan', '3')));
+});
+
 test('trình có home riêng trong phiên (docker): env dùng đường dẫn trong container', async t => {
     const db = taoCsdl();
     const trinh = taoTrinhGia({ home: '/home/aword' });

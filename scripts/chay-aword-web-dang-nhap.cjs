@@ -28,6 +28,8 @@ const TEP_MAY_CHU = path.join(THU_MUC, 'may-chu.json');
 const TEP_NHAT_KY = path.join(THU_MUC, 'nhat-ky.log');
 const TEP_CMD = path.join(THU_MUC, 'may-chu.cmd');
 const DU_LIEU = path.join(THU_MUC, 'du-lieu');
+const TEP_KHOA = path.join(THU_MUC, 'khoa-ai.env');
+const CSDL = path.join(DU_LIEU, 'aword-web.db');
 const TEN_MIEN = process.env.AWORD_WEB_TEN_MIEN || 'aword.localhost';
 const CONG_MAC_DINH = +(process.env.AWORD_WEB_CONG || 8080);
 
@@ -35,8 +37,11 @@ const bao = s => console.log(`[AWord Web] ${s}`);
 const dung = (s, ma = 1) => { console.error(`\n[AWord Web] LỖI: ${s}`); process.exit(ma); };
 const docJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return undefined; } };
 
-const hoi = (url, ms = 1500) => new Promise(res => {
-    const req = http.get(url, r => { r.resume(); res(r.statusCode); });
+// Máy chủ định tuyến theo TÊN MÁY (tenMien = cổng đăng nhập, app.tenMien = phiên), nên phép kiểm phải gửi đúng
+// header Host — gọi thẳng 127.0.0.1 sẽ bị chuyển hướng về tên miền chính thức và không bao giờ thấy 200.
+const hoi = (cong, duongDan, ms = 1500) => new Promise(res => {
+    const req = http.get({ host: '127.0.0.1', port: cong, path: duongDan, headers: { Host: `${TEN_MIEN}:${cong}` } },
+        r => { r.resume(); res(r.statusCode); });
     req.on('error', () => res(0));
     req.setTimeout(ms, () => { req.destroy(); res(0); });
 });
@@ -50,10 +55,16 @@ function moTrinhDuyet(url) {
     if (process.platform === 'win32') { spawn('cmd', ['/c', 'start', '""', url], { detached: true, stdio: 'ignore' }).unref(); }
     else { spawn(process.platform === 'darwin' ? 'open' : 'xdg-open', [url], { detached: true, stdio: 'ignore' }).unref(); }
 }
+// MỘT bộ đọc dòng dùng chung cho mọi câu hỏi: mở/đóng theo từng câu sẽ làm mất phần người dùng (hoặc script) đã gõ sẵn.
+let boDoc;
 const doiCauTraLoi = cauHoi => new Promise(res => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.question(cauHoi, tl => { rl.close(); res(tl.trim()); });
+    boDoc ??= readline.createInterface({ input: process.stdin, output: process.stdout });
+    boDoc.question(cauHoi, tl => res(tl.trim()));
 });
+const dongBoDoc = () => { boDoc?.close(); boDoc = undefined; };
+// Trả lời sẵn bằng biến môi trường (cài tự động, kiểm thử): AWORD_WEB_TL_KHOA (1|2|0 hoặc "2:sk-..."),
+// AWORD_WEB_TL_DINH_DANH, AWORD_WEB_TL_HO_TEN. Không đặt thì hỏi trên màn hình như bình thường.
+const traLoiSan = async (bien, cauHoi) => (process.env[bien] ?? '').trim() || doiCauTraLoi(cauHoi);
 
 /** Biến môi trường cho máy chủ: bí mật ký token, thư mục dữ liệu, cổng, tên miền, trình điều phối. */
 function moiTruong(cong) {
@@ -70,8 +81,72 @@ function moiTruong(cong) {
         AWORD_WEB_TRINH_DIEU_PHOI: process.env.AWORD_WEB_TRINH_DIEU_PHOI || 'tien-trinh',
         AWORD_WEB_REPO: REPO,
     };
+    // Tài khoản đầu tiên (chủ máy) dùng THẲNG thư mục nhà thật: phiên kế thừa nguyên lịch sử phiên Claude Code, skill,
+    // cấu hình và thư mục làm việc Documents\AWord đang có. Cấu hình giao diện Theia vẫn để riêng. Đặt
+    // AWORD_WEB_KHONG_KE_THUA=1 nếu muốn tài khoản 1 có thư mục nhà trắng như các tài khoản khác.
+    if (!process.env.AWORD_WEB_KHONG_KE_THUA) { env.AWORD_WEB_HOME_TAI_KHOAN_1 = os.homedir(); }
     delete env.ELECTRON_RUN_AS_NODE;
     return env;
+}
+
+/** Khóa AI của tổ chức: hỏi một lần, lưu riêng trên máy (KHÔNG vào kho mã), nạp lại ở các lần chạy sau. */
+async function khoaAi() {
+    if (fs.existsSync(TEP_KHOA)) {
+        const kq = {};
+        for (const dong of fs.readFileSync(TEP_KHOA, 'utf8').split(/\r?\n/)) {
+            const m = /^([A-Z_]+)=(.*)$/.exec(dong.trim());
+            if (m && m[2]) { kq[m[1]] = m[2]; }
+        }
+        return kq;
+    }
+    console.log('');
+    bao('Bản có đăng nhập cho AI đi qua Cổng AI của máy chủ (không dùng tài khoản Claude trên máy).');
+    console.log('  [1] Khóa Anthropic (Claude)     [2] Khóa DeepSeek     [0] Bỏ qua, cấu hình sau');
+    const traLoi = await traLoiSan('AWORD_WEB_TL_KHOA', '  Chọn (1/2/0): ');
+    const [chon, khoaSan] = traLoi.split(':');
+    const bien = chon === '1' ? 'AWORD_KHOA_ANTHROPIC' : chon === '2' ? 'AWORD_KHOA_DEEPSEEK' : '';
+    if (!bien) {
+        fs.writeFileSync(TEP_KHOA, '# Chưa cấu hình khóa AI. Thêm một dòng, ví dụ:\n# AWORD_KHOA_DEEPSEEK=sk-...\n', { mode: 0o600 });
+        bao(`Bỏ qua — khi cần, thêm khóa vào ${TEP_KHOA} rồi chạy lại.`);
+        return {};
+    }
+    const khoa = khoaSan?.trim() || await doiCauTraLoi('  Dán khóa rồi Enter (khóa sẽ hiện trên màn hình): ');
+    if (!khoa) { bao('Không nhận được khóa — bỏ qua.'); return {}; }
+    fs.writeFileSync(TEP_KHOA, `${bien}=${khoa}\n`, { mode: 0o600 });
+    bao(`Đã lưu khóa vào ${TEP_KHOA} (chỉ nằm trên máy này).`);
+    return { [bien]: khoa };
+}
+
+/**
+ * Bật các mô hình của nhà cung cấp đang có khóa (giá để 0 — dùng cá nhân, không trừ hạn mức; quản trị nhập giá thật
+ * trong trang Quản trị khi cần theo dõi chi phí). DeepSeek: Claude Code mặc định gọi mô hình claude-*, nên ghi sẵn
+ * ANTHROPIC_MODEL vào settings.json của từng tài khoản để phiên gọi đúng mô hình DeepSeek.
+ */
+function batMoHinh(khoa) {
+    if (!fs.existsSync(CSDL)) { return; }
+    const ncc = khoa.AWORD_KHOA_ANTHROPIC ? 'anthropic' : khoa.AWORD_KHOA_DEEPSEEK ? 'deepseek' : '';
+    if (!ncc) { return; }
+    const { DatabaseSync } = require('node:sqlite');
+    const db = new DatabaseSync(CSDL);
+    try {
+        db.prepare('UPDATE bang_gia SET bat = 1, cap_nhat_luc = ? WHERE nha_cung_cap = ?').run(Date.now(), ncc);
+        const ds = db.prepare('SELECT ma FROM bang_gia WHERE nha_cung_cap = ? ORDER BY ma').all(ncc).map(r => r.ma);
+        bao(`Đã bật mô hình ${ncc}: ${ds.join(', ')} (giá 0 — không trừ hạn mức).`);
+        if (ncc === 'deepseek') {
+            const lon = ds.find(m => /pro/i.test(m)) ?? ds[0];
+            const nho = ds.find(m => /flash/i.test(m)) ?? lon;
+            for (const { id } of db.prepare('SELECT id FROM tai_khoan').all()) {
+                const tep = path.join(DU_LIEU, 'tai-khoan', String(id), '.claude', 'settings.json');
+                fs.mkdirSync(path.dirname(tep), { recursive: true });
+                const cu = docJson(tep) ?? {};
+                cu.env = { ...(cu.env ?? {}), ANTHROPIC_MODEL: lon, ANTHROPIC_SMALL_FAST_MODEL: nho };
+                fs.writeFileSync(tep, JSON.stringify(cu, null, 2));
+            }
+            bao(`Phiên của các tài khoản sẽ dùng mô hình ${lon} (việc nhẹ: ${nho}).`);
+        }
+    } finally {
+        db.close();
+    }
 }
 
 function tatMayChu() {
@@ -109,8 +184,9 @@ function chayNen(cong, env) {
         '@echo off',
         'chcp 65001 >nul',
         `cd /d "${MAY_CHU}"`,
-        ...['AWORD_WEB_BI_MAT', 'AWORD_WEB_DU_LIEU', 'AWORD_WEB_CONG', 'AWORD_WEB_TEN_MIEN', 'AWORD_WEB_TRINH_DIEU_PHOI', 'AWORD_WEB_REPO']
-            .map(ten => dat(ten, env[ten])),
+        ...['AWORD_WEB_BI_MAT', 'AWORD_WEB_DU_LIEU', 'AWORD_WEB_CONG', 'AWORD_WEB_TEN_MIEN', 'AWORD_WEB_TRINH_DIEU_PHOI',
+            'AWORD_WEB_REPO', 'AWORD_WEB_HOME_TAI_KHOAN_1', 'AWORD_KHOA_ANTHROPIC', 'AWORD_KHOA_DEEPSEEK', 'AWORD_KHOA_OPENAI']
+            .filter(ten => env[ten]).map(ten => dat(ten, env[ten])),
         'set "ELECTRON_RUN_AS_NODE="',
         `"${process.execPath}" src${path.sep}main.ts >> "${TEP_NHAT_KY}" 2>&1`,
         '',
@@ -131,7 +207,7 @@ function chayNen(cong, env) {
 
     // 1. Đang chạy sẵn → mở trình duyệt.
     const dangChay = docJson(TEP_MAY_CHU);
-    if (dangChay?.cong && (await hoi(`http://127.0.0.1:${dangChay.cong}/dang-nhap`)) === 200) {
+    if (dangChay?.cong && (await hoi(dangChay.cong, '/dang-nhap')) === 200) {
         bao(`Đang chạy — mở http://${TEN_MIEN}:${dangChay.cong}`);
         moTrinhDuyet(`http://${TEN_MIEN}:${dangChay.cong}/`);
         return;
@@ -140,18 +216,20 @@ function chayNen(cong, env) {
     // 2. Phiên của mỗi tài khoản chạy chính browser-app này → dùng lại bước làm mới của bản một người.
     bao('Kiểm tra và làm mới bản web (aword-chat, plugin Claude Code, native module, browser-app)…');
     const r = spawnSync(process.execPath, [path.join(__dirname, 'chay-aword-web.cjs'), '--chi-chuan-bi'],
-        { cwd: REPO, stdio: 'inherit', env: { ...process.env, ELECTRON_RUN_AS_NODE: '' } });
+        // stdin 'ignore': bước chuẩn bị không hỏi gì, nếu cho kế thừa stdin nó sẽ nuốt mất phần trả lời của các câu hỏi bên dưới
+        { cwd: REPO, stdio: ['ignore', 'inherit', 'inherit'], env: { ...process.env, ELECTRON_RUN_AS_NODE: '' } });
     if (r.status !== 0) { dung('Chuẩn bị bản web thất bại (xem thông báo phía trên).'); }
 
     let cong = CONG_MAC_DINH;
     while (!(await congTrong(cong))) { cong++; }
     const env = moiTruong(cong);
+    Object.assign(env, await khoaAi());
 
     // 3. Lần đầu: tạo tài khoản quản trị.
     if (!fs.existsSync(path.join(DU_LIEU, 'aword-web.db'))) {
         bao('Lần đầu chạy — tạo tài khoản quản trị cho bạn.');
-        const dinhDanh = await doiCauTraLoi('  Email hoặc số điện thoại đăng nhập: ');
-        const hoTen = await doiCauTraLoi('  Họ và tên: ');
+        const dinhDanh = await traLoiSan('AWORD_WEB_TL_DINH_DANH', '  Email hoặc số điện thoại đăng nhập: ');
+        const hoTen = await traLoiSan('AWORD_WEB_TL_HO_TEN', '  Họ và tên: ');
         const t = spawnSync(process.execPath, ['src/main.ts', 'tao-quan-tri', dinhDanh, hoTen],
             { cwd: MAY_CHU, env, encoding: 'utf8', windowsHide: true });
         process.stdout.write(t.stdout ?? '');
@@ -159,13 +237,19 @@ function chayNen(cong, env) {
         bao('GHI LẠI mật khẩu tạm ở trên — lần đăng nhập đầu tiên sẽ yêu cầu đổi mật khẩu.');
     }
 
+    dongBoDoc();
+    batMoHinh(env);
+
     // 4. Chạy nền, chờ sẵn sàng rồi mở trình duyệt.
+    if (env.AWORD_WEB_HOME_TAI_KHOAN_1) {
+        bao(`Tài khoản đầu tiên dùng thư mục nhà ${env.AWORD_WEB_HOME_TAI_KHOAN_1} — kế thừa lịch sử phiên Claude Code, skill và Documents\\AWord sẵn có.`);
+    }
     bao(`Khởi động máy chủ tại http://${TEN_MIEN}:${cong} (chỉ máy này truy cập được)…`);
     const pid = chayNen(cong, env);
     fs.writeFileSync(TEP_MAY_CHU, JSON.stringify({ pid, cong, luc: new Date().toISOString() }, null, 2));
     const conSong = () => { try { process.kill(pid, 0); return true; } catch { return false; } };
     for (let i = 0; i < 90 && conSong(); i++) {
-        if ((await hoi(`http://127.0.0.1:${cong}/dang-nhap`)) === 200) {
+        if ((await hoi(cong, '/dang-nhap')) === 200) {
             bao(`SẴN SÀNG — mở http://${TEN_MIEN}:${cong}. Tắt bằng "Tắt AWord Web (đăng nhập)".`);
             moTrinhDuyet(`http://${TEN_MIEN}:${cong}/`);
             process.exit(0);
