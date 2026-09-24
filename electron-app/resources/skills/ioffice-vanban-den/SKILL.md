@@ -7,6 +7,19 @@ description: Quy trình xử lý "Văn bản đến chờ xử lý" trên hệ t
 
 Mục tiêu: mỗi ngày, lấy danh sách văn bản đến đang chờ xử lý được phân công cho **tài khoản của người dùng** (cấu hình trong `auth.local.json` — xem `INSTALL.md`), đọc trích yếu và file đính kèm, rồi xuất ra **một bản tổng hợp nhiệm vụ** để người dùng duyệt. Người dùng (không phải Claude) mới là người thao tác xử lý chính thức trên hệ thống.
 
+## Cách đọc iOffice: ƯU TIÊN Playwright MCP (từ 24/9/2026)
+
+Có công cụ `mcp__playwright__*` (gõ `/mcp` để xem) → **dùng Playwright MCP**, đừng chạy script Python nữa.
+Bộ script và toàn bộ kinh nghiệm selector nằm ở **`playwright/README.md`** ngay trong skill này:
+`login.js` (đăng nhập, mật khẩu không đi qua hội thoại), `vbden_cho_xu_ly.js` (văn bản đến chờ xử lý theo vai trò
+XLC/PH), `vbdi_theo_ky.js` (văn bản đi đã phát hành theo khoảng ngày ban hành).
+
+Chưa có công cụ đó → bảo người dùng chạy **Start Menu → "Bật đọc trang web (AWord Pro)"** (tệp `Bat_Doc_Web.cmd`
+trong thư mục cài AWord) rồi mở lại AWord. Máy không bật được (không có Node.js, mạng chặn) hoặc cần tải hàng loạt
+tệp đính kèm thì mới quay về bộ script Python mô tả ở các mục dưới.
+
+Mọi nguyên tắc an toàn dưới đây áp dụng cho cả hai cách.
+
 ## Nguyên tắc an toàn (đọc trước, luôn áp dụng)
 
 1. **Chỉ đọc, không hành động trên hệ thống (mặc định).** Tuyệt đối KHÔNG tự bấm "Chuyển xử lý", "Trình ký", "Phát hành", "Hoàn thành", hay bất kỳ nút nào thay đổi trạng thái văn bản. Chỉ điều hướng, mở, đọc, tải đính kèm về để đọc.

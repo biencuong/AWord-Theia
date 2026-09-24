@@ -10,6 +10,9 @@ export interface ThongTinBanDuocDuyet {
     phienBan: string;
     urlVsix: string;
     ghiChu?: string;
+    // 'open-vsx': bản mới nhất Anthropic vừa phát hành (theo thời gian thực);
+    // 'danh-muc': bản người duy trì AWord ghim trong danh mục (khi tắt tự động hoặc Open VSX không trả lời).
+    nguon?: 'open-vsx' | 'danh-muc';
 }
 
 export interface CapNhatClaudeCodeServer {
@@ -19,9 +22,17 @@ export interface CapNhatClaudeCodeServer {
     // Đọc bản Claude Code do người duy trì AWord đã DUYỆT (undefined nếu không đọc được
     // danh mục, hoặc danh mục chưa có gói cho nền tảng máy này).
     layBanDuocDuyet(): Promise<ThongTinBanDuocDuyet | undefined>;
+    // Bản NÊN DÙNG theo thời gian thực: bản mới nhất trên Open VSX, trừ các bản danh mục ghi là
+    // có lỗi (khongDung) và không vượt trần (toiDa) nếu danh mục đặt. Danh mục đặt tuDong=false
+    // hoặc Open VSX không trả lời thì trả bản đã duyệt như layBanDuocDuyet().
+    layBanMoiNhat(): Promise<ThongTinBanDuocDuyet | undefined>;
     // Tải VSIX của bản đã duyệt về và giải nén vào thư mục cập nhật cá nhân. Cần KHỞI ĐỘNG
     // LẠI AWord (không phải chỉ mở lại khung Claude) để bản mới có hiệu lực.
+    // Bản tải về được Việt hoá và gỡ khung danh sách phiên như bản đóng gói sẵn.
     capNhat(thongTin: ThongTinBanDuocDuyet): Promise<void>;
+    // Áp lại bảng dịch MỚI NHẤT lên bản Claude Code đã cập nhật (bản tải về trước khi có bản dịch mới, hoặc
+    // trước khi AWord biết Việt hoá khung chat). Có hiệu lực từ lần mở AWord kế tiếp.
+    vaLaiVietHoa(): Promise<void>;
 }
 
 export const CapNhatClaudeCodeServer = Symbol('CapNhatClaudeCodeServer');

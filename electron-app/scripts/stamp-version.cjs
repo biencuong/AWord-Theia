@@ -51,4 +51,15 @@ if (fs.existsSync(pkgWeb)) {
     const rawWeb = fs.readFileSync(pkgWeb, 'utf8');
     fs.writeFileSync(pkgWeb, rawWeb.replace(/("version":\s*")[^"]*(")/, `$1${version}$2`));
 }
+// Cửa sổ khởi động (splash) hiện đúng "AWord Pro <phiên bản>". Chỉ ghi vào stderr: stdout của script này
+// là số phiên bản mà Phat_Hanh_AWord.ps1 đọc.
+const splash = path.join(__dirname, '..', 'resources', 'splash', 'index.html');
+if (fs.existsSync(splash)) {
+    const rawSplash = fs.readFileSync(splash, 'utf8');
+    const moi = rawSplash.replace(/(<span class="so-phien-ban">)[^<]*(<\/span>)/, `$1${version}$2`);
+    if (moi === rawSplash && !rawSplash.includes(`<span class="so-phien-ban">${version}</span>`)) {
+        console.error('[stamp-version] Khong tim thay cho ghi so phien ban trong splash/index.html');
+    }
+    fs.writeFileSync(splash, moi);
+}
 console.log(version);

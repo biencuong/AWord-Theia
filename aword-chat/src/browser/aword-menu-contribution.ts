@@ -330,10 +330,10 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         }
     }
 
-    // Cập nhật RIÊNG plugin Claude Code bên trong AWord, không cần chờ đóng gói lại cả
-    // bản AWord mới: tải bản do người duy trì AWord đã DUYỆT (danh mục trên repo, không
-    // phải mọi bản trên open-vsx.org) về thư mục plugin cá nhân — Theia tự ưu tiên bản có
-    // số hiệu cao hơn giữa thư mục này và thư mục plugin đóng sẵn khi khởi động lại.
+    // Cập nhật RIÊNG plugin Claude Code bên trong AWord, không cần chờ đóng gói lại cả bản AWord mới:
+    // tải bản mới nhất Anthropic phát hành trên Open VSX (trừ bản người duy trì chặn trong danh mục trên
+    // repo) về thư mục plugin cá nhân — Theia tự nạp bản số hiệu cao nhất khi khởi động lại. Việc này
+    // cũng chạy NỀN định kỳ (AwordTuDongCapNhatClaudeContribution); nút này để kiểm tra ngay.
     protected async capNhatClaudeCode(): Promise<void> {
         let banDangDung: string | undefined;
         try {
@@ -343,9 +343,9 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         let banDuocDuyet: ThongTinBanDuocDuyet | undefined;
         let loi: string | undefined;
         try {
-            banDuocDuyet = await this.capNhatClaudeCodeServer.layBanDuocDuyet();
+            banDuocDuyet = await this.capNhatClaudeCodeServer.layBanMoiNhat();
             if (!banDuocDuyet) {
-                loi = 'Không đọc được danh mục phiên bản Claude Code đã duyệt (hoặc chưa có bản cho máy này).';
+                loi = 'Không lấy được thông tin phiên bản Claude Code mới nhất (hoặc chưa có bản cho máy này).';
             }
         } catch {
             loi = 'Không kết nối được máy chủ cập nhật. Kiểm tra kết nối mạng rồi thử lại.';
@@ -368,14 +368,14 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         bang.className = 'aword-update-versions';
         bang.innerHTML =
             `<div><span class="aword-update-label">Đang dùng:</span> <b>${banDangDung ?? 'không rõ'}</b></div>` +
-            `<div><span class="aword-update-label">Đã duyệt:</span> <b>${banDuocDuyet.phienBan}</b></div>`;
+            `<div><span class="aword-update-label">Bản mới nhất:</span> <b>${banDuocDuyet.phienBan}</b></div>`;
         wrap.appendChild(bang);
 
         const ketLuan = document.createElement('p');
         ketLuan.className = 'aword-update-status';
         ketLuan.textContent = coBanMoi
-            ? 'Đã có bản Claude Code mới được duyệt! Bấm "Cập nhật" để tải về (cần khởi động lại AWord sau khi xong).'
-            : 'Bạn đang dùng phiên bản Claude Code mới nhất được duyệt.';
+            ? 'Đã có bản Claude Code mới! Bấm "Cập nhật" để tải về (cần khởi động lại AWord sau khi xong).'
+            : 'Bạn đang dùng phiên bản Claude Code mới nhất (hoặc đã tải sẵn, có hiệu lực từ lần mở AWord tới).';
         wrap.appendChild(ketLuan);
 
         if (banDuocDuyet.ghiChu) {
@@ -416,7 +416,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
     // AwordLayoutContribution) vì plugin chỉ được Theia quét lại lúc khởi động. Dùng đúng cơ
     // chế restart có sẵn của Theia Electron (window.electronTheiaCore.restart, cùng lời gọi
     // Theia tự dùng khi một cấu hình cần khởi động lại) — không tự chế IPC riêng.
-    protected khoiDongLaiAWord(): void {
+    khoiDongLaiAWord(): void {
         const dienTheia = (window as unknown as { electronTheiaCore?: { restart: () => void } }).electronTheiaCore;
         if (dienTheia?.restart) {
             this.windowService.setSafeToShutDown();
@@ -507,7 +507,7 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         const giuLai = new Set<string>([
             AwordAboutCommand.id, AwordUpdateCommand.id, AwordUpdateClaudeCodeCommand.id,
             'aword:welcome', 'aword.layout.claude-restart', 'aword.layout.claude-reopen-session',
-            'aword.tri-thuc.ket-noi-lai'
+            'aword.tri-thuc.ket-noi-lai', 'aword:tu-dong-cap-nhat-claude-code'
         ]);
         for (const child of [...help.children]) {
             if (!giuLai.has(child.id)) {

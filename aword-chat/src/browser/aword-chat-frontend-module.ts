@@ -18,6 +18,7 @@ import { ChiSoTokenServer, CHI_SO_TOKEN_PATH } from '../common/chi-so-token-prot
 import { AwordThongKeWidget } from './aword-thong-ke-widget';
 import { AwordChiSoTokenWidget } from './aword-chi-so-token-widget';
 import { AwordThongKeContribution } from './aword-thong-ke-contribution';
+import { AwordTuDongCapNhatClaudeContribution } from './aword-tu-dong-cap-nhat-claude-contribution';
 
 import '../../src/browser/style/index.css';
 import '../../src/browser/style/thong-bao-giua.css';
@@ -76,6 +77,12 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bind(AwordMenuContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(AwordMenuContribution);
     bind(MenuContribution).toService(AwordMenuContribution);
+
+    // Tự cập nhật Claude Code theo thời gian thực (kiểm tra nền lúc mở AWord + mỗi 6 giờ; bật/tắt ở menu Trợ giúp).
+    bind(AwordTuDongCapNhatClaudeContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(AwordTuDongCapNhatClaudeContribution);
+    bind(MenuContribution).toService(AwordTuDongCapNhatClaudeContribution);
+    bind(FrontendApplicationContribution).toService(AwordTuDongCapNhatClaudeContribution);
 
     bind(AwordLayoutContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(AwordLayoutContribution);

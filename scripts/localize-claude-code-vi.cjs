@@ -8,129 +8,38 @@
 const fs = require('fs');
 const path = require('path');
 
-const DICH_LENH = {
-    'Claude Code: Open in New Tab': 'Claude Code: Mở trong thẻ mới',
-    'Claude Code: Open': 'Claude Code: Mở',
-    'Claude Code: Open in Primary Editor': 'Claude Code: Mở trong trình soạn thảo chính',
-    'Claude Code: Open in New Window': 'Claude Code: Mở trong cửa sổ mới',
-    'Claude Code: Create Worktree': 'Claude Code: Tạo worktree',
-    'Claude Code: Open in Side Bar': 'Claude Code: Mở ở thanh bên',
-    'Claude Code: New Conversation': 'Claude Code: Cuộc trò chuyện mới',
-    'Claude Code: Reopen Closed Session': 'Claude Code: Mở lại phiên vừa đóng',
-    'Claude Code: Update extension': 'Claude Code: Cập nhật extension',
-    'Claude Code: Focus input': 'Claude Code: Chuyển tiêu điểm vào ô nhập',
-    'Claude Code: Blur input': 'Claude Code: Rời tiêu điểm khỏi ô nhập',
-    'Claude Code: Logout': 'Claude Code: Đăng xuất',
-    'Claude Code: Open in Terminal': 'Claude Code: Mở trong Terminal',
-    'Claude Code: Accept Proposed Changes': 'Claude Code: Chấp nhận thay đổi đề xuất',
-    'Claude Code: Reject Proposed Changes': 'Claude Code: Từ chối thay đổi đề xuất',
-    'Claude Code: Insert @-Mention Reference': 'Claude Code: Chèn tham chiếu @',
-    'Claude Code: Install Plugin': 'Claude Code: Cài plugin',
-    'Claude Code: Insert At-Mentioned': 'Claude Code: Chèn tham chiếu @',
-    'Claude Code: Show Logs': 'Claude Code: Hiện nhật ký',
-    'Claude Code: Open Walkthrough': 'Claude Code: Mở hướng dẫn sử dụng',
-    // Thêm từ bản 2.1.270
-    'Claude Code: Focus last message': 'Claude Code: Chuyển tới tin nhắn cuối',
-    'Claude Code: Toggle Focus view': 'Claude Code: Bật/tắt chế độ xem tập trung',
-    'Claude Code: Mark Session as Unread': 'Claude Code: Đánh dấu phiên là chưa đọc',
-    'Claude Code: Rename Session Tab': 'Claude Code: Đổi tên thẻ phiên',
-    'Claude Code: Add Session Tab to Group': 'Claude Code: Thêm thẻ phiên vào nhóm',
-};
-
-const DICH_CAI_DAT = {
-    'claudeCode.environmentVariables': 'Biến môi trường đặt khi khởi chạy Claude.\n\nNên đặt biến môi trường trong settings.json của Claude.\nXem tài liệu: https://code.claude.com/docs/en/settings',
-    'claudeCode.useTerminal': 'Chạy Claude trong terminal thay vì giao diện gốc.',
-    'claudeCode.allowDangerouslySkipPermissions': 'Cho phép chế độ bỏ qua kiểm tra quyền. Chỉ nên dùng trong môi trường cách ly không có Internet.',
-    'claudeCode.claudeProcessWrapper': 'Đường dẫn tệp thực thi dùng để khởi chạy tiến trình Claude.',
-    'claudeCode.respectGitIgnore': 'Tôn trọng tệp .gitignore khi tìm kiếm tệp. Mẹo: khi tắt, vẫn có thể lọc bằng các mẫu loại trừ trong .ignore.',
-    'claudeCode.initialPermissionMode': 'Chế độ quyền ban đầu cho cuộc trò chuyện mới. \'manual\' tương đương \'default\' — chế độ ghi nhãn Manual trên giao diện.',
-    'claudeCode.disableLoginPrompt': 'Khi bật, không bao giờ nhắc đăng nhập/xác thực trong extension. Dùng khi việc xác thực được xử lý bên ngoài.',
-    'claudeCode.autosave': 'Tự động lưu tệp trước khi Claude đọc hoặc ghi.',
-    'claudeCode.useCtrlEnterToSend': 'Khi bật, dùng Ctrl/Cmd+Enter để gửi thay vì chỉ Enter. Enter khi đó dùng để xuống dòng.',
-    'claudeCode.preferredLocation': 'Vị trí mặc định mở Claude. Cài đặt này tự cập nhật khi bạn mở Claude ở vị trí mới.',
-    'claudeCode.enableNewConversationShortcut': 'Dùng phím tắt Cmd/Ctrl+N để bắt đầu cuộc trò chuyện mới khi Claude đang có tiêu điểm.',
-    'claudeCode.enableReopenClosedSessionShortcut': 'Dùng Cmd/Ctrl+Shift+T để mở lại thẻ phiên Claude vừa đóng gần nhất. Chỉ chặn phím tắt khi thứ đóng gần nhất là thẻ Claude; nếu không sẽ chuyển về hành vi mở lại editor bình thường.',
-    'claudeCode.hideOnboarding': 'Ẩn danh sách hướng dẫn làm quen trong Claude Code.',
-    'claudeCode.usePythonEnvironment': 'Tự động kích hoạt môi trường Python của workspace khi chạy Claude. Cần cài extension [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python).',
-    'claudeCode.focusView': 'Chế độ xem tập trung: ẩn các lệnh gọi công cụ và hoạt động đang chạy trong khung chat, chỉ hiện yêu cầu của bạn và câu trả lời của Claude. Phần bị gấp vẫn mở lại được bằng một cú bấm, kèm dấu hiệu cho biết công cụ đang chạy. Thường bật/tắt từ menu lệnh ở ô nhập, lệnh "Claude Code: Bật/tắt chế độ xem tập trung" hoặc phím tắt Ctrl+Alt+F.',
-    'claudeCode.archiveInactiveSessions': 'Tự lưu trữ (archive) phiên sau khoảng thời gian không hoạt động này. Phiên đang mở, đang chạy, đang chờ nhập hoặc chưa đọc không bao giờ bị tự lưu trữ.',
-};
-
-const DICH_WALKTHROUGH = {
-    'Get started with Claude Code': 'Bắt đầu với Claude Code',
-    'Learn how to use Claude Code to write, edit, and understand your code.': 'Tìm hiểu cách dùng Claude Code để viết, chỉnh sửa và hiểu mã nguồn của bạn.',
-    'Your AI coding partner': 'Trợ thủ lập trình AI của bạn',
-    'Claude Code helps you write, edit, and understand code right in VS Code.': 'Claude Code giúp bạn viết, chỉnh sửa và hiểu mã ngay trong trình soạn thảo.',
-    'Open Claude Code': 'Mở Claude Code',
-    'Click the orange Claude icon in the top right corner, or press Ctrl+Escape (Cmd+Escape on Mac) to start a conversation.': 'Bấm biểu tượng Claude màu cam ở góc trên bên phải, hoặc nhấn Ctrl+Escape (Cmd+Escape trên Mac) để bắt đầu trò chuyện.',
-    'Chat with Claude': 'Trò chuyện với Claude',
-    'Type a message and press Enter. Ask questions, request changes, or get help understanding your code. Use @ to mention files for context, or select code first to ask about it.': 'Gõ tin nhắn và nhấn Enter. Đặt câu hỏi, yêu cầu chỉnh sửa, hoặc nhờ giải thích mã. Dùng @ để đính kèm tệp làm ngữ cảnh, hoặc bôi đen mã trước rồi hỏi về đoạn đó.',
-    'Past conversations': 'Các cuộc trò chuyện trước',
-    'Click the Past Conversations button at the top or type /resume to browse past sessions. You can start a new conversation anytime by clicking the New Chat button.': 'Bấm nút Past Conversations ở trên cùng hoặc gõ /resume để xem các phiên trước. Bạn có thể bắt đầu cuộc trò chuyện mới bất cứ lúc nào bằng nút New Chat.',
-};
-
-const DICH_MO_TA = {
-    'Claude Code for VS Code: Harness the power of Claude Code without leaving your IDE':
-        'Claude Code cho AWord: Khai thác sức mạnh của Claude Code ngay trong ứng dụng',
-};
+// Bảng dịch dùng CHUNG với bản Claude Code AWord tự tải về khi cập nhật (aword-chat/src/node/
+// cap-nhat-claude-code-server-impl.ts) — một nguồn duy nhất để hai đường Việt hoá không lệch nhau.
+const BANG_DICH = require('../aword-chat/src/common/viet-hoa-claude-code.json');
+const DICH_LENH = BANG_DICH.lenh;
+const DICH_CAI_DAT = BANG_DICH.caiDat;
+const DICH_WALKTHROUGH = BANG_DICH.walkthrough;
+const DICH_MO_TA = BANG_DICH.moTa;
 
 // Gỡ khung "danh sách phiên" (view container claude-sessions-sidebar trên thanh hoạt động): AWord chỉ để Claude Code ở
 // thanh bên phụ. Trước đây khung bị đóng ngay khi Theia dựng nó, nhưng extension đã kịp resolve webview → nhật ký đầy lỗi
 // "No webview view registered for handle" / "Unknown Webview" ($show, $setBadge, $setOptions, $setHtml). Gỡ khỏi khai
 // báo thì khung không bao giờ được tạo; extension vẫn đăng ký provider nhưng không có view nào để resolve (vô hại).
 // Bản tải qua "Cập nhật Claude Code" được gỡ tương tự trong cap-nhat-claude-code-server-impl.ts.
-const KHUNG_DANH_SACH_PHIEN = 'claude-sessions-sidebar';
-function boKhungDanhSachPhien(pkg) {
-    const c = pkg.contributes ?? {};
-    let doi = false;
-    for (const vung of Object.keys(c.viewsContainers ?? {})) {
-        const truoc = c.viewsContainers[vung].length;
-        c.viewsContainers[vung] = c.viewsContainers[vung].filter(v => v.id !== KHUNG_DANH_SACH_PHIEN);
-        doi = doi || c.viewsContainers[vung].length !== truoc;
-    }
-    if (c.views && c.views[KHUNG_DANH_SACH_PHIEN]) {
-        delete c.views[KHUNG_DANH_SACH_PHIEN];
-        doi = true;
-    }
-    return doi;
-}
+// Dùng CHUNG hàm vá với công cụ Việt hoá trên máy (tools/viet-hoa-claude-code) — một cách vá cho mọi nơi.
+const { apDung, vaWebview } = require('../tools/viet-hoa-claude-code/viet-hoa.cjs');
 
 function patchPluginDir(pluginRoot) {
     const pkgPath = path.join(pluginRoot, 'extension', 'package.json');
     if (!fs.existsSync(pkgPath)) return false;
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    const daBoKhung = boKhungDanhSachPhien(pkg);
-    if (pkg._aword_vi) {
-        if (daBoKhung) {
-            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
-            console.log(`[localize-claude-code-vi] Đã gỡ khung danh sách phiên: ${pkgPath}`);
-        }
-        console.log(`[localize-claude-code-vi] Đã vá từ trước: ${pkgPath}`);
-        return true;
+    if (apDung(pkg, BANG_DICH, { goKhung: true })) {
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+        console.log(`[localize-claude-code-vi] Đã vá khai báo: ${pkgPath}`);
+    } else {
+        console.log(`[localize-claude-code-vi] Khai báo đã Việt hoá sẵn: ${pkgPath}`);
     }
-    if (pkg.description && DICH_MO_TA[pkg.description]) {
-        pkg.description = DICH_MO_TA[pkg.description];
+    const w = vaWebview(path.join(pluginRoot, 'extension'), BANG_DICH.webview);
+    if (w.trangThai === 'cu-phap-loi') {
+        console.error('[localize-claude-code-vi] Bản vá khung chat KHÔNG qua kiểm tra cú pháp — giữ nguyên tiếng Anh. Rà lại bảng webview!');
+    } else {
+        console.log(`[localize-claude-code-vi] Khung chat: ${w.trangThai} (${w.soChuoi} chuỗi tiếng Việt)`);
     }
-    for (const cmd of pkg.contributes?.commands ?? []) {
-        if (DICH_LENH[cmd.title]) cmd.title = DICH_LENH[cmd.title];
-    }
-    const props = pkg.contributes?.configuration?.properties ?? {};
-    for (const [key, viDesc] of Object.entries(DICH_CAI_DAT)) {
-        if (!props[key]) continue;
-        if (props[key].description) props[key].description = viDesc;
-        else if (props[key].markdownDescription) props[key].markdownDescription = viDesc;
-    }
-    for (const wt of pkg.contributes?.walkthroughs ?? []) {
-        if (DICH_WALKTHROUGH[wt.title]) wt.title = DICH_WALKTHROUGH[wt.title];
-        if (DICH_WALKTHROUGH[wt.description]) wt.description = DICH_WALKTHROUGH[wt.description];
-        for (const step of wt.steps ?? []) {
-            if (DICH_WALKTHROUGH[step.title]) step.title = DICH_WALKTHROUGH[step.title];
-            if (DICH_WALKTHROUGH[step.description]) step.description = DICH_WALKTHROUGH[step.description];
-        }
-    }
-    pkg._aword_vi = true;
-    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
-    console.log(`[localize-claude-code-vi] Đã vá: ${pkgPath}`);
     return true;
 }
 

@@ -1,3 +1,30 @@
+AWord Pro 3.0.5 — **Claude Code tự cập nhật theo thời gian thực** và **Claude đọc được trang web** (Playwright).
+Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
+Kho dữ liệu và tùy chỉnh cá nhân. Kỹ năng đã có sẵn trên máy KHÔNG bị ghi đè — chỉ kỹ năng còn thiếu mới được cài thêm.
+
+Nội dung:
+- **Claude Code tự cập nhật, không chờ bản AWord mới**: lúc mở AWord và cứ 6 giờ một lần, AWord kiểm tra bản Claude Code
+  mới nhất Anthropic vừa phát hành, tải ngầm rồi mời khởi động lại (bấm "Để sau" thì lần mở AWord tới tự dùng bản mới).
+  Bản tải về vẫn giữ tiếng Việt như bản đóng gói sẵn. Bật/tắt ở menu Trợ giúp → Tự động cập nhật Claude Code; cập nhật
+  ngay bằng tay ở Trợ giúp → Cập nhật Claude Code. Chỉ cần cài bản 3.0.5 này một lần, từ đó Claude Code tự lên bản mới.
+- **Claude đọc được trang web bằng trình duyệt thật (Playwright)**: đọc trang phải đăng nhập (iOffice, cổng dịch vụ công,
+  hệ thống báo cáo ngành), trích bảng số liệu ra Excel, tải tệp đính kèm, điền biểu mẫu, chụp màn hình làm minh chứng.
+  Bật một lần: Start Menu → **"Bật đọc trang web (AWord Pro)"** (máy cần Node.js — tệp này tự báo nếu thiếu), rồi mở lại
+  AWord. Mặc định Claude CHỈ ĐỌC; việc gửi, nộp, trình ký, phát hành chỉ làm khi bạn đồng ý rõ. Mật khẩu không gõ vào
+  khung chat.
+- **Kỹ năng mới "Làm việc với trang web"** (`dung-web-playwright`): hướng dẫn Claude chọn đúng cách đọc web, các việc
+  hay gặp và quy tắc an toàn.
+- **Kỹ năng iOffice**: ưu tiên đọc bằng Playwright, kèm sẵn script đăng nhập, lấy văn bản đến chờ xử lý (Xử lý chính /
+  Phối hợp) và văn bản đi đã phát hành theo kỳ.
+- **Khung chat Claude Code bằng tiếng Việt**: nút, menu, chế độ làm việc (Hỏi trước khi sửa / Tự động sửa / Lập kế hoạch),
+  hộp hỏi quyền, danh sách cuộc trò chuyện… (gần 500 chuỗi). Bảng dịch đặt trên máy chủ cập nhật nên bản Claude Code mới tải về
+  vẫn giữ tiếng Việt, chuỗi mới được dịch bổ sung mà không cần cài lại AWord.
+- **Cửa sổ khởi động** hiện đúng tên **AWord Pro** kèm số phiên bản.
+- Sửa lỗi: nút "Khởi động lại" sau khi cập nhật Claude Code trước đây chỉ mở lại cửa sổ nên vẫn chạy bản cũ — nay khởi động lại
+  toàn bộ ứng dụng và dùng ngay bản mới; cập nhật Claude Code lần thứ hai không còn thất bại vì bản đang chạy bị Windows khoá tệp.
+
+---
+
 AWord Pro 3.0.4 — thêm **9 kỹ năng mới** (thiết kế bài trình chiếu và 8 kỹ năng giảng dạy) và **Thống kê token — chi phí**.
 Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
 Kho dữ liệu và tùy chỉnh cá nhân. Kỹ năng đã có sẵn trên máy KHÔNG bị ghi đè — chỉ kỹ năng còn thiếu mới được cài thêm.

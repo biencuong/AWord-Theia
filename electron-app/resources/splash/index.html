@@ -2,68 +2,46 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<title>AWord</title>
+<title>AWord Pro</title>
 <style>
+  /* Phông Inter (SIL OFL 1.1, The Inter Project Authors) — nhúng tập con đúng các ký tự dùng ở đây,
+     để máy không có mạng vẫn hiện đúng phông. */
+  @font-face { font-family: "Inter AW"; font-weight: 800; src: url(data:font/woff2;base64,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) format("woff2"); }
+  @font-face { font-family: "Inter AW"; font-weight: 600; src: url(data:font/woff2;base64,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) format("woff2"); }
+  @font-face { font-family: "Inter AW"; font-weight: 400; src: url(data:font/woff2;base64,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) format("woff2"); }
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
     overflow: hidden; user-select: none; cursor: default;
-    font-family: "Segoe UI", system-ui, sans-serif;
+    font-family: "Inter AW", "Segoe UI", system-ui, sans-serif;
   }
-  body {
-    /* Nền tối sang trọng + quầng sáng cam sau logo — làm logo cam nổi bật, ấn tượng */
-    background:
-      radial-gradient(120% 90% at 50% 34%, rgba(240,110,30,0.28) 0%, rgba(240,110,30,0) 55%),
-      linear-gradient(160deg, #241a17 0%, #17151b 52%, #0e0d13 100%);
-    color: #f4f5f8;
-  }
+  /* Giao diện PHẲNG: nền một màu, chữ màu đặc, không quầng sáng/bóng/chuyển động của logo. */
+  body { background: #1c1b21; color: #f4f5f8; }
   .wrap {
     height: 100%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 15px;
+    align-items: center; justify-content: center; gap: 16px;
   }
-  .logo {
-    width: 104px; height: 104px;
-    filter: drop-shadow(0 12px 30px rgba(240, 110, 30, .55)) drop-shadow(0 2px 8px rgba(0,0,0,.4));
-    animation: tho 2.6s ease-in-out infinite;
-  }
+  .logo { width: 112px; height: 112px; }
   .logo svg { width: 100%; height: 100%; display: block; }
-  @keyframes tho { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
-  .ten {
-    font-size: 32px; font-weight: 700; letter-spacing: .5px;
-    background: linear-gradient(90deg, #ffc27a, #ff8a3d 55%, #f26a1b);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .phu { font-size: 12.5px; color: #b9bcc7; margin-top: -8px; letter-spacing: .3px; }
+  .ten { font-size: 32px; font-weight: 800; letter-spacing: -.3px; color: #ffffff; line-height: 1; }
+  .ten .pro { color: #F26A1B; margin-left: 8px; }
+  .so-phien-ban { margin-left: 5px; font-size: 13px; font-weight: 600; letter-spacing: .2px; color: #9da1ad; font-variant-numeric: tabular-nums; }
+  .phu { font-size: 12.5px; color: #a9adb8; margin-top: -4px; }
   .vong {
-    margin-top: 12px; width: 26px; height: 26px;
-    border: 3px solid rgba(255,255,255,.14); border-top-color: #ff7a2a;
+    margin-top: 10px; width: 24px; height: 24px;
+    border: 3px solid #34333b; border-top-color: #F26A1B;
     border-radius: 50%; animation: quay 0.85s linear infinite;
   }
   @keyframes quay { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .vong { animation-duration: 2.5s; } }
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-        <defs>
-          <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="40" y1="24" x2="220" y2="232">
-            <stop offset="0" stop-color="#ffb347"/><stop offset="0.55" stop-color="#f2701b"/><stop offset="1" stop-color="#e04c10"/>
-          </linearGradient>
-        </defs>
-        <rect x="26" y="26" width="204" height="204" rx="50" fill="url(#g)"/>
-        <g fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M132 116 L184 64"/><polyline points="158,62 186,62 186,90"/>
-        </g>
-        <path fill="#fff" d="M86 72 C88.2 87 90.3 89.1 105 91.3 C90.3 93.5 88.2 95.6 86 110.6 C83.8 95.6 81.7 93.5 67 91.3 C81.7 89.1 83.8 87 86 72 Z"/>
-        <g fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M70 188 L93 122 L116 188"/><path d="M81 166 H105"/>
-        </g>
-        <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round">
-          <path d="M132 150 H176"/><path d="M132 168 H165"/><path d="M132 186 H152"/>
-        </g>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="112" height="112"><rect x="24" y="24" width="208" height="208" rx="48" fill="#F26A1B"/><path fill="#fff" d="M80 46 C82.4 62 86 65.6 102 68 C86 70.4 82.4 74 80 90 C77.6 74 74 70.4 58 68 C74 65.6 77.6 62 80 46 Z"/><path fill="#fff" d="M50 196 80.24 108H108.27L138.65 196H114.92L102.98 157.33Q100.12 147.63 97.29 137.77Q94.45 127.91 91.46 116.38H97.22Q94.14 127.91 91.26 137.77Q88.38 147.63 85.42 157.33L73.09 196ZM70.77 179.08V162.45H117.92V179.08Z" transform="translate(46 196) scale(0.9545) translate(-50 -196)"/><path d="M142 120 L186 76" fill="none" stroke="#fff" stroke-width="14"/><path d="M160 63 H195 V98" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="miter"/><path d="M152 146 H202 M152 169 H190 M152 192 H174" fill="none" stroke="#fff" stroke-width="12"/></svg>
     </div>
-    <div class="ten">AWord</div>
+    <!-- Số phiên bản do scripts/stamp-version.cjs ghi mỗi lần đóng gói — đừng sửa tay. -->
+    <div class="ten">AWord<span class="pro">Pro</span><span class="so-phien-ban">3.0.5</span></div>
     <div class="phu">Giải pháp AI &amp; Chuyển đổi số — đang khởi động…</div>
     <div class="vong"></div>
   </div>

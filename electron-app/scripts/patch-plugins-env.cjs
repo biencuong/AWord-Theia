@@ -66,6 +66,23 @@ if (content.includes(marker)) {
         + `    ? 'local-dir:' + thuMucBundle + ',local-dir:' + thuMucCapNhat\n`
         + `    : 'local-dir:' + thuMucBundle;\n`
         + `  if (thuMucCapNhat) { process.env.AWORD_CAP_NHAT_PLUGIN_DIR = thuMucCapNhat; }\n`
+        // Bản Claude Code mới trong thư mục cập nhật chỉ được nạp khi BACKEND khởi động lại (Theia quét plugin
+        // một lần lúc backend chạy), còn lệnh "Restart" của Theia chỉ mở lại CỬA SỔ. Backend aword-chat ghi tệp
+        // đánh dấu sau khi cài xong bản mới -> lần Restart kế tiếp khởi động lại TOÀN BỘ ứng dụng. Listener này
+        // đăng ký trước handler của Theia nên chạy trước; app.exit(0) kết thúc luôn, handler của Theia không kịp mở cửa sổ.
+        + `  if (thuMucCapNhat) {\n`
+        + `    try {\n`
+        + `      const { app, ipcMain } = require('electron');\n`
+        + `      const danhDau = path.join(path.dirname(thuMucCapNhat), 'aword-can-khoi-dong-lai');\n`
+        + `      try { fs.unlinkSync(danhDau); } catch (e) { /* mở app mới là đã nạp bản mới */ }\n`
+        + `      ipcMain.on('Restart', () => {\n`
+        + `        if (!fs.existsSync(danhDau)) { return; }\n`
+        + `        try { fs.unlinkSync(danhDau); } catch (e) { /* bỏ qua */ }\n`
+        + `        app.relaunch();\n`
+        + `        app.exit(0);\n`
+        + `      });\n`
+        + `    } catch (e) { /* không có 'electron' (backend tách rời) */ }\n`
+        + `  }\n`
         + `})();\n`;
     fs.writeFileSync(target, inject + content, 'utf8');
     console.log('[patch-plugins-env] Đã patch electron-main.js: THEIA_DEFAULT_PLUGINS gồm plugins đóng sẵn + thư mục cập nhật cá nhân (AWORD_CAP_NHAT_PLUGIN_DIR).');

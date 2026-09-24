@@ -23,7 +23,7 @@ if (skills.length === 0) {
 // Các file nguồn ở gốc AWord-Theia được nhúng vào bộ cài — thiếu là fail sớm,
 // tránh NSIS báo "no files found" khó hiểu lúc biên dịch.
 const rootDir = path.join(appDir, '..');
-for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Ket_Noi_KhoTriThuc.cmd', 'Chuyen_Du_Lieu_AGiaoAn.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd', 'Cap_Nhat_Claude.ps1', 'Cap_Nhat_QuyTac.ps1']) {
+for (const f of ['settings.json', 'CLAUDE.user.md', 'Ket_Noi_KhoDuLieu.cmd', 'Ket_Noi_KhoTriThuc.cmd', 'Chuyen_Du_Lieu_AGiaoAn.cmd', 'Cai_Dat_Cong_Cu.cmd', 'Cap_Nhat_Cau_Hinh.ps1', 'Kiem_Tra_AWord.cmd', 'Bat_Doc_Web.cmd', 'Cap_Nhat_Claude.ps1', 'Cap_Nhat_QuyTac.ps1']) {
     if (!fs.existsSync(path.join(rootDir, f))) {
         console.error(`[gen-installer-nsh] Thiếu file nguồn ${f} ở gốc AWord-Theia!`);
         process.exit(1);
@@ -138,6 +138,11 @@ lines.push(
     '  File "${PROJECT_DIR}\\..\\Kiem_Tra_AWord.cmd"',
     '  CreateShortCut "$SMPROGRAMS\\Kiểm tra AWord Pro.lnk" "$INSTDIR\\Kiem_Tra_AWord.cmd" "" "$INSTDIR\\AWordPro.exe" 0',
     '',
+    '  ; Bật đọc trang web: đăng ký MCP playwright (trình duyệt thật) cho Claude — đọc trang phải',
+    '  ; đăng nhập, tải tệp đính kèm, điền biểu mẫu, chụp minh chứng. Cần Node.js; script tự báo nếu thiếu.',
+    '  File "${PROJECT_DIR}\\..\\Bat_Doc_Web.cmd"',
+    '  CreateShortCut "$SMPROGRAMS\\Bật đọc trang web (AWord Pro).lnk" "$INSTDIR\\Bat_Doc_Web.cmd" "" "$INSTDIR\\AWordPro.exe" 0',
+    '',
     '  ; Hòa hợp binary Claude (hybrid): ưu tiên claude cài sẵn trên máy nếu mới hơn/bằng và',
     '  ; chạy được, không thì giữ bản đóng kèm (offline). Chạy ngay khi cài + shortcut chạy lại tay.',
     '  File "${PROJECT_DIR}\\..\\Cap_Nhat_Claude.ps1"',
@@ -171,6 +176,7 @@ lines.push(
     '  Delete "$SMPROGRAMS\\Chuyển dữ liệu AGiaoAn sang AWord Pro.lnk"',
     '  Delete "$SMPROGRAMS\\Cài công cụ tài liệu (AWord Pro).lnk"',
     '  Delete "$SMPROGRAMS\\Kiểm tra AWord Pro.lnk"',
+    '  Delete "$SMPROGRAMS\\Bật đọc trang web (AWord Pro).lnk"',
     '  Delete "$SMPROGRAMS\\Cập nhật Claude (AWord Pro).lnk"',
     '  DeleteRegKey HKCU "Software\\Classes\\*\\shell\\AWordPro"',
     '  DeleteRegKey HKCU "Software\\Classes\\Directory\\shell\\AWordPro"',

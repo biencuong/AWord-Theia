@@ -1,5 +1,7 @@
 {
-  "_ghi_chu_cho_nguoi_duy_tri": "Danh mục bản Claude Code đã DUYỆT cho nút 'Cập nhật Claude Code' trong AWord PRO (Trợ giúp > Cập nhật Claude Code). Dòng AWord 2.x đọc claude-code.json (đã đóng băng ở 2.1.211, không sửa). Sửa 'phienBan' + 'vsix' rồi commit + push lên nhánh main khi đã tự kiểm tra ổn định một bản Claude Code mới hơn — KHÔNG cần đóng gói lại cả AWord, người dùng bấm nút là tải được ngay. Lấy URL .vsix đúng nền tảng tại https://open-vsx.org/extension/Anthropic/claude-code (mục Download từng phiên bản/nền tảng).",
+  "_ghi_chu_cho_nguoi_duy_tri": "Danh mục điều khiển cập nhật Claude Code cho AWord PRO. Từ AWord Pro 3.0.5, AWord TỰ cập nhật theo thời gian thực: lúc mở app và mỗi 6 giờ, lấy bản mới nhất Anthropic phát hành trên Open VSX, tải ngầm, Việt hoá, mời khởi động lại. Các trường điều khiển (mọi máy đọc lại mỗi lần kiểm tra, KHÔNG cần đóng gói): tuDong=false là PHANH KHẨN CẤP — mọi máy chỉ dùng bản ghim ở phienBan/vsix; khongDung = danh sách bản đã biết là lỗi, máy sẽ bỏ qua và lấy bản mới nhất còn lại; toiDa (tuỳ chọn) = trần phiên bản. phienBan/vsix còn là bản dự phòng khi Open VSX không trả lời, và là bản duy nhất với AWord Pro trước 3.0.5 (bấm tay Trợ giúp > Cập nhật Claude Code). Dòng AWord 2.x đọc claude-code.json (đóng băng ở 2.1.211, không sửa). Lấy URL .vsix tại https://open-vsx.org/extension/Anthropic/claude-code.",
+  "tuDong": true,
+  "khongDung": [],
   "phienBan": "2.1.270",
   "ghiChu": "Claude Code 2.1.270 (Open VSX 12/9/2026): thêm chế độ xem tập trung (Ctrl+Alt+F), đổi tên/nhóm thẻ phiên, đánh dấu phiên chưa đọc, tự lưu trữ phiên không hoạt động.",
   "vsix": {
