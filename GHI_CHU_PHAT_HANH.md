@@ -1,3 +1,23 @@
+AWord Pro 3.0.4 — thêm **9 kỹ năng mới** (thiết kế bài trình chiếu và 8 kỹ năng giảng dạy) và **Thống kê token — chi phí**.
+Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
+Kho dữ liệu và tùy chỉnh cá nhân. Kỹ năng đã có sẵn trên máy KHÔNG bị ghi đè — chỉ kỹ năng còn thiếu mới được cài thêm.
+
+Nội dung:
+- **Thiết kế bài trình chiếu** (kỹ năng mới): 5 bộ màu dựng sẵn cho hội nghị, tập huấn, đề án, báo cáo số liệu và bài
+  giảng tiểu học; thang cỡ chữ theo phòng họp hay hội trường; 12 bố cục slide kèm tọa độ (bìa, mục lục, ba thẻ, số liệu
+  nổi bật, biểu đồ kèm nhận xét, ảnh lớn, dòng thời gian, bảng…); bộ hàm dựng bằng python-pptx; cách xuất PDF rồi tự
+  render ra ảnh để soát trước khi giao. Cứ nói "làm slide báo cáo cho đẹp", Claude tự dùng kỹ năng này.
+- **8 kỹ năng giảng dạy**: phiếu học tập; sơ đồ dạy học (sơ đồ tư duy, sơ đồ khối, trục thời gian); vẽ hình giáo khoa;
+  kỹ thuật dạy học tích cực cho từng hoạt động; sinh hoạt lớp và hoạt động trải nghiệm; sổ chủ nhiệm và nhận xét học
+  sinh theo Thông tư 27/2020, 22/2021; trộn đề kiểm tra; kế hoạch chuyên môn của tổ.
+- **Thống kê token và chi phí**: chỉ báo ngay trên thanh tiêu đề, bấm vào mở trang thống kê chi tiết (menu Trợ giúp →
+  Thống kê token và chi phí). Số liệu đọc từ chính các phiên Claude Code trên máy, không đếm trùng phiên đã tính.
+- **Bản trên trình duyệt**: chạy hoàn toàn ẩn, không còn cửa sổ dòng lệnh của node và claude; sửa nhóm lỗi khi chạy dài
+  (chậm dần, treo).
+- Skill tra cứu Kho tri thức AI: bổ sung mục giới thiệu KHO KỸ NĂNG đóng kèm AWord.
+
+---
+
 AWord Pro 3.0.3 — sửa lỗi bộ cài **"AWord Pro cannot be closed"**: bộ cài đóng AWord Pro kèm các tiến trình con (Terminal, tác vụ
 Claude…) trước khi cài; nếu một tiến trình cũ bị Windows giữ lại không đóng được thì báo rõ bằng tiếng Việt — khởi động lại máy
 tính rồi chạy lại bộ cài. Nhật ký gọn hơn: gỡ khung "danh sách phiên" ẩn của Claude Code (trước đây sinh lỗi webview mỗi lần mở).
