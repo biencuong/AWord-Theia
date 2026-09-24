@@ -285,12 +285,42 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         wrap.appendChild(ketLuan);
 
         const goiPro = releasePro?.assets?.find(a => /^AWordPro-Setup-.*\.exe$/i.test(a.name));
-        const moiNangCapPro = !coBanMoi && !!releasePro;
-        if (moiNangCapPro) {
+        const banPro = dinhDangPhienBan((releasePro?.tag_name ?? releasePro?.name ?? '').replace(/^v/i, ''));
+        const coPro = !!releasePro && !!goiPro;
+        if (coPro) {
             const pro = document.createElement('p');
-            pro.textContent = `Khuyến nghị nâng cấp lên AWord Pro ${dinhDangPhienBan((releasePro!.tag_name ?? releasePro!.name ?? '').replace(/^v/i, ''))} — dòng sản phẩm mới chạy song song bản web. `
-                + 'AWord Pro cài song song, không gỡ bản này; hai bản dùng chung thư mục làm việc Documents\\AWord, cấu hình Claude, bộ nhớ và kết nối kho — không mất dữ liệu.';
+            pro.textContent = `Khuyến nghị nâng cấp lên AWord Pro ${banPro} — dòng sản phẩm mới, cài song song và không gỡ bản này; `
+                + 'hai bản dùng chung thư mục làm việc Documents\\AWord, cấu hình Claude, bộ nhớ, lịch sử trò chuyện và kết nối kho — không mất dữ liệu.';
             wrap.appendChild(pro);
+        }
+
+        // Còn cả bản 2.x mới lẫn AWord Pro → HỎI RÕ muốn tải bản nào, không tự quyết thay người dùng.
+        const phaiChon = coBanMoi && coPro;
+        let chonPro = coPro;
+        if (phaiChon) {
+            const dan = document.createElement('p');
+            dan.className = 'aword-update-status';
+            dan.textContent = 'Bạn muốn nâng lên bản nào?';
+            wrap.appendChild(dan);
+            const hop = document.createElement('div');
+            hop.className = 'aword-update-chon';
+            const lua: Array<[string, string]> = [
+                ['pro', `AWord Pro ${banPro} — dòng sản phẩm mới (khuyến nghị), cài song song với bản đang dùng`],
+                ['2x', `AWord ${dinhDangPhienBan(banMoi)} — cập nhật trong dòng 2.x, cài đè lên bản đang dùng`],
+            ];
+            for (const [gt, nhan] of lua) {
+                const dong = document.createElement('label');
+                const o = document.createElement('input');
+                o.type = 'radio';
+                o.name = 'aword-ban-nang-cap';
+                o.value = gt;
+                o.checked = gt === 'pro';
+                o.onchange = () => { chonPro = gt === 'pro'; };
+                dong.appendChild(o);
+                dong.appendChild(document.createTextNode(` ${nhan}`));
+                hop.appendChild(dong);
+            }
+            wrap.appendChild(hop);
         }
 
         const tomTat = (release.body ?? '').trim();
@@ -308,15 +338,17 @@ export class AwordMenuContribution implements CommandContribution, MenuContribut
         const dongY = await new ConfirmDialog({
             title: AwordUpdateCommand.label!,
             msg: wrap,
-            ok: coBanMoi ? 'Tải bản mới' : moiNangCapPro ? 'Tải AWord Pro' : Dialog.OK,
-            cancel: coBanMoi || moiNangCapPro ? 'Để sau' : ''
+            ok: phaiChon ? 'Tải bản đã chọn' : coPro ? 'Tải AWord Pro' : coBanMoi ? 'Tải bản mới' : Dialog.OK,
+            cancel: coBanMoi || coPro ? 'Để sau' : ''
         }).open();
+        if (!dongY) { return; }
 
-        if (coBanMoi && dongY) {
+        const trangPhatHanh = `https://github.com/${GITHUB_REPO}/releases`;
+        if (coPro && (chonPro || !coBanMoi)) {
+            this.windowService.openNewWindow(goiPro?.browser_download_url ?? releasePro!.html_url ?? trangPhatHanh, { external: true });
+        } else if (coBanMoi) {
             const goiCai = release.assets?.find(a => /^AWord-Setup-.*\.exe$/i.test(a.name));
-            this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
-        } else if (moiNangCapPro && dongY) {
-            this.windowService.openNewWindow(goiPro?.browser_download_url ?? releasePro!.html_url ?? `https://github.com/${GITHUB_REPO}/releases`, { external: true });
+            this.windowService.openNewWindow(goiCai?.browser_download_url ?? release.html_url ?? trangPhatHanh, { external: true });
         }
     }
 

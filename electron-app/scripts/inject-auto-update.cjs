@@ -76,91 +76,59 @@ ${marker}
       return 0;
     };
 
-    const kiemTraCapNhat = async () => {
-      // Dò DANH SÁCH release, KHÔNG dùng /releases/latest: cờ "Latest" trên GitHub được giữ cố
-      // định ở bản cầu nối (kiểu số theo giờ) để máy chạy bản cũ — chỉ biết /latest — vẫn lên
-      // được bản cầu nối; từ bản cầu nối trở đi app tự chọn bản số hiệu cao nhất có bộ cài hợp nền tảng.
-      const macOS = process.platform === 'darwin';
-      const khopGoi = a => macOS
-        ? /^AWord-.*\\.dmg$/i.test(a.name)
-        : /^AWord-Setup-.*\\.exe$/i.test(a.name);
-      const ds = await layJson('https://api.github.com/repos/' + REPO + '/releases?per_page=30');
-      let rel = null;
-      let asset = null;
-      for (const r of (Array.isArray(ds) ? ds : [])) {
-        if (r.draft || r.prerelease) { continue; }
-        const goi = (r.assets || []).find(khopGoi);
-        if (!goi) { continue; }
-        if (!rel || soSanhPhienBan(r.tag_name || r.name || '', rel.tag_name || rel.name || '') > 0) {
-          rel = r;
-          asset = goi;
-        }
-      }
-      if (!rel) { return; }
-      const moi = rel.tag_name || rel.name || '';
-      if (soSanhPhienBan(moi, app.getVersion()) <= 0) { return; }
-      const chon = await dialog.showMessageBox({
-        type: 'info',
-        title: 'Cập nhật AWord',
-        message: 'Đã có phiên bản AWord mới: ' + moi.replace(/^v/i, '') + ' (bạn đang dùng ' + app.getVersion() + ').',
-        detail: 'Tải về và cài đặt ngay? Ứng dụng sẽ đóng để chạy bộ cài.',
-        buttons: ['Cập nhật ngay', 'Để sau'],
-        defaultId: 0, cancelId: 1
-      });
-      if (chon.response !== 0) { return; }
-      const dich = path.join(app.getPath('temp'), asset.name);
-      await taiTep(asset.browser_download_url, dich);
-      if (macOS) {
-        // Mo .dmg (mount) - nguoi dung keo AWord vao Applications de thay ban cu.
-        spawn('open', [dich], { detached: true, stdio: 'ignore' }).unref();
-      } else {
-        spawn(dich, [], { detached: true, stdio: 'ignore' }).unref();
-      }
-      app.quit();
-    };
-
-    // DÒNG AWord 2.x ĐÃ NGỪNG PHÁT TRIỂN (từ 2.0.2): MỖI LẦN MỞ app đều báo và mời nâng cấp lên AWord Pro 3.x — sản phẩm
-    // mới cài SONG SONG, dùng chung dữ liệu làm việc. Không còn "Không nhắc lại" (bỏ qua cả trạng thái đã lưu ở 2.0.1).
-    //   - Máy đã cài AWord Pro: nút "Mở AWord Pro".
-    //   - Chưa cài: nút "Cài AWord Pro ngay" → tải bộ cài (tiến độ trên thanh tác vụ) rồi tự mở; lỗi thì mở trang tải.
-    // Bộ cài Pro đặt tên AWordPro-* nên kiemTraCapNhat ở trên (chỉ nhận AWord-Setup-*) không coi Pro là bản cập nhật của 2.x.
     const TRANG_TAI = 'https://github.com/' + REPO + '/releases';
     let dangThoat = false;
     app.on('before-quit', () => { dangThoat = true; });
 
+    // Máy đã cài AWord Pro thì chỉ cần mở, không tải lại.
     const duongDanAwordPro = () => {
       const ungVien = process.platform === 'darwin'
         ? ['/Applications/AWord Pro.app', path.join(app.getPath('home'), 'Applications', 'AWord Pro.app')]
-        : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'AWordPro', 'AWordPro.exe')]; // executableName AWordPro → thư mục cài AWordPro
+        : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'AWordPro', 'AWordPro.exe')];
       return ungVien.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
     };
     const moAwordPro = p => {
       if (process.platform === 'darwin') { spawn('open', [p], { detached: true, stdio: 'ignore' }).unref(); }
       else { spawn(p, [], { detached: true, stdio: 'ignore', cwd: path.dirname(p) }).unref(); }
     };
-    const timBanAwordPro = async () => {
-      const macOS = process.platform === 'darwin';
-      const khopPro = a => macOS ? /^AWordPro-.*\\.dmg$/i.test(a.name) : /^AWordPro-Setup-.*\\.exe$/i.test(a.name);
+
+    // Tìm bản mới nhất của DÒNG 2.x (bộ cài AWord-Setup-* / AWord-*.dmg) — null nếu đang là bản mới nhất.
+    // Dò DANH SÁCH release, KHÔNG dùng /releases/latest: cờ "Latest" trên GitHub được giữ cố định ở bản cầu nối
+    // (kiểu số theo giờ) để máy chạy bản rất cũ — chỉ biết /latest — vẫn lên được; từ bản cầu nối trở đi app tự
+    // chọn bản có số hiệu cao nhất.
+    const macOS = process.platform === 'darwin';
+    const timBanMoi = async (khop) => {
       const ds = await layJson('https://api.github.com/repos/' + REPO + '/releases?per_page=30');
       let rel = null;
       let goi = null;
       for (const r of (Array.isArray(ds) ? ds : [])) {
         if (r.draft || r.prerelease) { continue; }
-        const g = (r.assets || []).find(khopPro);
+        const g = (r.assets || []).find(khop);
         if (!g) { continue; }
         if (!rel || soSanhPhienBan(r.tag_name || r.name || '', rel.tag_name || rel.name || '') > 0) { rel = r; goi = g; }
       }
-      return rel ? { phienBan: String(rel.tag_name || rel.name || '').replace(/^v/i, ''), goi, trang: rel.html_url || TRANG_TAI } : null;
+      if (!rel) { return null; }
+      return { phienBan: String(rel.tag_name || rel.name || '').replace(/^v/i, ''), goi, trang: rel.html_url || TRANG_TAI };
     };
-    // Tải bộ cài Pro: tiến độ hiện trên nút app ở thanh tác vụ (bộ cài vài trăm MB), xong thì tự chạy bộ cài.
-    const taiVaCaiAwordPro = async ban => {
+    const timBan2x = async () => {
+      const ban = await timBanMoi(a => (macOS ? /^AWord-.*\\.dmg$/i : /^AWord-Setup-.*\\.exe$/i).test(a.name));
+      return ban && soSanhPhienBan(ban.phienBan, app.getVersion()) > 0 ? ban : null;
+    };
+    const timBanAwordPro = () => timBanMoi(a => (macOS ? /^AWordPro-.*\\.dmg$/i : /^AWordPro-Setup-.*\\.exe$/i).test(a.name));
+
+    // Tải bộ cài rồi mở: tiến độ hiện trên nút app ở thanh tác vụ (bộ cài vài trăm MB).
+    // thoatApp = true với bản cập nhật 2.x (bộ cài ghi đè chính app này), = false với AWord Pro (cài song song).
+    const taiVaCai = async (ban, ten, thoatApp) => {
       const { BrowserWindow, Notification } = require('electron');
       const cuaSo = BrowserWindow.getAllWindows()[0];
       const dich = path.join(app.getPath('temp'), ban.goi.name);
       const tong = ban.goi.size || 0;
       try {
         if (Notification.isSupported()) {
-          new Notification({ title: 'Đang tải AWord Pro ' + ban.phienBan, body: 'Bộ cài sẽ tự mở khi tải xong (xem tiến độ trên thanh tác vụ). Bạn vẫn dùng AWord bình thường.' }).show();
+          new Notification({
+            title: 'Đang tải ' + ten + ' ' + ban.phienBan,
+            body: 'Bộ cài sẽ tự mở khi tải xong (xem tiến độ trên thanh tác vụ). Bạn vẫn dùng AWord bình thường.'
+          }).show();
         }
       } catch (e) { /* bỏ qua */ }
       const hen = tong && cuaSo ? setInterval(() => {
@@ -172,57 +140,90 @@ ${marker}
         if (hen) { clearInterval(hen); }
         try { if (cuaSo && !cuaSo.isDestroyed()) { cuaSo.setProgressBar(-1); } } catch (e) { /* bỏ qua */ }
       }
-      if (process.platform === 'darwin') { spawn('open', [dich], { detached: true, stdio: 'ignore' }).unref(); }
+      if (macOS) { spawn('open', [dich], { detached: true, stdio: 'ignore' }).unref(); }
       else { spawn(dich, [], { detached: true, stdio: 'ignore' }).unref(); }
+      if (thoatApp) { app.quit(); }
     };
 
-    const baoNgungPhatTrien = async () => {
+    const baoLoiTai = async (ban, ten, loi) => {
+      const chon = await dialog.showMessageBox({
+        type: 'error',
+        title: 'Chưa tải được ' + ten,
+        message: 'Tải bộ cài ' + ten + ' không thành công (' + (loi && loi.message ? loi.message : loi) + ').',
+        detail: 'Bạn có thể tải thủ công trên trang phát hành rồi chạy tệp ' + ban.goi.name + '.',
+        buttons: ['Mở trang tải', 'Đóng'], defaultId: 0, cancelId: 1, noLink: true
+      });
+      if (chon.response === 0) { shell.openExternal(ban.trang); }
+    };
+
+    /**
+     * MỘT hộp thoại duy nhất mỗi lần mở app: báo dòng 2.x đã ngừng phát triển và HỎI RÕ muốn nâng lên bản nào —
+     * AWord Pro (dòng mới, cài song song) hay chỉ cập nhật trong dòng 2.x (nếu còn bản 2.x mới hơn), hay để sau.
+     */
+    const hoiNangCap = async () => {
       if (dangThoat) { return; }
-      const daCai = duongDanAwordPro();
-      let ban = null;
-      if (!daCai) { try { ban = await timBanAwordPro(); } catch (e) { ban = null; /* offline: vẫn báo, nút mở trang tải */ } }
+      const daCaiPro = duongDanAwordPro();
+      let ban2x = null;
+      let banPro = null;
+      try { ban2x = await timBan2x(); } catch (e) { /* offline: vẫn hiện thông báo */ }
+      if (!daCaiPro) { try { banPro = await timBanAwordPro(); } catch (e) { /* offline */ } }
       if (dangThoat) { return; }
-      const tenPro = 'AWord Pro' + (ban ? ' ' + ban.phienBan : ' 3.x');
+
+      const nut = [];
+      const viec = [];
+      if (daCaiPro) {
+        nut.push('Mở AWord Pro');
+        viec.push(async () => moAwordPro(daCaiPro));
+      } else if (banPro) {
+        nut.push('Nâng cấp lên AWord Pro ' + banPro.phienBan);
+        viec.push(async () => {
+          try { await taiVaCai(banPro, 'AWord Pro', false); } catch (e) { await baoLoiTai(banPro, 'AWord Pro', e); }
+        });
+      } else {
+        nut.push('Mở trang tải AWord Pro');
+        viec.push(async () => shell.openExternal(TRANG_TAI));
+      }
+      if (ban2x) {
+        nut.push('Chỉ cập nhật AWord ' + ban2x.phienBan);
+        viec.push(async () => {
+          try { await taiVaCai(ban2x, 'AWord', true); } catch (e) { await baoLoiTai(ban2x, 'AWord', e); }
+        });
+      }
+      nut.push('Để sau');
+
+      const dong = [
+        'Bản AWord ' + app.getVersion() + ' vẫn mở được nhưng dòng 2.x KHÔNG còn nhận tính năng mới hay cập nhật Claude Code.',
+        '',
+        'AWord Pro cài SONG SONG, không gỡ bản này. Hai bản dùng chung thư mục làm việc Documents\\\\AWord, cấu hình Claude, '
+          + 'bộ nhớ, lịch sử trò chuyện và kết nối Kho dữ liệu — không mất dữ liệu.',
+        '',
+        'Có trong AWord Pro: tự kết nối Kho tri thức AI giảng dạy, mô hình AI DeepSeek, Claude Code mới nhất, thống kê '
+          + 'token — chi phí; sắp có bản web đăng nhập bằng tài khoản cá nhân.'
+      ];
+      if (ban2x) {
+        dong.push('', 'Bản AWord ' + ban2x.phienBan + ' của dòng 2.x chỉ sửa lỗi và bổ sung kỹ năng, cài đè lên bản đang dùng.');
+      }
+
       const chon = await dialog.showMessageBox({
         type: 'warning',
-        title: 'AWord 2.x đã ngừng phát triển',
-        message: daCai
+        title: 'AWord 2.x đã ngừng phát triển — bạn muốn nâng lên bản nào?',
+        message: daCaiPro
           ? 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN. Máy bạn đã có AWord Pro — hãy chuyển sang dùng AWord Pro.'
-          : 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN. Khuyến nghị nâng cấp lên ' + tenPro + '.',
-        detail: [
-          'Bản AWord ' + app.getVersion() + ' vẫn mở được nhưng KHÔNG còn nhận bản sửa lỗi, tính năng mới hay cập nhật Claude Code.',
-          '',
-          'AWord Pro cài SONG SONG, không gỡ bản này. Hai bản dùng chung thư mục làm việc Documents\\\\AWord, cấu hình Claude, bộ nhớ và kết nối Kho dữ liệu — không mất dữ liệu.',
-          '',
-          'Có trong AWord Pro: tự kết nối Kho tri thức AI giảng dạy, mô hình AI DeepSeek, Claude Code mới nhất; sắp có bản web đăng nhập bằng tài khoản cá nhân.'
-        ].join('\\n'),
-        buttons: [daCai ? 'Mở AWord Pro' : (ban ? 'Cài AWord Pro ngay' : 'Mở trang tải AWord Pro'), 'Để sau'],
-        defaultId: 0, cancelId: 1, noLink: true
+          : 'Dòng AWord 2.x đã NGỪNG PHÁT TRIỂN. Chọn bản bạn muốn nâng lên:',
+        detail: dong.join('\\n'),
+        buttons: nut,
+        defaultId: 0,
+        cancelId: nut.length - 1,
+        noLink: true
       });
-      if (chon.response !== 0 || dangThoat) { return; }
-      if (daCai) { moAwordPro(daCai); return; }
-      if (!ban) { shell.openExternal(TRANG_TAI); return; }
-      try {
-        await taiVaCaiAwordPro(ban);
-      } catch (e) {
-        const loi = await dialog.showMessageBox({
-          type: 'error',
-          title: 'Chưa tải được AWord Pro',
-          message: 'Tải bộ cài AWord Pro không thành công (' + (e && e.message ? e.message : e) + ').',
-          detail: 'Bạn có thể tải thủ công trên trang phát hành rồi chạy tệp ' + ban.goi.name + '.',
-          buttons: ['Mở trang tải', 'Đóng'], defaultId: 0, cancelId: 1, noLink: true
-        });
-        if (loi.response === 0) { shell.openExternal(ban.trang); }
-      }
+      const lam = viec[chon.response];
+      if (!lam || dangThoat) { return; }
+      await lam();
     };
 
     app.whenReady().then(() => {
-      // Chờ 15s sau khởi động cho app ổn định: kiểm tra bản cập nhật 2.x trước (máy còn ở 2.0.0/bản cầu nối lên bản
-      // 2.x cuối), rồi mới báo ngừng phát triển — nối tiếp để hai hộp thoại không chồng nhau; lỗi mạng thì bỏ qua.
-      setTimeout(async () => {
-        try { await kiemTraCapNhat(); } catch (e) { /* offline/không có release: bỏ qua */ }
-        try { await baoNgungPhatTrien(); } catch (e) { /* bỏ qua */ }
-      }, 15000);
+      // Chờ 15s sau khởi động cho app ổn định rồi mới hỏi; lỗi mạng thì bỏ qua.
+      setTimeout(() => { hoiNangCap().catch(() => { /* offline/không có release: bỏ qua */ }); }, 15000);
     });
   } catch (e) { console.error('[AWord] Khởi tạo kiểm tra cập nhật thất bại:', e); }
 })();
