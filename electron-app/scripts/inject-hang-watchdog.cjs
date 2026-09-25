@@ -41,28 +41,63 @@ ${marker}
     };
     const dangTreo = new WeakSet();
 
-    // 2) Renderer ket event loop: Electron ban 'unresponsive' — main van song, hien dialog.
+    // Chi so TUNG tien trinh luc treo (process.memoryUsage chi la tien trinh chinh — khong noi duoc ai gay treo).
+    const chiSoTienTrinh = () => {
+      try {
+        return app.getAppMetrics().map(m => m.type + (m.name ? '(' + m.name + ')' : '') + ':' + m.pid
+          + ' cpu=' + Math.round((m.cpu && m.cpu.percentCPUUsage) || 0) + '%'
+          + ' ram=' + Math.round(((m.memory && m.memory.workingSetSize) || 0) / 1024) + 'MB').join(' | ');
+      } catch (e) { return ''; }
+    };
+
+    // 2) Renderer ket event loop: Electron ban 'unresponsive' — main van song, hoi nguoi dung.
+    // HOP THOAI KHONG DONG BO (sua 25/9/2026): ban cu dung showMessageBoxSync -> tien trinh chinh bi KHOA CUNG suot luc
+    // hop thoai mo; renderer da hoi van khong chay tiep duoc (IPC dong bo phai cho main) -> nhat ky cho thay moi lan
+    // "responsive tro lai" deu dung vai ms SAU khi nguoi dung bam, du hop thoai da mo 9-28 phut. Nay: cho 15s (phan lon
+    // lan dung ngan tu hoi), hoi bang hop thoai bat dong bo, tu dong hop thoai khi cua so hoi lai; "Cho them" thi 60s sau
+    // con treo moi hoi lai.
+    const hoiKhiTreo = new WeakMap();
+    const hoi = (wc, tt) => {
+      tt.hen = null;
+      const win = BrowserWindow.fromWebContents(wc);
+      if (!win || win.isDestroyed() || !dangTreo.has(wc)) { return; }
+      ghiLog('van treo, hoi nguoi dung | ' + chiSoTienTrinh());
+      tt.huy = new AbortController();
+      dialog.showMessageBox(win, {
+        type: 'warning',
+        title: 'AWord không phản hồi',
+        message: 'Cửa sổ AWord đang không phản hồi.',
+        detail: 'Khởi động lại là an toàn — nội dung chat và file đã được lưu tự động. Nếu đang chờ một tác vụ rất nặng thì có thể chờ thêm; cửa sổ trở lại bình thường thì hộp này tự đóng.',
+        buttons: ['Khởi động lại AWord', 'Chờ thêm', 'Thoát AWord'],
+        defaultId: 0, cancelId: 1, noLink: true,
+        signal: tt.huy.signal
+      }).then(kq => {
+        tt.huy = null;
+        if (!dangTreo.has(wc)) { return; } // cua so da hoi -> hop thoai bi huy, khong lam gi
+        if (kq.response === 0) { ghiLog('nguoi dung chon: khoi dong lai'); app.relaunch(); app.exit(0); }
+        else if (kq.response === 2) { ghiLog('nguoi dung chon: thoat'); app.exit(0); }
+        else { ghiLog('nguoi dung chon: cho them'); tt.hen = setTimeout(() => hoi(wc, tt), 60000); }
+      }).catch(() => { tt.huy = null; });
+    };
     app.on('web-contents-created', (_e, wc) => {
       wc.on('unresponsive', () => {
+        if (hoiKhiTreo.has(wc)) { return; }
         dangTreo.add(wc);
-        let mem = '';
-        try { mem = ' rss=' + Math.round(process.memoryUsage().rss / 1048576) + 'MB'; } catch (e) { /* bo qua */ }
-        ghiLog('unresponsive' + mem);
-        const win = BrowserWindow.fromWebContents(wc);
-        if (!win || win.isDestroyed()) { return; }
-        const chon = dialog.showMessageBoxSync(win, {
-          type: 'warning',
-          title: 'AWord không phản hồi',
-          message: 'Cửa sổ AWord đang không phản hồi.',
-          detail: 'Thường do phiên làm việc kéo dài làm đầy bộ nhớ. Khởi động lại là an toàn — nội dung chat và file đã được lưu tự động. Nếu đang chờ một tác vụ rất nặng thì có thể chờ thêm.',
-          buttons: ['Khởi động lại AWord', 'Chờ thêm', 'Thoát AWord'],
-          defaultId: 0, cancelId: 1, noLink: true
-        });
-        if (chon === 0) { ghiLog('nguoi dung chon: khoi dong lai'); app.relaunch(); app.exit(0); }
-        else if (chon === 2) { ghiLog('nguoi dung chon: thoat'); app.exit(0); }
-        else { ghiLog('nguoi dung chon: cho them'); }
+        ghiLog('unresponsive | ' + chiSoTienTrinh());
+        const tt = { hen: null, huy: null };
+        hoiKhiTreo.set(wc, tt);
+        tt.hen = setTimeout(() => hoi(wc, tt), 15000);
       });
-      wc.on('responsive', () => { dangTreo.delete(wc); ghiLog('responsive tro lai'); });
+      wc.on('responsive', () => {
+        dangTreo.delete(wc);
+        const tt = hoiKhiTreo.get(wc);
+        hoiKhiTreo.delete(wc);
+        if (tt) {
+          if (tt.hen) { clearTimeout(tt.hen); }
+          if (tt.huy) { try { tt.huy.abort(); } catch (e) { /* bo qua */ } }
+        }
+        ghiLog('responsive tro lai');
+      });
     });
 
     // 3) Bam X khi cua so DANG treo: Theia cho renderer xac nhan dong (khong bao gio

@@ -52,7 +52,17 @@ export class AwordThongKeContribution extends AbstractViewContribution<AwordThon
      * chạy trên trình duyệt ẩn hẳn `#theia-top-panel`. Thiếu chỗ cắm thì bỏ qua im lặng, và trang thống kê
      * vẫn mở được bằng menu Trợ giúp — chỉ báo không bao giờ là lối vào duy nhất.
      */
-    async onStart(_app: FrontendApplication): Promise<void> {
+    onStart(_app: FrontendApplication): void {
+        // Chạy nền: Theia CHỜ onStart xong mới khởi động tiếp, không được đợi ở đây.
+        void this.ganChiBao();
+    }
+
+    protected async ganChiBao(): Promise<void> {
+        // #window-controls do contribution khác của Theia tạo, có khi SAU onStart này → kiểm một lần thì lúc có lúc
+        // không (máy người dùng có chỉ báo, bản thử thì không). Đợi tối đa 10 giây; bản trình duyệt không có thì thôi.
+        for (let i = 0; i < 40 && !document.getElementById('window-controls'); i++) {
+            await new Promise(r => setTimeout(r, 250));
+        }
         if (!document.getElementById('window-controls')) { return; }
         try {
             await this.shell.addWidget(this.chiSoWidget, { area: 'top' });

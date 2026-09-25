@@ -10,6 +10,17 @@
 //      và không thể trừ ra chính xác — nên quét lại TOÀN BỘ. Đây là lý do ghi thêm `dauBam` (băm 4 KB đầu):
 //      chỉ so kích thước thì bỏ sót trường hợp ghi lại mà tệp dài hơn.
 //
+// CHI PHÍ MỖI LƯỢT QUÉT (sửa 25/9/2026 — nguyên nhân AWord "chạy lâu thì treo"): bản trước `readFileSync` TOÀN BỘ
+// mọi tệp rồi mới so kích thước, nên một lượt quét "không có gì mới" vẫn đọc lại 1,73 GB (828 tệp, tệp lớn nhất
+// 338 MB): ~2 giây và chặn event loop tới 444 ms — chạy mỗi 5 giây, và liên tục trong lúc Claude đang trả lời
+// (fs.watch bắn theo từng dòng ghi thêm). Tiến trình này là backend Theia, nơi trung chuyển MỌI thông điệp giữa
+// giao diện và Claude Code, nên nó bận là cả ứng dụng đứng theo. Nay:
+//   - tệp không đổi kích thước thì KHÔNG mở (lượt quét thường chỉ tốn một `stat` mỗi tệp);
+//   - chỉ đọc phần mới từ `vitri`, theo lô ≤ LO_DOC byte, nhường luồng giữa các lô; băm đầu chỉ đọc ≤ 4 KB;
+//   - sự kiện fs.watch mang tên tệp → chỉ đọc đúng tệp vừa đổi; quét toàn thư mục chỉ là lưới an toàn thưa;
+//   - dòng không chứa `"usage"` (tin nhắn người dùng, ảnh base64 hàng MB) bỏ qua ngay, không giải mã JSON;
+//   - chỉ ghi tệp trạng thái khi số liệu thật sự đổi.
+//
 // Ghi trạng thái bằng tệp tạm rồi đổi tên (atomic) và đặt quyền 0600 — trạng thái này chứa đường dẫn và số
 // liệu sử dụng của người dùng, không cần cho người khác trên máy đọc.
 
@@ -25,6 +36,27 @@ import type { SoToken } from '../common/so-token';
 
 /** Số byte đầu dùng để nhận ra tệp bị ghi lại. */
 const DAI_BAM_DAU = 4096;
+
+/** Mỗi lần đọc tối đa từng này byte rồi nhường luồng — tránh một tệp 300 MB chặn backend nửa giây. */
+const LO_DOC = 8 * 1024 * 1024;
+
+/** Đọc `dai` byte từ vị trí `tu` của tệp đang mở (đọc đủ, kể cả khi hệ điều hành trả thiếu). */
+function docDoan(fd: number, tu: number, dai: number): Buffer {
+    const buf = Buffer.allocUnsafe(dai);
+    let da = 0;
+    while (da < dai) {
+        const n = fs.readSync(fd, buf, da, dai - da, tu + da);
+        if (n <= 0) { break; }
+        da += n;
+    }
+    return da === dai ? buf : buf.subarray(0, da);
+}
+
+/** Nhường event loop cho việc khác (RPC giữa giao diện và Claude Code) rồi làm tiếp. Môi trường kiểm thử jsdom
+ *  không có setImmediate thì dùng setTimeout. */
+const nhuongLuong = (): Promise<void> => new Promise<void>(r => {
+    if (typeof setImmediate === 'function') { setImmediate(r); } else { setTimeout(r, 0); }
+});
 
 const NGAY_MS = 24 * 3600 * 1000;
 
@@ -67,10 +99,13 @@ export interface TuyChonKho {
     traGia: (model: string) => SoToken | undefined;
     /** Gọi sau mỗi lần số liệu đổi, để tầng trên đẩy lên giao diện. */
     khiDoi?: () => void;
-    /** Nhịp quét dự phòng, ms. `fs.watch` đệ quy trên Windows hay sót sự kiện nên luôn cần nhịp này. */
+    /** Nhịp quét dự phòng TOÀN thư mục, ms (mặc định 60 giây). `fs.watch` đệ quy trên Windows hay sót sự kiện nên luôn
+     *  cần nhịp này; tệp nào đổi thì đã được đọc ngay theo sự kiện, nhịp này chỉ là lưới an toàn. */
     nhipPollMs?: number;
     /** Gộp các sự kiện tệp rộ lên trong khoảng này, ms. */
     debounceMs?: number;
+    /** Số byte tối đa mỗi lần đọc một tệp (mặc định 8 MB) — chỉ đổi trong kiểm thử. */
+    loDocByte?: number;
     /** Số tệp xử lý mỗi lượt trước khi nhường luồng, khi quét lần đầu. */
     soTepMoiLo?: number;
 }
@@ -138,9 +173,10 @@ export function lietKeJsonl(goc: string): string[] {
 }
 
 export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
-    const nhipPoll = tuy.nhipPollMs ?? 5_000;
+    const nhipPoll = tuy.nhipPollMs ?? 60_000;
     const debounce = tuy.debounceMs ?? 500;
     const moiLo = Math.max(1, tuy.soTepMoiLo ?? 20);
+    const loDoc = Math.max(1, tuy.loDocByte ?? LO_DOC);
 
     let tt = docTrangThai(tuy.tepTrangThai);
     let dangQuet = false;
@@ -149,6 +185,10 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
     let henDebounce: NodeJS.Timeout | undefined;
     let theoDoi: fs.FSWatcher | undefined;
     let dangChay: Promise<void> | undefined;
+    /** Số liệu đã đổi kể từ lần ghi trạng thái trước — không đổi thì không ghi tệp, không báo giao diện. */
+    let coDoi = false;
+    /** Tệp vừa đổi theo sự kiện fs.watch, chờ đọc ở lượt kế tiếp. `null` = có sự kiện không rõ tệp → quét cả thư mục. */
+    let tepChoDoc: Set<string> | null = new Set<string>();
 
     // ---- tính toán ----
 
@@ -219,8 +259,12 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
 
     // ---- đọc ----
 
-    /** Đọc phần mới của một tệp. Trả `true` nếu tệp bị ghi lại (cần quét lại toàn bộ). */
-    function docTep(duong: string, quetLaiToanBo: boolean): boolean {
+    /**
+     * Đọc phần mới của một tệp. Trả `true` nếu tệp bị ghi lại (cần quét lại toàn bộ).
+     *
+     * Chỉ mở tệp khi kích thước khác lần trước; chỉ đọc ≤ 4 KB đầu để so băm và phần từ `vitri` trở đi, theo lô.
+     */
+    async function docTep(duong: string, quetLaiToanBo: boolean): Promise<boolean> {
         let st: fs.Stats;
         try {
             st = fs.statSync(duong);
@@ -232,24 +276,48 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
         const khoa = duong;
         const cu = quetLaiToanBo ? undefined : tt.tep[khoa];
         const tu = cu?.vitri ?? 0;
+        if (cu && st.size === tu) { return false; }      // không có gì mới — trường hợp của hầu hết tệp
+        if (cu && st.size < tu) { return true; }          // tệp ngắn đi = bị ghi lại
 
-        let buf: Buffer;
+        let fd: number;
         try {
-            buf = fs.readFileSync(duong);
+            fd = fs.openSync(duong, 'r');
         } catch {
             return false;
         }
+        try {
+            // So ĐÚNG đoạn đã tiêu thụ: ghi thêm vào cuối tệp không được coi là ghi lại.
+            if (cu && cu.dauBam !== bamDau(docDoan(fd, 0, Math.min(tu, DAI_BAM_DAU)), tu)) { return true; }
 
-        // So ĐÚNG đoạn đã tiêu thụ: ghi thêm vào cuối tệp không được coi là ghi lại.
-        if (cu && (buf.length < tu || cu.dauBam !== bamDau(buf, tu))) { return true; }
-        if (buf.length <= tu) { return false; }
-
-        const kq: KetQuaQuet = quetKhoi(buf.subarray(tu));
-        const moi = locLuotMoi(kq.luot);
-        if (moi.length > 0) { gopTheoNgay(moi, tt.mau); }
-        const vitriMoi = tu + kq.daDoc;
-        tt.tep[khoa] = { vitri: vitriMoi, dauBam: bamDau(buf, vitriMoi) };
-        return false;
+            let vitri = tu;
+            let lo = loDoc;
+            while (vitri < st.size) {
+                const doan = docDoan(fd, vitri, Math.min(lo, st.size - vitri));
+                if (doan.length === 0) { break; }
+                const kq: KetQuaQuet = quetKhoi(doan);
+                if (kq.daDoc === 0) {
+                    // Không có dòng trọn vẹn nào trong lô: hoặc dòng cuối đang ghi dở, hoặc một dòng dài hơn lô
+                    // (ảnh base64) → nới lô và đọc lại; tới cuối tệp mà vẫn chưa trọn thì để lần sau.
+                    if (vitri + doan.length >= st.size) { break; }
+                    lo *= 2;
+                    continue;
+                }
+                const moi = locLuotMoi(kq.luot);
+                if (moi.length > 0) { gopTheoNgay(moi, tt.mau); }
+                vitri += kq.daDoc;
+                lo = loDoc;
+                if (vitri < st.size) { await nhuongLuong(); }
+            }
+            if (vitri !== tu || !cu) {
+                // Băm đầu chỉ đổi khi phần đã tiêu thụ còn ngắn hơn 4 KB; dài hơn thì giữ băm cũ.
+                const dauBam = cu && tu >= DAI_BAM_DAU ? cu.dauBam : bamDau(docDoan(fd, 0, Math.min(vitri, DAI_BAM_DAU)), vitri);
+                tt.tep[khoa] = { vitri, dauBam };
+                coDoi = true;
+            }
+            return false;
+        } finally {
+            fs.closeSync(fd);
+        }
     }
 
     /** Quét toàn bộ, chia lô để không chặn luồng của tiến trình nền. */
@@ -257,12 +325,15 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
         // Xoá cửa sổ id: số liệu đang được dựng lại từ số 0, nên id cũ không còn nghĩa "đã tính rồi".
         // Quên bước này thì quét lại ra 0 — mọi lượt đều bị coi là đã gặp.
         idDaTinh.clear();
+        tt.mau = {};
+        tt.tep = {};
+        coDoi = true;
         const teps = lietKeJsonl(tuy.goc);
         let ghiLai = 0;
         let dem = 0;
         for (const t of teps) {
-            if (docTep(t, true)) { ghiLai++; }
-            if (++dem % moiLo === 0) { await new Promise<void>(r => setImmediate(r)); }
+            if (await docTep(t, true)) { ghiLai++; }
+            if (++dem % moiLo === 0) { await nhuongLuong(); }
         }
         // Tệp đã biến mất thì bỏ khỏi trạng thái, kẻo phình mãi.
         const con = new Set(teps);
@@ -273,23 +344,40 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
         tt.lanQuetCuoi = Date.now();
     }
 
-    /** Chỉ đọc những tệp đã đổi kể từ lần trước. */
-    async function quetTangDan(): Promise<void> {
-        const teps = lietKeJsonl(tuy.goc);
+    /** Đọc phần mới của các tệp cho trước; tệp nào bị ghi lại thì tính lại từ đầu. */
+    async function docCacTep(teps: Iterable<string>): Promise<void> {
         let ghiLai = 0;
         let dem = 0;
         for (const t of teps) {
-            if (docTep(t, false)) { ghiLai++; }
-            if (++dem % moiLo === 0) { await new Promise<void>(r => setImmediate(r)); }
+            if (await docTep(t, false)) { ghiLai++; }
+            if (++dem % moiLo === 0) { await nhuongLuong(); }
         }
         if (ghiLai > 0) {
             // Có tệp bị ghi lại: cộng dồn hiện tại không còn tin được → tính lại từ đầu.
-            tt.mau = {};
-            tt.tep = {};
             await quetToanBo();
             soTepGhiLai = ghiLai;
         }
         tt.lanQuetCuoi = Date.now();
+    }
+
+    /** Duyệt cả thư mục (lưới an toàn) — rẻ vì tệp không đổi chỉ tốn một `stat`. */
+    async function quetTangDan(): Promise<void> {
+        tepChoDoc = new Set<string>();
+        const teps = lietKeJsonl(tuy.goc);
+        await docCacTep(teps);
+        // Tệp đã biến mất thì bỏ khỏi trạng thái, kẻo phình mãi.
+        const con = new Set(teps);
+        for (const k of Object.keys(tt.tep)) {
+            if (!con.has(k)) { delete tt.tep[k]; coDoi = true; }
+        }
+    }
+
+    /** Chỉ đọc những tệp mà fs.watch báo vừa đổi; sự kiện không rõ tệp thì duyệt cả thư mục. */
+    async function quetTepVuaDoi(): Promise<void> {
+        const cho = tepChoDoc;
+        if (cho === null) { await quetTangDan(); return; }
+        tepChoDoc = new Set<string>();
+        if (cho.size > 0) { await docCacTep(cho); }
     }
 
     function chay(viec: () => Promise<void>): Promise<void> {
@@ -300,6 +388,8 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
             .finally(() => {
                 dangQuet = false;
                 dangChay = undefined;
+                if (!coDoi) { return; }
+                coDoi = false;
                 try {
                     ghiTrangThai(tuy.tepTrangThai, tt);
                 } catch (e) {
@@ -310,9 +400,19 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
         return dangChay;
     }
 
-    function henQuetLai(): void {
+    /** Hẹn một lượt đọc. `tep` = tệp vừa đổi (theo fs.watch); không có = duyệt cả thư mục. */
+    function henQuetLai(tep?: string): void {
+        if (tep === undefined) {
+            tepChoDoc = null;
+        } else if (tepChoDoc !== null) {
+            tepChoDoc.add(tep);
+        }
         if (henDebounce) { clearTimeout(henDebounce); }
-        henDebounce = setTimeout(() => { void chay(quetTangDan); }, debounce);
+        henDebounce = setTimeout(() => {
+            henDebounce = undefined;
+            // Đang có lượt chạy: chờ nó xong rồi đọc tiếp những tệp dồn lại trong lúc chờ.
+            void (dangChay ?? Promise.resolve()).then(() => chay(quetTepVuaDoi));
+        }, debounce);
     }
 
     return {
@@ -321,7 +421,11 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
             await chay(quetTangDan);
             if (fs.existsSync(tuy.goc)) {
                 try {
-                    theoDoi = fs.watch(tuy.goc, { recursive: true }, () => henQuetLai());
+                    theoDoi = fs.watch(tuy.goc, { recursive: true }, (_loai, ten) => {
+                        const t = ten ? String(ten) : '';
+                        if (!t) { henQuetLai(); return; }                 // không rõ tệp → duyệt cả thư mục
+                        if (t.endsWith('.jsonl')) { henQuetLai(path.join(tuy.goc, t)); }
+                    });
                     theoDoi.on('error', () => { /* theo dõi hỏng thì nhịp poll vẫn còn */ });
                 } catch {
                     // Nền tảng không hỗ trợ watch đệ quy → chỉ dùng nhịp poll.
@@ -364,9 +468,10 @@ export function taoKhoSoPhien(tuy: TuyChonKho): KhoSoPhien {
             return { chiSo: chiSo(), theoNgay, theoModel };
         },
 
-        quetLai(): Promise<void> {
-            tt.mau = {};
-            tt.tep = {};
+        async quetLai(): Promise<void> {
+            // Chờ lượt đang chạy xong rồi mới tính lại — trước đây xoá số liệu GIỮA lượt đang chạy rồi trả về
+            // chính lượt đó (chay() gặp dangChay), kết quả chỉ còn phần tệp chưa duyệt tới.
+            while (dangChay) { await dangChay; }
             return chay(quetToanBo);
         },
 

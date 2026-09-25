@@ -1,3 +1,24 @@
+AWord Pro 3.0.7 — **sửa nguyên nhân AWord chậm dần và "không phản hồi" khi chạy lâu**.
+Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
+Kho dữ liệu và tùy chỉnh cá nhân.
+
+Nội dung:
+- **Thống kê token không còn làm nặng máy**: trước đây cứ 5 giây (và liên tục trong lúc Claude đang trả lời) AWord đọc lại
+  TOÀN BỘ lịch sử trò chuyện của Claude Code (trên máy thử là 1,7 GB) — mỗi lượt ~2 giây, chặn tiến trình trung chuyển
+  giữa giao diện và Claude Code. Lịch sử càng dài (dùng càng lâu) càng nặng. Nay chỉ đọc đúng phần vừa ghi thêm: mỗi lượt
+  ~50 ms, số liệu giữ nguyên (đã đối chiếu 46 ngày, khớp 100%).
+- **Hộp thoại "AWord không phản hồi" không còn khoá cả ứng dụng**: trước đây hộp thoại này chặn cứng AWord suốt lúc chờ
+  bạn bấm, nên một lần đứng vài giây kéo thành 9–28 phút. Nay chờ 15 giây mới hỏi, cửa sổ hồi lại thì hộp thoại tự đóng;
+  nhật ký ghi thêm CPU/bộ nhớ từng tiến trình để chẩn đoán.
+- Không theo dõi thư mục tạm của trình đọc web (`.playwright-mcp`) và ảnh trang PDF (`aword_pdf_cache`).
+- **Thu nhỏ cửa sổ không còn mất nút đóng**: nút thu nhỏ / phóng to / đóng luôn nằm ở mép phải cửa sổ dù cửa sổ hẹp đến
+  đâu; thanh menu không lấn xuống dưới các nút này. Chỉ báo chi phí token trên thanh tiêu đề không còn lúc có lúc không.
+- **Chỉ báo chi phí token** nằm gọn giữa thanh tiêu đề theo chiều dọc, đứng bên phải cạnh tên cửa sổ (trước đây bị lệch lên
+  trên và dính sát sau menu). Khi chưa có bảng giá cho mô hình đang dùng thì chỉ hiện số token kèm dấu "!" — không hiện
+  "0 đ" gây hiểu nhầm là không tốn gì; rê chuột để xem số mô hình còn thiếu giá.
+
+---
+
 AWord Pro 3.0.6 — **mở ảnh ngay, không còn hỏi "tệp nhị phân"**; cửa sổ khởi động trở lại giao diện quen thuộc.
 Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
 Kho dữ liệu và tùy chỉnh cá nhân.

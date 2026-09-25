@@ -114,12 +114,17 @@ export class AwordChiSoTokenWidget extends ReactWidget {
     protected capNhatChuoi(): void {
         const rong = this.rong || document.getElementById('theia-top-panel')?.clientWidth || 0;
         let chuoi: string;
+        const cs = this.chiSo;
+        const token = cs ? `${soGon(cs.tokenThang.vao + cs.tokenThang.ra)} token` : '';
+        // Chưa có giá cho model nào đã dùng → tiền tính ra 0, nhưng "0" là con số SAI (người đọc hiểu là không tốn gì).
+        // Khi đó chỉ hiện số token; dấu "!" và chú thích rê chuột nói rõ là thiếu bảng giá.
+        const coTien = !!cs && (cs.tienThang > 0 || cs.soModelChuaCoGia === 0);
         if (rong > 0 && rong < RONG_GON) {
             chuoi = '';
         } else if (rong > 0 && rong < RONG_DAY_DU) {
-            chuoi = this.chiSo ? `${tienGon(this.chiSo.tienThang)}` : '…';
+            chuoi = cs ? (coTien ? `${tienGon(cs.tienThang)}` : token) : '…';
         } else {
-            chuoi = this.chiSo ? `${tienGon(this.chiSo.tienThang)} · ${soGon(this.chiSo.tokenThang.vao + this.chiSo.tokenThang.ra)} token` : '…';
+            chuoi = cs ? (coTien ? `${tienGon(cs.tienThang)} · ${token}` : token) : '…';
         }
         if (chuoi === this.chuoiHienTai) { return; }
         this.chuoiHienTai = chuoi;
@@ -136,7 +141,7 @@ export class AwordChiSoTokenWidget extends ReactWidget {
         const cs = this.chiSo;
         const canhBao = cs && cs.soModelChuaCoGia > 0;
         return (
-            <span className="aword-cs-trong" title={canhBao ? 'Một số mô hình chưa có giá — số tiền đang thiếu' : undefined}>
+            <span className="aword-cs-trong" title={canhBao ? `${cs!.soModelChuaCoGia} mô hình chưa có giá nên chưa tính được đủ chi phí — bấm để xem và nhập bảng giá` : undefined}>
                 {cs?.dangQuet ? <span className="aword-cs-cham" aria-label="đang quét" /> : null}
                 <span className="aword-cs-so">{this.chuoiHienTai}</span>
                 {canhBao ? <span className="aword-cs-canh" aria-label="thiếu giá">!</span> : null}

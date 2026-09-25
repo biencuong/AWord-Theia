@@ -225,6 +225,75 @@ describe('kho số phiên — đọc tăng dần và giữ trạng thái', () =>
         expect(bc.theoModel.map(m => m.model).sort()).toEqual(['model-a', 'model-b']);
     });
 
+    // ---- Chống treo khi chạy lâu (25/9/2026): lượt quét không được đọc lại tệp không đổi ----
+
+    test('lượt quét khi KHÔNG có gì mới thì không mở tệp nào (chỉ stat)', async () => {
+        fs.writeFileSync(path.join(goc, 'a.jsonl'), dong('m1', { vao: 1000 }));
+        fs.writeFileSync(path.join(goc, 'b.jsonl'), dong('m2', { vao: 2000 }));
+        const k = moKho();
+        await k.batDau();
+
+        const moTep = jest.spyOn(fs, 'openSync');
+        const docCa = jest.spyOn(fs, 'readFileSync');
+        try {
+            await k.quetNgay();
+            expect(moTep).not.toHaveBeenCalled();
+            expect(docCa.mock.calls.filter(c => String(c[0]).endsWith('.jsonl'))).toHaveLength(0);
+        } finally {
+            moTep.mockRestore();
+            docCa.mockRestore();
+        }
+        expect(k.docChiSo().tokenHomNay).toMatchObject({ vao: 3000, luot: 2 });
+    });
+
+    test('chỉ đọc PHẦN MỚI của tệp lớn, không đọc lại phần đầu', async () => {
+        const tepA = path.join(goc, 'a.jsonl');
+        const dem = 200;
+        let noiDung = '';
+        for (let i = 0; i < dem; i++) { noiDung += dong(`cu${i}`, { vao: 1 }); }
+        fs.writeFileSync(tepA, noiDung);
+        const k = moKho();
+        await k.batDau();
+        expect(k.docChiSo().tokenHomNay.luot).toBe(dem);
+
+        fs.appendFileSync(tepA, dong('moi', { vao: 5000 }));
+        const docDoan = jest.spyOn(fs, 'readSync');
+        try {
+            await k.quetNgay();
+            // Byte đọc = ≤ 4 KB băm đầu + đúng dòng mới (+ băm lại nếu cần), không phải cả tệp.
+            const tongByte = docDoan.mock.calls.reduce((s, c) => s + Number((c as unknown[])[3]), 0);
+            expect(tongByte).toBeLessThan(4096 + dong('moi', { vao: 5000 }).length + 1);
+        } finally {
+            docDoan.mockRestore();
+        }
+        expect(k.docChiSo().tokenHomNay).toMatchObject({ vao: dem + 5000, luot: dem + 1 });
+    });
+
+    test('một dòng DÀI HƠN lô đọc (ảnh base64) vẫn tính đúng', async () => {
+        const tepA = path.join(goc, 'a.jsonl');
+        const dai = JSON.stringify({ type: 'user', message: { content: 'x'.repeat(5000) } }) + '\n';
+        fs.writeFileSync(tepA, dong('m1', { vao: 10 }) + dai + dong('m2', { vao: 20 }));
+        kho = taoKhoSoPhien({ goc, tepTrangThai, traGia: m => GIA[m], nhipPollMs: 1_000_000, loDocByte: 512 });
+        await kho.batDau();
+        expect(kho.docChiSo().tokenHomNay).toMatchObject({ vao: 30, luot: 2 });
+        // Mở lại: không đếm trùng
+        kho.dung();
+        kho = taoKhoSoPhien({ goc, tepTrangThai, traGia: m => GIA[m], nhipPollMs: 1_000_000, loDocByte: 512 });
+        await kho.batDau();
+        expect(kho.docChiSo().tokenHomNay).toMatchObject({ vao: 30, luot: 2 });
+    });
+
+    test('"Tính lại từ đầu" bấm ĐÚNG LÚC đang quét vẫn ra đủ số', async () => {
+        for (let i = 0; i < 60; i++) {
+            fs.writeFileSync(path.join(goc, `t${i}.jsonl`), dong(`m${i}`, { vao: 100 }));
+        }
+        kho = taoKhoSoPhien({ goc, tepTrangThai, traGia: m => GIA[m], nhipPollMs: 1_000_000, soTepMoiLo: 5 });
+        const batDau = kho.batDau();          // quét lần đầu đang chạy (nhường luồng mỗi 5 tệp)
+        const tinhLai = kho.quetLai();        // người dùng bấm trong lúc đó
+        await Promise.all([batDau, tinhLai]);
+        expect(kho.docChiSo().tokenHomNay).toMatchObject({ vao: 6000, luot: 60 });
+    });
+
     test('bảng giá đổi thì số tiền đổi theo, không cần quét lại', async () => {
         fs.writeFileSync(path.join(goc, 'a.jsonl'), dong('m1', { vao: 1000 }));
 

@@ -378,6 +378,24 @@ div.aword-welcome-vai-tt {
     color: var(--theia-editor-foreground);
 }
 
+/* Cụm nút thu nhỏ / phóng to / đóng luôn bám MÉP PHẢI CỬA SỔ (sửa 25/9/2026). Theia đặt cụm nút
+   `position:absolute; right:0` theo #theia-top-panel. Khi cửa sổ hẹp hơn tổng bề rộng tối thiểu của các khung
+   (khám phá + soạn thảo + khung Claude), Lumino đẩy khung Theia RỘNG HƠN cửa sổ (đo được 826px trong cửa sổ 821px),
+   thanh trên cùng rộng theo, và cụm nút trôi ra ngoài mép phải — mất nút ĐÓNG trước tiên. `fixed` tính theo cửa
+   sổ nên không bao giờ trôi. */
+#window-controls {
+    position: fixed !important;
+    top: 0;
+    right: 0 !important;
+    height: var(--theia-private-menubar-height) !important;
+    z-index: 10000;
+}
+/* Thanh menu không được chui xuống dưới cụm nút khi cửa sổ hẹp: chừa 144px (3 nút) + khoảng thở. */
+#theia\:menubar {
+    max-width: calc(100vw - 144px - 56px);
+    overflow: hidden;
+}
+
 /* Logo AWord đứng trước menu "Tệp" trên thanh tiêu đề tùy biến (giống biểu tượng của VS Code).
    Thanh menu do Theia tự vẽ (custom title bar, mặc định trên Windows) nên chèn được bằng CSS.
    .lm-MenuBar-content là vùng flex chứa các mục menu — ::before thành mục đầu, nằm trước "Tệp". */

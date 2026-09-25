@@ -1,8 +1,8 @@
 {
   "private": true,
   "name": "electron-app",
-  "version": "3.0.6",
-  "buildTimestamp": "20260925.1418",
+  "version": "3.0.7",
+  "buildTimestamp": "20260925.1536",
   "main": "lib/backend/electron-main.js",
   "dependencies": {
     "@theia/core": "1.73.1",
@@ -86,7 +86,9 @@
             "**/dist/**": true,
             "**/out/**": true,
             "**/.cache/**": true,
-            "**/AppData/**": true
+            "**/AppData/**": true,
+            "**/.playwright-mcp/**": true,
+            "**/aword_pdf_cache/**": true
           },
           "search.exclude": {
             "**/.aword": true,

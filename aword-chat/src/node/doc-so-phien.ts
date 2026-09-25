@@ -55,6 +55,25 @@ export interface MauTheoNgay {
     [ngay: string]: { [model: string]: SoToken & { luot: number } };
 }
 
+/** Dấu hiệu có số token trong một dòng JSONL — lọc nhanh trước khi giải mã. */
+const DAU_USAGE = Buffer.from('"usage"');
+
+const laKhoangTrang = (b: number): boolean => b === 0x20 || b === 0x09 || b === 0x0d;
+
+/**
+ * Phân loại dòng bị bỏ qua mà KHÔNG giải mã (dòng có thể dài hàng MB): 'trong' | 'hong' | 'khac'.
+ * Dòng JSON đối tượng hợp lệ luôn mở bằng '{' và đóng bằng '}' — thiếu một trong hai là dòng hỏng/ghi dở,
+ * giữ đúng cách đếm `boQua.hong` như khi còn JSON.parse mọi dòng.
+ */
+function phanLoaiDongBoQua(buf: Buffer, tu: number, den: number): 'trong' | 'hong' | 'khac' {
+    let a = tu;
+    let b = den - 1;
+    while (a <= b && laKhoangTrang(buf[a])) { a++; }
+    if (a > b) { return 'trong'; }
+    while (b > a && laKhoangTrang(buf[b])) { b--; }
+    return buf[a] === 0x7b && buf[b] === 0x7d ? 'khac' : 'hong';
+}
+
 const NGAY_TRONG = 24 * 3600 * 1000;
 /** Việt Nam là UTC+7 quanh năm, không có giờ mùa hè. */
 const LECH_VN_MS = 7 * 3600 * 1000;
@@ -114,9 +133,18 @@ export function quetKhoi(buf: Buffer): KetQuaQuet {
     for (;;) {
         const xuong = buf.indexOf(0x0a, tu);
         if (xuong < 0) { break; }
-        const dong = buf.toString('utf8', tu, xuong);
+        const dauDong = tu;
         daDoc = xuong + 1;
         tu = xuong + 1;
+        // Lượt tính tiền nào cũng có `"usage"`. Dòng không có (tin nhắn người dùng, kết quả công cụ, ảnh base64 dài
+        // hàng MB) bỏ qua NGAY — không giải mã, không JSON.parse. Tìm trong đúng khung dòng (subarray là khung nhìn,
+        // không chép), nếu tìm trên cả buf thì mỗi dòng quét tới cuối khối → O(n²).
+        if (buf.subarray(dauDong, xuong).indexOf(DAU_USAGE) < 0) {
+            const loai = phanLoaiDongBoQua(buf, dauDong, xuong);
+            if (loai === 'hong') { boQua.hong++; } else if (loai === 'khac') { boQua.khongPhaiLuot++; }
+            continue;
+        }
+        const dong = buf.toString('utf8', dauDong, xuong);
         if (dong.trim() === '') { continue; }
 
         let tho: unknown;

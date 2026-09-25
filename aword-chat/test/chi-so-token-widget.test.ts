@@ -108,6 +108,19 @@ describe('chỉ báo token trên thanh tiêu đề', () => {
         expect(json).toContain('aword-cs-canh');
     });
 
+    test('CHƯA CÓ GIÁ mô hình nào (tiền tính ra 0) thì KHÔNG hiện "0" — chỉ hiện token + dấu cảnh báo', () => {
+        const cs = chiSo({ tienThang: 0, soModelChuaCoGia: 8 });
+        const rong = noiBo(dungWidget(1200, cs));
+        expect(rong.chuoiHienTai).toBe('1,5tr token');
+        expect(JSON.stringify(rong.render())).toContain('aword-cs-canh');
+        expect(noiBo(dungWidget(800, cs)).chuoiHienTai).toBe('1,5tr token');
+    });
+
+    test('có giá một phần (tiền > 0) thì vẫn hiện tiền kèm dấu cảnh báo', () => {
+        const w = noiBo(dungWidget(1200, chiSo({ soModelChuaCoGia: 1 })));
+        expect(w.chuoiHienTai).toBe('1,2tr · 1,5tr token');
+    });
+
     test('đang quét thì hiện dấu hiệu quét', () => {
         const w = dungWidget(1200, chiSo({ dangQuet: true }));
         expect(JSON.stringify(noiBo(w).render())).toContain('aword-cs-cham');

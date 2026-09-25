@@ -8,7 +8,7 @@
    `margin-left: auto` là đủ để đẩy sang phải.
    `margin-right: 144px` chừa đúng chỗ cho #window-controls (3 nút cửa sổ × 48px). Không chừa thì nút ĐÓNG
    CỬA SỔ nằm đè lên con số. */
-#aword-chi-so-token {
+.aword-cs-nut {
     margin-left: auto;
     margin-right: 144px;
     align-self: center;
@@ -21,7 +21,17 @@
     user-select: none;
 }
 
-#aword-chi-so-token .aword-cs-trong {
+/* Bấm chuột xong không để lại khung viền focus to quanh cả vùng; điều hướng bằng bàn phím thì viền nằm gọn trên viên thuốc. */
+.aword-cs-nut:focus,
+.aword-cs-nut:focus-visible {
+    outline: none;
+}
+.aword-cs-nut:focus-visible .aword-cs-trong {
+    outline: 1px solid var(--theia-focusBorder);
+    outline-offset: 1px;
+}
+
+.aword-cs-nut .aword-cs-trong {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -35,17 +45,17 @@
     color: var(--theia-titleBar-activeForeground);
 }
 
-#aword-chi-so-token:hover .aword-cs-trong {
+.aword-cs-nut:hover .aword-cs-trong {
     background: rgba(255, 255, 255, 0.11);
     border-color: var(--aword-cam);
 }
 
-#aword-chi-so-token .aword-cs-so {
+.aword-cs-nut .aword-cs-so {
     color: var(--aword-cam);
     font-weight: 600;
 }
 
-#aword-chi-so-token .aword-cs-canh {
+.aword-cs-nut .aword-cs-canh {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -59,7 +69,7 @@
     line-height: 1;
 }
 
-#aword-chi-so-token .aword-cs-cham {
+.aword-cs-nut .aword-cs-cham {
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -78,6 +88,10 @@
    giữa thì không bảo đảm được là không đè, vì thanh menu bên trái đẩy mép phải của tiêu đề ra xa.
    `--aword-tt-rong` do chính chỉ báo công bố sau mỗi lần vẽ (0px khi chỉ báo bị ẩn). */
 #theia-custom-title {
+    /* Bám theo CỬA SỔ như cụm nút (index.css) — khung Theia có thể rộng hơn cửa sổ khi thu nhỏ. */
+    position: fixed !important;
+    top: 0;
+    height: var(--theia-private-menubar-height);
     left: auto !important;
     right: calc(144px + 16px + var(--aword-tt-rong, 0px)) !important;
     transform: none !important;
