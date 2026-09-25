@@ -19,6 +19,8 @@ import { AwordThongKeWidget } from './aword-thong-ke-widget';
 import { AwordChiSoTokenWidget } from './aword-chi-so-token-widget';
 import { AwordThongKeContribution } from './aword-thong-ke-contribution';
 import { AwordTuDongCapNhatClaudeContribution } from './aword-tu-dong-cap-nhat-claude-contribution';
+import { FileResourceResolver } from '@theia/filesystem/lib/browser/file-resource';
+import { AwordFileResourceResolver } from './aword-mo-tep-nhi-phan';
 
 import '../../src/browser/style/index.css';
 import '../../src/browser/style/thong-bao-giua.css';
@@ -37,6 +39,9 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     rebind(ApplicationShellOptions).toConstantValue({
         rightPanel: { initialSizeRatio: 0.33 }
     });
+
+    // Tệp nhị phân không có trình xem: tự mở bằng ứng dụng Windows thay vì hộp thoại "Bạn vẫn muốn mở?" (như VS Code).
+    rebind(FileResourceResolver).to(AwordFileResourceResolver).inSingletonScope();
 
     bind(CapNhatClaudeCodeServer).toDynamicValue(ctx => {
         const provider = ctx.container.get(WebSocketConnectionProvider);

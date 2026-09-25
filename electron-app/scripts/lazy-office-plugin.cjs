@@ -14,6 +14,17 @@ if (!fs.existsSync(pkgPath)) {
 }
 
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+// Ảnh (jpg, png, gif, bmp, webp, ico…) mở bằng trình xem ảnh của plugin làm MẶC ĐỊNH — như VS Code mở ảnh bằng trình
+// xem sẵn có. Plugin khai báo mức "option" nên Theia mở ảnh bằng trình soạn thảo văn bản và bật hộp thoại
+// "Tệp là tệp nhị phân… Bạn vẫn muốn mở?" (người dùng gặp khi Claude đọc ảnh trang PDF trong aword_pdf_cache).
+const xemAnh = (pkg.contributes && pkg.contributes.customEditors || []).find(ed => ed.viewType === 'cweijan.imageViewer');
+if (xemAnh && xemAnh.priority !== 'default') {
+    xemAnh.priority = 'default';
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+    console.log('[lazy-office] Trình xem ảnh cweijan.imageViewer: đặt làm MẶC ĐỊNH cho tệp ảnh.');
+}
+
 if (pkg._aword_lazy) {
     console.log('[lazy-office] Đã vá từ trước — bỏ qua.');
     process.exit(0);

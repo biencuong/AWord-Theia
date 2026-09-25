@@ -1,3 +1,17 @@
+AWord Pro 3.0.6 — **mở ảnh ngay, không còn hỏi "tệp nhị phân"**; cửa sổ khởi động trở lại giao diện quen thuộc.
+Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
+Kho dữ liệu và tùy chỉnh cá nhân.
+
+Nội dung:
+- **Mở ảnh ngay trong AWord** (jpg, png, gif, bmp, webp, ico…) bằng trình xem ảnh — như VS Code. Trước đây AWord mở ảnh
+  bằng trình soạn thảo văn bản và bật hộp thoại "Tệp là tệp nhị phân… Bạn vẫn muốn mở?" (hay gặp khi Claude đọc ảnh các
+  trang PDF scan).
+- **Tệp không phải văn bản khác** (không có trình xem trong AWord): tự mở bằng ứng dụng mặc định của Windows, chỉ báo một
+  dòng — không còn hộp thoại phải bấm "Có".
+- **Cửa sổ khởi động** giữ giao diện của AWord 2.x (nền tối quầng cam, chữ cam chuyển màu) với logo và chữ của AWord Pro 3.x.
+
+---
+
 AWord Pro 3.0.5 — **Claude Code tự cập nhật theo thời gian thực** và **Claude đọc được trang web** (Playwright).
 Khi bộ cài hỏi về settings.json và CLAUDE.md, chọn "Yes" (cập nhật): cấu hình được HỢP NHẤT, giữ nguyên mã kết nối AI,
 Kho dữ liệu và tùy chỉnh cá nhân. Kỹ năng đã có sẵn trên máy KHÔNG bị ghi đè — chỉ kỹ năng còn thiếu mới được cài thêm.
